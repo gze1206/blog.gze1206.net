@@ -3,16 +3,21 @@ import colors from 'vuetify/es5/util/colors'
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: '%s - blog.gze1206.net',
-    title: 'blog.gze1206.net',
+    titleTemplate: (titleChunk) => {
+      const siteTitle = 'blog.gze1206.net'
+      return titleChunk ? `${titleChunk} - ${siteTitle}` : siteTitle
+    },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' },
+      { hid: 'description', name: 'description', content: 'gze1206\'s blog' },
       { name: 'format-detection', content: 'telephone=no' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      { rel: 'stylesheet', href: '/css/index.css' },
+      { rel: 'stylesheet', href: '/css/bootstrap.css' },
+      { rel: 'stylesheet', href: '/css/fonts.css' }
     ]
   },
 

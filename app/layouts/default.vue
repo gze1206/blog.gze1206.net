@@ -5,9 +5,7 @@
         <Nuxt />
       </v-container>
     </v-main>
-    <v-footer
-      app
-    >
+    <v-footer>
       <span>
         created with
         <a href="https://nuxtjs.org/" target="_blank">Nuxt.js</a> by
