@@ -1,0 +1,15 @@
+version: '3'
+services:
+  nuxt.js:
+    container_name: nuxt.js
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - ./app:/root
+    working_dir: /root
+    command: yarn dev
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true
