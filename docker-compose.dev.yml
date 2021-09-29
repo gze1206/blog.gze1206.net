@@ -1,14 +1,14 @@
 version: '3'
 services:
   nuxt.js:
-    container_name: nuxt.js
+    container_name: nuxt.js-dev
     build: .
     ports:
-      - 80:80
+      - 80:3000
     volumes:
       - ./app:/root
     working_dir: /root
-    command: yarn start
+    command: yarn dev
     environment:
       - PORT=80
       - HOST=0.0.0.0
