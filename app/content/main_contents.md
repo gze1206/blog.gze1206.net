@@ -6,8 +6,9 @@ description: Contents for main page
 
 [![GitHub](https://badgen.net/badge/GitHub/gze1206/dark?icon=github&labelColor=212121&color=525252)](https://github.com/gze1206)
 [![Discord](https://badgen.net/badge/Discord/gze1206%235106/dark?icon=discord&labelColor=5865F2&color=525252)](https://discord.com)
+[![KakaoTalk](https://img.shields.io/badge/KakaoTalk-ggzzzeze-default?logo=KakaoTalk&logoColor=black&labelColor=FFE01B&color=525252)](https://open.kakao.com/me/gze1206)
 [![Steam](https://img.shields.io/badge/Steam-gze1206-default?logo=Steam&logoColor=white&labelColor=000000&color=525252)](https://steamcommunity.com/id/gze1206/)
-[![Gmail](https://img.shields.io/badge/email-gze1206@kakao.com-default?logo=Mail.Ru&logoColor=black&labelColor=FFE01B&color=525252)](mailto://gze1206@kakao.com)
+[![email](https://img.shields.io/badge/email-gze1206@kakao.com-default?logo=Mail.Ru&logoColor=black&labelColor=FFE01B&color=525252)](mailto://gze1206@kakao.com)
 
 안녕하세요, 김명식입니다.  
 주로 사용하는 닉네임은 gze1206이고, 프로그래머로 근무한 이력이 있습니다.  
