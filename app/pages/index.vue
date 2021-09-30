@@ -27,6 +27,7 @@ export default {
     const mainContents = this.mainContents
 
     return {
+      title: null,
       meta: [
         {
           hid: 'description',
