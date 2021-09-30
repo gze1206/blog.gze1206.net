@@ -1,6 +1,7 @@
 ---
 title: blog.gze1206.net
 description: Contents for main page
+careers:
 ---
 # 🙋‍♂️ MyoungSik Kim (gze1206)
 
@@ -24,33 +25,7 @@ description: Contents for main page
 [:img{src="https://github-readme-stats.vercel.app/api?username=gze1206&show_icons=true&count_private=true&theme=tokyonight" .full-width}](https://github.com/anuraghazra/github-readme-stats)
 
 ### 🏙 Career
-
-#### Social Service Agent
-* 2021.07 ~ 2021.11
-* 4조 2교대로 근무
-* 여가 시간에 학점은행제 과목 이수 및 관심 있던 분야에 대한 학습 진행
-
-#### AIARA
-* 2020.04 ~ 2021.01
-* 프로그램2팀
-* 교육 관련 서비스나 피트니스 회사의 관리자 페이지 등 다양한 웹 프로젝트 참여
-* C# WinForm을 사용한 바코드 리더기 제작
-* 사물 인식 기반 SNS 등 모바일 프로젝트 참여
-* 건강 상의 문제로 퇴사 / 사회복무요원으로 전환
-
-#### KRAFTON SQUALL
-* 2018.10 ~ 2020.03
-* 플랫폼 개발팀
-* '테라 오리진' 개발 참여 (일본 서비스 진행)
-* 서버 및 DB 관리 / 전투 관련 로직 작업
-* 추가로 자동화 테스트 툴 및 개발 편의 도구 제작
-* 서비스 진행 도중 폐업으로 인해 이직
-
-#### Seoul Digitech Highschool
-* 2016.03 ~ 2019.02
-* 게임영상과
-* 게임개발 기능반 (게임개발 기능경기대회 준비)
-* 프로그래밍 트랙 (다른 트랙 친구와 협업 진행)
+<CareerList :careers="careers"></CareerList>
 
 ## 🎮 Gamer
 학생 때부터 식비까지 아껴가며 스팀 등에 돈을 쏟아부은 결과 아래와 같은 계정이 만들어지게 되었습니다.  

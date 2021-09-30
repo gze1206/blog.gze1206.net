@@ -10,3 +10,7 @@
     -ms-user-select: none;
     user-select: none;
 }
+
+.nuxt-content img {
+    max-width: 500px;
+}

@@ -14,10 +14,17 @@
 </template>
 
 <script>
+import CareerList from '~/components/career-list'
 
 export default {
+  components: {
+    // eslint-disable-next-line vue/no-unused-components
+    CareerList
+  },
   async asyncData ({ $content }) {
     const mainContents = await $content('main_contents').fetch()
+    const careers = await $content('careers').sortBy('order', 'desc').fetch()
+    mainContents.careers = careers
 
     return {
       mainContents
