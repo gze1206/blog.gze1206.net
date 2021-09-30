@@ -21,7 +21,7 @@ description: Contents for main page
 [^1]: [이 블로그](https://github.com/gze1206/blog.gze1206.net)도 Nuxt.js를 사용해 제작했습니다
 
 ### 📈 GitHub stats
-[![gze1206's github stats](https://github-readme-stats.vercel.app/api?username=gze1206&show_icons=true&count_private=true&theme=tokyonight)](https://github.com/anuraghazra/github-readme-stats)
+[:img{src="https://github-readme-stats.vercel.app/api?username=gze1206&show_icons=true&count_private=true&theme=tokyonight" .full-width}](https://github.com/anuraghazra/github-readme-stats)
 
 ### 🏙 Career
 
@@ -59,4 +59,4 @@ description: Contents for main page
 코로나19가 이렇게 확산되기 전에는 친구와 오락실에 가서 철권이나 리듬게임도 즐겨 했었습니다.
 
 ### 💸 Profile cards
-[![Steam profile](https://steam.mmosvc.com/76561198088205032/v1.png)](https://steamcommunity.com/id/gze1206/)
+[:img{src=https://steam.mmosvc.com/76561198088205032/v1.png .full-width}](https://steamcommunity.com/id/gze1206/)

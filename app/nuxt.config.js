@@ -59,7 +59,14 @@ export default {
   },
 
   // Content module configuration: https://go.nuxtjs.dev/config-content
-  content: {},
+  content: {
+    markdown: {
+      remarkPlugins: [
+        'remark-directive',
+        '~/plugins/htmlDirectives.js'
+      ]
+    }
+  },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
