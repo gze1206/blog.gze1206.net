@@ -5,11 +5,13 @@ careers:
 ---
 # 🙋‍♂️ MyoungSik Kim (gze1206)
 
+:::div{#badges.my-5.mt-7}
 [![GitHub](https://badgen.net/badge/GitHub/gze1206/dark?icon=github&labelColor=212121&color=525252)](https://github.com/gze1206)
 [![Discord](https://badgen.net/badge/Discord/gze1206%235106/dark?icon=discord&labelColor=5865F2&color=525252)](https://discord.com)
 [![KakaoTalk](https://img.shields.io/badge/KakaoTalk-ggzzzeze-default?logo=KakaoTalk&logoColor=black&labelColor=FFE01B&color=525252)](https://open.kakao.com/me/gze1206)
 [![Steam](https://img.shields.io/badge/Steam-gze1206-default?logo=Steam&logoColor=white&labelColor=000000&color=525252)](https://steamcommunity.com/id/gze1206/)
 [![email](https://img.shields.io/badge/email-gze1206@kakao.com-default?logo=Mail.Ru&logoColor=black&labelColor=FFE01B&color=525252)](mailto://gze1206@kakao.com)
+:::
 
 안녕하세요, 김명식입니다.  
 주로 사용하는 닉네임은 gze1206이고, 프로그래머로 근무한 이력이 있습니다.  
@@ -30,7 +32,7 @@ careers:
 ## 🎮 Gamer
 학생 때부터 식비까지 아껴가며 스팀 등에 돈을 쏟아부은 결과 아래와 같은 계정이 만들어지게 되었습니다.  
 스팀에 입문하게 된 것은 Portal 시리즈였으며, 그 밖에도 Assassin's Creed 시리즈도 좋아합니다.  
-스팀 게임 외에 PC 게임은 메이플스토리나 마비노기, 로스트아크를 했지만 현재는 로스트아크만 플레이 중입니다. 
+스팀 게임 외에 PC 게임은 메이플스토리나 마비노기, 로스트아크를 했지만 현재는 로스트아크만 플레이 중입니다.  
 코로나19가 이렇게 확산되기 전에는 친구와 오락실에 가서 철권이나 리듬게임도 즐겨 했었습니다.
 
 ### 💸 Profile cards
