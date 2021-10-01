@@ -11,6 +11,16 @@
     user-select: none;
 }
 
-.nuxt-content img {
-    max-width: 500px;
+.v-application,.v-card {
+    background-color: var(--v-background-base) !important;
+    color: var(--v-foreground-base) !important;
+}
+
+.v-application a {
+    color: var(--v-foreground-base) !important;
+    text-decoration: underline;
+}
+
+.v-application code {
+    all: unset!important;
 }

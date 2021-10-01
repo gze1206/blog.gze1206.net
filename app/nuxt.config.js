@@ -21,6 +21,7 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
+    { src: '~/assets/index.scss', lang: 'scss' }
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
@@ -66,7 +67,10 @@ export default {
       remarkPlugins: [
         'remark-directive',
         '~/plugins/htmlDirectives.js'
-      ]
+      ],
+      prism: {
+        theme: 'prism-themes/themes/prism-solarized-dark-atom.css'
+      }
     }
   },
 
@@ -75,8 +79,13 @@ export default {
     customVariables: ['~/assets/variables.scss'],
     theme: {
       dark: true,
+      options: {
+        customProperties: true
+      },
       themes: {
         dark: {
+          background: '#2F3837',
+          foreground: '#EBEBEB',
           primary: colors.blue.darken2,
           accent: colors.grey.darken3,
           secondary: colors.amber.darken3,

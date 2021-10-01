@@ -12,6 +12,6 @@ description: this is test article
 
 > test
 
-```cs:test.cs
+```cs[test.cs]
 System.Console.WriteLine("test");
 ```

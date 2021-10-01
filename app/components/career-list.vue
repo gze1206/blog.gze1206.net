@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card v-for="item in careers" :key="item.order" class="my-3" max-width="500px">
+    <v-card v-for="item in careers" :key="item.order" outlined class="my-3" max-width="500px">
       <v-img v-if="item.cover" :src="item.cover" />
       <v-card-title>{{ item.title }}</v-card-title>
       <v-card-subtitle>{{ formatDuration(item) }}</v-card-subtitle>

@@ -1,0 +1,38 @@
+.nuxt-content {
+    & img {
+        max-width: 500px;
+    }
+
+    & .nuxt-content-highlight {
+        position: relative;
+
+        /* Style filename span added by @nuxt/content */
+        & > .filename {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            z-index: 10;
+            margin-top: 0.75rem;
+            margin-right: 1rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            line-height: 1;
+            letter-spacing: -0.025em;
+            --tw-text-opacity: 1;
+            color: rgba(243, 244, 246, var(--tw-text-opacity));
+        }
+
+        /* Add top padding to code blocks with filename */
+        & > .filename + pre[class*="language-"] {
+            padding-top: 2rem;
+        }
+    }
+
+    /* Force style on pre elements */
+    & pre[class*="language-"] {
+        position: static;
+        --tw-bg-opacity: 1;
+        background-color: rgba(31, 41, 55, var(--tw-bg-opacity));
+    }
+}
