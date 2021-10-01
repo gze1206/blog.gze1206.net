@@ -2,18 +2,19 @@ backend:
   name: git-gateway
   branch: master
 
-media_folder: static/img
+media_folder: app/static/img
 public_folder: /img
 
 collections:
   - name: 'articles'
     label: 'Articles'
-    format: 'json'
-    folder: 'content/articles'
+    format: 'frontmatter'
+    folder: 'app/content/articles'
     create: true
     slug: '{{slug}}'
     fields:
       - { label: 'Title', name: 'title', widget: 'string' }
+      - { label: 'Publish Date', name: 'date', widget: 'datetime' }
       - { label: 'Featured Image', name: 'thumbnail', widget: 'image', required: false }
       - { label: 'Description', name: 'description', widget: 'string' }
       - { label: 'Body', name: 'body', widget: 'markdown' }
