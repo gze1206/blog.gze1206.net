@@ -1,7 +1,7 @@
 ---
 title: test article
 date: 2021-10-01T13:35:46.422Z
-categoty: ETC
+category: ETC
 # thumbnail: /img/tera_origin.jpg
 ---
 이 글은 테스트용 글이다.  
