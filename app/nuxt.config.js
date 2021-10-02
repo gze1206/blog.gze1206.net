@@ -33,6 +33,14 @@ export default {
 
   target: 'static',
 
+  ssr: false,
+
+  watchers: {
+    webpack: {
+      ignored: /node_modules/
+    }
+  },
+
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://go.nuxtjs.dev/eslint
