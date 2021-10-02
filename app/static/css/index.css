@@ -21,7 +21,7 @@
     background-color: #00000077;
     margin: -1em;
 }
-.nuxt-content-container#article-body {
+.nuxt-content#article-body {
     margin-top: 400px;
     padding: 2em;
     padding-top: 5em;
