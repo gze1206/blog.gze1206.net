@@ -11,6 +11,22 @@
     user-select: none;
 }
 
+#article-hero {
+    left: 0;
+    top: 0;
+    position: absolute;
+    width: 100%;
+}
+#article-title {
+    background-color: #00000077;
+    margin: -1em;
+}
+.nuxt-content-container#article-body {
+    margin-top: 400px;
+    padding: 2em;
+    padding-top: 5em;
+}
+
 .v-application,.v-card {
     background-color: var(--v-background-base) !important;
     color: var(--v-foreground-base) !important;
@@ -19,6 +35,10 @@
 .v-application a {
     color: var(--v-foreground-base) !important;
     text-decoration: underline;
+}
+
+.v-application a.v-btn {
+    text-decoration: none!important;
 }
 
 .v-application code {

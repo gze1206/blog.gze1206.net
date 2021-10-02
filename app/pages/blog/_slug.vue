@@ -1,5 +1,5 @@
 <template>
-  <div class="noselect" style="min-height: 800px!important;">
+  <div style="min-height: 800px!important;">
     <v-parallax id="article-hero" dark :src="thumbnail" height="400">
       <v-row id="article-title" align="center" justify="center">
         <v-col cols="12" class="text-center">
@@ -67,18 +67,5 @@ export default {
 </script>
 
 <style scoped>
-#article-hero {
-  left: 0;
-  top: 0;
-  position: absolute;
-  width: 100%;
-}
-#article-title {
-  background-color: #00000077;
-}
-#article-body {
-  margin-top: 400px;
-  padding: 2em;
-  padding-top: 5em;
-}
+
 </style>

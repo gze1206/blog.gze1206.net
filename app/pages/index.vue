@@ -1,7 +1,7 @@
 <template>
-  <div class="noselect" style="min-height: 800px!important;">
-    <v-parallax id="main-hero" dark src="/img/hero1.jpg" height="400">
-      <v-row id="main-title" align="center" justify="center">
+  <div style="min-height: 800px!important;">
+    <v-parallax id="article-hero" dark :src="thumbnail" :alt="thumbnail" height="400">
+      <v-row id="article-title" align="center" justify="center">
         <v-col cols="12" class="text-center">
           <h1 class="display-1 font-weight-bold mb-4">
             {{ mainContents.title }}
@@ -9,7 +9,7 @@
         </v-col>
       </v-row>
     </v-parallax>
-    <nuxt-content id="main-body" :document="mainContents" />
+    <nuxt-content id="article-body" :document="mainContents" />
   </div>
 </template>
 
@@ -65,23 +65,15 @@ export default {
         }
       ]
     }
+  },
+  computed: {
+    thumbnail () {
+      return this.mainContents?.thumbnail ?? '/img/hero1.jpg'
+    }
   }
 }
 </script>
 
 <style scoped>
-#main-hero {
-  left: 0;
-  top: 0;
-  position: absolute;
-  width: 100%;
-}
-#main-title {
-  background-color: #00000077;
-}
-#main-body {
-  margin-top: 400px;
-  padding: 2em;
-  padding-top: 5em;
-}
+
 </style>
