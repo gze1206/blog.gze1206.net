@@ -1,0 +1,16 @@
+{
+    "body": [
+        {
+            "name": "Programming",
+            "description": "본업에 관련된 글"
+        },
+        {
+            "name": "Learn",
+            "description": "공부한 내용들 정리"
+        },
+        {
+            "name": "ETC",
+            "description": "분류되지 않은 글"
+        }
+    ]
+}
