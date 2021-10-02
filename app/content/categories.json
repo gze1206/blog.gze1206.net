@@ -2,14 +2,17 @@
     "body": [
         {
             "name": "Programming",
+            "slug": "programming",
             "description": "본업에 관련된 글"
         },
         {
             "name": "Learn",
+            "slug": "learn",
             "description": "공부한 내용들 정리"
         },
         {
             "name": "ETC",
+            "slug": "etc",
             "description": "분류되지 않은 글"
         }
     ]

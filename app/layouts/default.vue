@@ -36,7 +36,7 @@ export default {
     return {
       title: 'blog.gze1206.net',
       menus: [
-        { text: 'categories', to: '/categories', exact: false },
+        { text: 'categories', to: '/category', exact: false },
         { text: 'blog', to: '/blog', exact: true }
       ]
     }

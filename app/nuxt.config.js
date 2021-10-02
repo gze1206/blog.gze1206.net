@@ -78,7 +78,8 @@ export default {
       ],
       prism: {
         theme: 'prism-themes/themes/prism-solarized-dark-atom.css'
-      }
+      },
+      nestedProperties: ['category', 'tags']
     }
   },
 
