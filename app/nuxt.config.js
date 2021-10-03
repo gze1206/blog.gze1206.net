@@ -15,7 +15,8 @@ export default {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
-      { rel: 'stylesheet', href: '/css/index.css' }
+      { rel: 'stylesheet', href: '/css/index.css' },
+      { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/katex@0.11.0/dist/katex.min.css' }
     ]
   },
 
@@ -35,6 +36,10 @@ export default {
 
   ssr: false,
 
+  generate: {
+    fallback: true
+  },
+
   watchers: {
     webpack: {
       ignored: /node_modules/
@@ -46,7 +51,8 @@ export default {
     // https://go.nuxtjs.dev/eslint
     '@nuxtjs/eslint-module',
     // https://go.nuxtjs.dev/vuetify
-    '@nuxtjs/vuetify'
+    '@nuxtjs/vuetify',
+    '@nuxtjs/netlify-files'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -71,15 +77,25 @@ export default {
 
   // Content module configuration: https://go.nuxtjs.dev/config-content
   content: {
+    liveEdit: false,
+    nestedProperties: ['category', 'tags'],
+    apiPrefix: '__content',
     markdown: {
       remarkPlugins: [
+        'remark-breaks',
+        'remark-math',
+        ['remark-collapse', { test: 'tango' }],
+        'remark-emoji',
         'remark-directive',
         '~/plugins/htmlDirectives.js'
       ],
+      rehypePlugins: [
+        ['rehype-autolink-headings', { behavior: 'wrap' }],
+        'rehype-katex'
+      ],
       prism: {
         theme: 'prism-themes/themes/prism-solarized-dark-atom.css'
-      },
-      nestedProperties: ['category', 'tags']
+      }
     }
   },
 

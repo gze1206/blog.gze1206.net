@@ -25,6 +25,7 @@
     margin-top: 400px;
     padding: 2em;
     padding-top: 5em;
+    word-break: keep-all;
 }
 
 .v-application,.v-card {
