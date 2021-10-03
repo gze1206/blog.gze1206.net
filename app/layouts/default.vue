@@ -43,3 +43,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+#main-appbar {
+  background-color: rgba(0,0,0,0.6);
+}
+</style>
