@@ -6,6 +6,9 @@
           <h1 class="display-1 font-weight-bold mb-4">
             {{ article.title }}
           </h1>
+          <nuxt-link v-if="article.category" :to="`/category/${categorySlug}`">
+            Category : {{ article.category }}
+          </nuxt-link>
         </v-col>
       </v-row>
     </v-parallax>
@@ -18,8 +21,12 @@ export default {
   async asyncData ({ $content, params }) {
     const article = await $content('articles', params.slug).fetch()
 
+    const categories = await $content('categories').fetch()
+    const category = categories.body.find(v => v.name === article.category).slug
+
     return {
-      article
+      article,
+      categorySlug: category
     }
   },
   head () {
