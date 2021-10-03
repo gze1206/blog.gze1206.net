@@ -13,6 +13,7 @@
       </v-row>
     </v-parallax>
     <nuxt-content id="article-body" :document="article" />
+    <comments />
   </div>
 </template>
 
