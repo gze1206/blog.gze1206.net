@@ -5,7 +5,7 @@ careers:
 ---
 # 🙋‍♂️ MyoungSik Kim (gze1206)
 
-:::div{#badges.my-5.mt-7}
+:::div{#badges.my-5.mt-7.org-width}
 [![GitHub](https://badgen.net/badge/GitHub/gze1206/dark?icon=github&labelColor=212121&color=525252)](https://github.com/gze1206) [![Discord](https://badgen.net/badge/Discord/gze1206%235106/dark?icon=discord&labelColor=5865F2&color=525252)](https://discord.com) [![KakaoTalk](https://img.shields.io/badge/KakaoTalk-ggzzzeze-default?logo=KakaoTalk&logoColor=black&labelColor=FFE01B&color=525252)](https://open.kakao.com/me/gze1206) [![Steam](https://img.shields.io/badge/Steam-gze1206-default?logo=Steam&logoColor=white&labelColor=000000&color=525252)](https://steamcommunity.com/id/gze1206/) [![email](https://img.shields.io/badge/email-gze1206@kakao.com-default?logo=Mail.Ru&logoColor=black&labelColor=FFE01B&color=525252)](mailto://gze1206@kakao.com)
 :::
 
@@ -20,7 +20,7 @@ careers:
 [^1]: [이 블로그](https://github.com/gze1206/blog.gze1206.net)도 Nuxt.js를 사용해 제작했습니다
 
 ### 📈 GitHub stats
-[:img{src="https://github-readme-stats.vercel.app/api?username=gze1206&show_icons=true&count_private=true&theme=tokyonight" .full-width}](https://github.com/anuraghazra/github-readme-stats)
+[:img{src="https://github-readme-stats.vercel.app/api?username=gze1206&show_icons=true&count_private=true&theme=tokyonight"}](https://github.com/anuraghazra/github-readme-stats)
 
 ### 🏙 Career
 <CareerList :careers="careers"></CareerList>
@@ -32,4 +32,4 @@ careers:
 코로나19가 이렇게 확산되기 전에는 친구와 오락실에 가서 철권이나 리듬게임도 즐겨 했었습니다.
 
 ### 💸 Profile cards
-[:img{src=https://steam.mmosvc.com/76561198088205032/v1.png .full-width}](https://steamcommunity.com/id/gze1206/)
+[:img{src=https://steam.mmosvc.com/76561198088205032/v1.png}](https://steamcommunity.com/id/gze1206/)
