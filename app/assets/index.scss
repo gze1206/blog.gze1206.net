@@ -1,10 +1,6 @@
 .nuxt-content {
-    & img {
+    & .article-image {
         max-width: 500px;
-    }
-    
-    :not(.org-width) img {
-      width: 100%;
     }
 
     & h1,h2,h3,h4,h5,h6 {
