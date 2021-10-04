@@ -29,6 +29,11 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
+    ...(process.env.NODE_ENV === 'production'
+      ? [
+          { src: '~/plugins/gtag' }
+        ]
+      : [])
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -40,15 +45,6 @@ export default {
 
   generate: {
     fallback: true
-  },
-
-  googleAnalytics: {
-    id: 'G-VPVRFS2P5S'
-  },
-  publicRuntimeConfig: {
-    googleAnalytics: {
-      id: 'G-VPVRFS2P5S'
-    }
   },
 
   watchers: {
@@ -63,8 +59,7 @@ export default {
     '@nuxtjs/eslint-module',
     // https://go.nuxtjs.dev/vuetify
     '@nuxtjs/vuetify',
-    '@nuxtjs/netlify-files',
-    '@nuxtjs/google-analytics'
+    '@nuxtjs/netlify-files'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
