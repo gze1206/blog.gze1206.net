@@ -1,7 +1,9 @@
 <template>
   <v-app dark class="noselect">
     <v-app-bar id="main-appbar" fixed app>
-      <v-btn plain outlined to="/" v-text="title" />
+      <nuxt-link to="/">
+        <v-img src="/icon.png" class="mx-2" max-height="40" max-width="40" contain />
+      </nuxt-link>
       <v-spacer />
       <v-btn
         v-for="menu in menus"
