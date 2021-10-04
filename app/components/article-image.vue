@@ -1,7 +1,7 @@
 <template>
   <div class="full-width article-image mt-4">
-    <if-wrap>
-      <a :if="to" :href="to" target="_blank">
+    <if-wrap :if="to">
+      <a :href="to" target="_blank">
         <v-img :src="src" lazy-src="/img/hero1.jpg">
           <template #placeholder>
             <v-row
@@ -34,23 +34,23 @@ export default {
   props: {
     to: {
       type: String,
-      default: () => ''
+      default: () => null
     },
     src: {
       type: String,
-      default: () => ''
+      default: () => null
     },
     text: {
       type: String,
-      default: () => ''
+      default: () => null
     },
     refLabel: {
       type: String,
-      default: () => ''
+      default: () => null
     },
     refLink: {
       type: String,
-      default: () => ''
+      default: () => null
     }
   },
   computed: {

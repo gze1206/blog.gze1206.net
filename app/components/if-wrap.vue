@@ -14,7 +14,11 @@ export default {
       console.warn('this component accepts only one root node in its slot')
     }
 
-    return ctx.props.if ? children[0] : children[0].children
+    let show = ctx.props.if
+    if (typeof show === 'function') {
+      show = show()
+    }
+    return show ? children[0] : children[0].children
   }
 }
 </script>
