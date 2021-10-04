@@ -1,23 +1,38 @@
 <template>
-  <div v-if="articles.length">
-    <v-card v-for="article in articles" :key="article.title" outlined :to="getURL(article)" class="ma-3 text-decoration-none">
-      <v-img v-if="article.thumbnail" alt="article thumb" :src="article.thumbnail" max-height="200px" />
-      <v-card-title>{{ article.title }}</v-card-title>
-      <v-card-subtitle>{{ formatPubDate(article) }} / {{ getCategory(article) }}</v-card-subtitle>
-      <v-card-text>{{ getDescription(article) }}</v-card-text>
-    </v-card>
-    <div class="text-center">
-      <v-pagination
-        v-model="page"
-        :length="maxPage"
-        :total-visible="7"
-        @input="updatePage"
-      />
+  <div>
+    <div v-if="isByCategory && category" class="ma-3 mb-7">
+      <h1>Category : {{ category.name }}</h1>
+      <span class="text-subtitle-2">{{ category.description }}</span>
     </div>
+    <div v-if="!isLoading && articles.length">
+      <v-card v-for="article in articles" :key="article.title" outlined :to="getURL(article)" class="ma-3 text-decoration-none">
+        <v-img v-if="article.thumbnail" alt="article thumb" :src="article.thumbnail" max-height="200px" />
+        <v-card-title>{{ article.title }}</v-card-title>
+        <v-card-subtitle>{{ formatPubDate(article) }} / {{ getCategory(article) }}</v-card-subtitle>
+        <v-card-text>{{ getDescription(article) }}</v-card-text>
+      </v-card>
+      <div class="text-center">
+        <v-pagination
+          v-model="page"
+          :length="maxPage"
+          :total-visible="7"
+          @input="updatePage"
+        />
+      </div>
+    </div>
+    <v-container v-else-if="!isLoading" class="text-center">
+      <v-icon size="72">
+        mdi-alert-circle-outline
+      </v-icon><br>
+      There's no articles
+    </v-container>
+    <v-overlay :value="isLoading">
+      <v-progress-circular
+        indeterminate
+        size="64"
+      />
+    </v-overlay>
   </div>
-  <v-container v-else class="text-center">
-    There's no articles
-  </v-container>
 </template>
 
 <script>
@@ -70,7 +85,14 @@ export default {
     return {
       articles: [],
       maxPage: 1,
-      page: 1
+      page: 1,
+      category: null,
+      isLoading: true
+    }
+  },
+  computed: {
+    isByCategory () {
+      return this.$route.params.slug != null
     }
   },
   created () {
@@ -100,6 +122,13 @@ export default {
       this.articles = articles
       this.maxPage = maxPage
       this.page = newPage
+
+      if (slug) {
+        const categories = (await this.$content('categories').fetch())?.body ?? []
+        const category = categories.find(v => v.slug === slug)
+        this.category = category
+      }
+      this.isLoading = false
     }
   }
 }
