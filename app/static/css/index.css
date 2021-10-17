@@ -47,5 +47,5 @@
 }
 
 .token.class-name {
-    text-decoration: none;
+    text-decoration: none!important;
 }
