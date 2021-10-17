@@ -45,3 +45,7 @@
 .v-application code {
     all: unset!important;
 }
+
+.token.class-name {
+    text-decoration: none;
+}
