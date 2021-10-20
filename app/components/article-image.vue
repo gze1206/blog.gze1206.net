@@ -1,8 +1,8 @@
 <template>
-  <div class="full-width article-image mt-4">
+  <div class="full-width article-image mt-4" :style="{ 'max-width': width }">
     <if-wrap :if="to">
       <a :href="to" target="_blank">
-        <v-img :src="src" lazy-src="/img/hero1.jpg">
+        <v-img :src="src" lazy-src="/img/hero1.jpg" :max-width="width">
           <template #placeholder>
             <v-row
               class="fill-height ma-0"
@@ -34,6 +34,10 @@ export default {
   props: {
     to: {
       type: String,
+      default: () => null
+    },
+    width: {
+      type: Number,
       default: () => null
     },
     src: {
