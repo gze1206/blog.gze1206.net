@@ -1,5 +1,16 @@
 import colors from 'vuetify/es5/util/colors'
 
+async function createSitemapRoutes () {
+  const routes = []
+  const { $content } = require('@nuxt/content')
+  const posts = await $content('articles').fetch()
+
+  for (const post of posts) {
+    routes.push({ url: `blog/${post.slug}`, lastmod: post.date })
+  }
+  return routes
+}
+
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -69,7 +80,9 @@ export default {
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
     // https://go.nuxtjs.dev/content
-    '@nuxt/content'
+    '@nuxt/content',
+    // https://sitemap.nuxtjs.org/
+    '@nuxtjs/sitemap'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -103,6 +116,13 @@ export default {
         theme: 'prism-themes/themes/prism-solarized-dark-atom.css'
       }
     }
+  },
+
+  sitemap: {
+    hostname: 'https://blog.gze1206.net',
+    gzip: true,
+    routes: createSitemapRoutes,
+    exclude: ['/admin/**']
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
