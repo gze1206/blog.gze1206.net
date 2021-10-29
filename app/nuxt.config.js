@@ -24,7 +24,8 @@ export default {
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: 'gze1206\'s blog' },
       { name: 'format-detection', content: 'telephone=no' },
-      { hid: 'og:image', property: 'og:image', content: 'https://blog.gze1206.net/icon.png' }
+      { hid: 'og:image', property: 'og:image', content: 'https://blog.gze1206.net/icon.png' },
+      { hid: 'og:description', name: 'description', content: 'gze1206\'s blog' }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
@@ -90,8 +91,13 @@ export default {
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
+    icon: {
+      cacheDir: '.cache/pwa/icon'
+    },
     manifest: {
-      lang: 'en'
+      name: 'blog.gze1206.net',
+      lang: 'en',
+      useWebmanifestExtension: true
     }
   },
 
