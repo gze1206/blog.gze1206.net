@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-card v-for="item in careers" :key="item.order" outlined class="my-3" max-width="500px">
-      <v-img v-if="item.cover" :src="item.cover" />
+      <lazy-image v-if="item.cover" :src="item.cover" />
       <v-card-title>{{ item.title }}</v-card-title>
       <v-card-subtitle>{{ formatDuration(item) }}</v-card-subtitle>
       <v-card-text>
@@ -15,6 +15,7 @@
 </template>
 
 <script>
+import LazyImage from './lazy-image.vue'
 
 function dateFormat (date) {
   const yyyy = date.getFullYear().toString()
@@ -24,6 +25,7 @@ function dateFormat (date) {
 }
 
 export default {
+  components: { LazyImage },
   props: {
     careers: {
       type: Array,

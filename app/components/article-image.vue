@@ -2,20 +2,7 @@
   <div class="full-width article-image mt-4" :style="{ 'max-width': width }">
     <if-wrap :if="to">
       <a :href="to" target="_blank">
-        <v-img :src="src" lazy-src="/img/hero1.jpg" :max-width="width">
-          <template #placeholder>
-            <v-row
-              class="fill-height ma-0"
-              align="center"
-              justify="center"
-            >
-              <v-progress-circular
-                indeterminate
-                color="grey lighten-5"
-              />
-            </v-row>
-          </template>
-        </v-img>
+        <lazy-image :src="src" :max-width="width" />
       </a>
     </if-wrap>
     <p v-if="text || ref" class="text-caption text-center">
@@ -29,8 +16,9 @@
 
 <script>
 import ifWrap from './if-wrap.vue'
+import LazyImage from './lazy-image.vue'
 export default {
-  components: { ifWrap },
+  components: { ifWrap, LazyImage },
   props: {
     to: {
       type: String,

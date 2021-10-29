@@ -6,7 +6,7 @@
     </div>
     <div v-if="!isLoading && articles.length">
       <v-card v-for="article in articles" :key="article.title" outlined :to="getURL(article)" class="ma-3 text-decoration-none">
-        <v-img v-if="article.thumbnail" alt="article thumb" :src="article.thumbnail" max-height="200px" />
+        <lazy-image v-if="article.thumbnail" alt="article thumb" :src="article.thumbnail" max-height="200px" />
         <v-card-title>{{ article.title }}</v-card-title>
         <v-card-subtitle>{{ formatPubDate(article) }} / {{ getCategory(article) }}</v-card-subtitle>
         <v-card-text>{{ getDescription(article) }}</v-card-text>
@@ -36,6 +36,7 @@
 </template>
 
 <script>
+import lazyImage from './lazy-image.vue'
 const ITEM_PER_PAGE = 10
 
 function dateFormat (date) {
@@ -81,6 +82,7 @@ function fetchCategory (slug) {
 }
 
 export default {
+  components: { lazyImage },
   data () {
     return {
       articles: [],
