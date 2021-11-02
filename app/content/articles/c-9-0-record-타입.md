@@ -1,5 +1,6 @@
 ---
 title: "C# 9.0 : Record 타입"
+slug: c-9-0-record-type
 date: 2021-10-06T22:00:56.653Z
 category: Programming
 tags:
