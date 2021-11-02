@@ -14,6 +14,7 @@ careers:
 안녕하세요, 김명식입니다.
 주로 사용하는 닉네임은 gze1206이고, 프로그래머로 근무한 이력이 있습니다.
 현재는 사회복무요원 복무를 마치고 다시 입사하기 위해 준비 중 입니다.
+:br
 
 ## 👨‍💻 Programmer
 선호하는 언어는 C#이며, 업무 외에도 다양한 분야에 대한 학습을 진행하고 있습니다.
@@ -24,8 +25,12 @@ careers:
 ### 📈 GitHub stats
 :article-image{src="https://github-readme-stats.vercel.app/api?username=gze1206&show_icons=true&count_private=true&theme=tokyonight" to="https://github.com/anuraghazra/github-readme-stats"}
 
+### 🏆 BaekJoon Online Judge (solved.ac)
+:article-image{src="http://mazassumnida.wtf/api/v2/generate_badge?boj=gze1206" to="https://solved.ac/gze1206"}
+
 ### 🏙 Career
 <CareerList :careers="careers"></CareerList>
+:br
 
 ## 🎮 Gamer
 학생 때부터 식비까지 아껴가며 스팀 등에 돈을 쏟아부은 결과 아래와 같은 계정이 만들어지게 되었습니다.
@@ -35,3 +40,4 @@ careers:
 
 ### 💸 Profile cards
 :article-image{src=https://steam.mmosvc.com/76561198088205032/v1.png to="https://steamcommunity.com/id/gze1206/"}
+:br
