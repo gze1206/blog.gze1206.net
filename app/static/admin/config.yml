@@ -11,12 +11,14 @@ collections:
     format: 'frontmatter'
     folder: 'app/content/articles'
     create: true
-    slug: '{{slug}}'
+    identifier_field: slug
+    slug: '{{fields.slug}}'
     fields:
       - { label: 'Title', name: 'title', widget: 'string' }
+      - { label: 'Slug', name: 'slug', widget: slug, hint: 'slug' }
       - { label: 'Publish Date', name: 'date', widget: 'datetime' }
       - { label: 'Featured Image', name: 'thumbnail', widget: 'image', required: false }
-      - { label: 'Description', name: 'description', widget: 'string', required: false }
+      - { label: 'Description', name: 'description', widget: 'text', required: false }
       - { label: 'Category', name: 'category', widget: 'string', required: false, default: 'ETC' }
       - { label: 'Tags', name: 'tags', widget: 'list', required: false, default: [] }
       - { label: 'Body', name: 'body', widget: 'markdown' }

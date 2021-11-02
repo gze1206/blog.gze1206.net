@@ -1,5 +1,6 @@
 ---
 title: 새 블로그를 만들면서 도입한 것들
+slug: new-things-on-this-blog
 date: 2021-10-04T21:24:58.938Z
 description: Nuxt와 Netlify를 사용해 새롭게 블로그를 제작했습니다. 기초적인 기능 구현을 마쳐 관련된 내용을 공유하고자 합니다.
 category: Programming

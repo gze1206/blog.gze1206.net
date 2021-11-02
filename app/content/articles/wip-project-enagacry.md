@@ -1,5 +1,6 @@
 ---
 title: "진행 중인 학습 프로젝트 소개 : Enaga Cry"
+slug: wip-project-enagacry
 date: 2021-10-24T03:07:08.399Z
 description: 개인 학습을 위해 진행 중인 프로젝트에 대한 소개문
 category: Programming

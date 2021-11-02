@@ -1,5 +1,6 @@
 ---
 title: "백준 15663 : N과 M (9) - Ruby"
+slug: baekjoon-15663-n-and-m-9-ruby
 date: 2021-10-28T14:20:23.833Z
 category: Programming
 tags:
