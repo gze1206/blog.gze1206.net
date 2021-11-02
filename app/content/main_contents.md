@@ -26,7 +26,7 @@ careers:
 :article-image{src="https://github-readme-stats.vercel.app/api?username=gze1206&show_icons=true&count_private=true&theme=tokyonight" to="https://github.com/anuraghazra/github-readme-stats"}
 
 ### 🏆 BaekJoon Online Judge (solved.ac)
-:article-image{src="http://mazassumnida.wtf/api/v2/generate_badge?boj=gze1206" to="https://solved.ac/gze1206"}
+:article-image{src="https://warm-fortress-72347.herokuapp.com/api/v2/generate_badge?boj=gze1206" to="https://solved.ac/gze1206"}
 
 ### 🏙 Career
 <CareerList :careers="careers"></CareerList>
