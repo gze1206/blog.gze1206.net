@@ -32,7 +32,7 @@ N개의 자연수와 자연수 M이 주어졌을 때, 아래 조건을 만족하
 :br
 
 ## 코드
-```ruby:answer.rb
+```ruby[answer.rb]
 _,m,*a=$<.read.split.map &:to_i
 a.sort.permutation(m).uniq{|c| [*c]}.each{|c|puts c*' '}
 ```
