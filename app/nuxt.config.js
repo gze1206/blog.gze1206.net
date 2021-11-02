@@ -11,6 +11,13 @@ async function createSitemapRoutes () {
   return routes
 }
 
+function filterSitemapRoutes ({ routes }) {
+  return routes.map((route) => {
+    route.url = `${route.url}/`
+    return route
+  })
+}
+
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -128,6 +135,7 @@ export default {
     hostname: 'https://blog.gze1206.net',
     gzip: true,
     routes: createSitemapRoutes,
+    filter: filterSitemapRoutes,
     exclude: ['/admin/**']
   },
 
