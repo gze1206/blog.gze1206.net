@@ -60,5 +60,6 @@ export default {
 <style scoped>
 #main-appbar {
   background-color: rgba(0,0,0,0.6);
+  z-index: 100;
 }
 </style>
