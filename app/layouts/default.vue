@@ -42,6 +42,17 @@ export default {
         { text: 'blog', to: '/blog', exact: true }
       ]
     }
+  },
+  head () {
+    const { path } = this.$route
+    const pathWithSlash = path.endsWith('/') ? path : `${path}/`
+    const canonical = `https://blog.gze1206.net${pathWithSlash}`
+
+    return {
+      link: [
+        { rel: 'canonical', href: canonical }
+      ]
+    }
   }
 }
 </script>
