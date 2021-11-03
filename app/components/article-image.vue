@@ -25,7 +25,7 @@ export default {
       default: () => null
     },
     width: {
-      type: Number,
+      type: [Number, String],
       default: () => null
     },
     src: {

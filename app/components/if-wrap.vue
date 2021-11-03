@@ -3,7 +3,7 @@ export default {
   functional: true,
   props: {
     if: {
-      type: [Boolean, Function],
+      type: [String, Number, Boolean, Function],
       default: () => false
     }
   },
