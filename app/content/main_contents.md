@@ -18,12 +18,12 @@ careers:
 
 ## 👨‍💻 Programmer
 선호하는 언어는 C#이며, 업무 외에도 다양한 분야에 대한 학습을 진행하고 있습니다.
-게임 클라이언트/서버 뿐만 아니라 웹, 개발 환경을 위한 유틸리티 제작 등을 진행했으며, 웹 관련 프로젝트는 주로 [Vue](https://vuejs.org/) ([Nuxt.js](https://nuxtjs.org/))[^1]를 사용했습니다.
+게임 클라이언트/서버 뿐만 아니라 웹, 개발 환경을 위한 유틸리티 제작 등을 진행했으며, 웹 관련 프로젝트는 주로 Vue (Nuxt.js)[^1]를 사용했습니다.
 
 [^1]: [이 블로그](https://github.com/gze1206/blog.gze1206.net)도 Nuxt.js를 사용해 제작했습니다
 
 ### 📈 GitHub stats
-:article-image{src="https://github-readme-stats.vercel.app/api?username=gze1206&show_icons=true&count_private=true&theme=tokyonight" to="https://github.com/anuraghazra/github-readme-stats"}
+:article-image{src="https://github-readme-stats.vercel.app/api?username=gze1206&show_icons=true&count_private=true&theme=tokyonight" to="https://github.com/gze1206"}
 
 ### 🏆 BaekJoon Online Judge (solved.ac)
 :article-image{src="https://warm-fortress-72347.herokuapp.com/api/v2/generate_badge?boj=gze1206" to="https://solved.ac/gze1206"}
