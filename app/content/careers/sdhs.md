@@ -1,6 +1,8 @@
 ---
-order: 0
 title: Seoul Digitech Highschool
+korTitle: 서울 디지텍고등학교
+slug: sdhs
+order: 1
 from: 2016.03.02
 to: 2019.02.14
 department: 게임영상과
