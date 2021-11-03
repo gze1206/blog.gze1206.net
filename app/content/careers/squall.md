@@ -1,6 +1,8 @@
 ---
-order: 1
 title: KRAFTON SQUALL
+korTitle: 크래프톤 스콜
+slug: squall
+order: 2
 from: 2018.10.22
 to: 2020.03.06
 department: 프로그램실 플랫폼개발팀
