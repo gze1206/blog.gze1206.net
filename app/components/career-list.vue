@@ -28,6 +28,9 @@
       <v-card v-if="selected">
         <lazy-image v-if="selected.cover" :src="selected.cover" />
         <v-card-title>{{ selected.title }}</v-card-title>
+        <v-card-subtitle v-if="selected.korTitle" class="pb-0">
+          {{ selected.korTitle }}
+        </v-card-subtitle>
         <v-card-subtitle class="pt-1">
           Working period : {{ formatDuration(selected) }}
         </v-card-subtitle>
@@ -37,7 +40,7 @@
             Project : {{ selected.project }}
           </div>
         </v-card-text>
-        <nuxt-content class="ma-5 mt-0" :document="selected" />
+        <nuxt-content id="career-body" :document="selected" />
       </v-card>
     </v-dialog>
   </div>
@@ -90,6 +93,10 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.nuxt-content#career-body {
+    padding: 1em;
+    padding-top: 0;
+    word-break: keep-all;
+}
 </style>
