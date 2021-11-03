@@ -5,12 +5,7 @@
       <span class="text-subtitle-2">{{ category.description }}</span>
     </div>
     <div v-if="!isLoading && articles.length">
-      <v-card v-for="article in articles" :key="article.title" outlined :to="getURL(article)" class="ma-3 text-decoration-none">
-        <lazy-image v-if="article.thumbnail" alt="article thumb" :src="article.thumbnail" max-height="200px" />
-        <v-card-title>{{ article.title }}</v-card-title>
-        <v-card-subtitle>{{ formatPubDate(article) }} / {{ getCategory(article) }}</v-card-subtitle>
-        <v-card-text>{{ getDescription(article) }}</v-card-text>
-      </v-card>
+      <article-list-item v-for="article in articles" :key="article.title" :article="article" />
       <div class="text-center">
         <v-pagination
           v-model="page"
@@ -36,18 +31,7 @@
 </template>
 
 <script>
-import lazyImage from './lazy-image.vue'
 const ITEM_PER_PAGE = 10
-
-function dateFormat (date) {
-  const yyyy = date.getFullYear().toString()
-  const mm = (date.getMonth() + 1).toString().padStart(2, '0')
-  const dd = date.getDate().toString().padStart(2, '0')
-  const hh = date.getHours().toString().padStart(2, '0')
-  const MM = date.getMinutes().toString().padStart(2, '0')
-
-  return `${yyyy}.${mm}.${dd} ${hh}:${MM}`
-}
 
 async function loadArticles ($content, fetcher, page) {
   const total = (await $content('articles').only([]).fetch()).length
@@ -82,7 +66,6 @@ function fetchCategory (slug) {
 }
 
 export default {
-  components: { lazyImage },
   data () {
     return {
       articles: [],
@@ -101,18 +84,6 @@ export default {
     this.fetchArticles(1)
   },
   methods: {
-    formatPubDate (item) {
-      return dateFormat(new Date(item.date))
-    },
-    getCategory (item) {
-      return item.category ?? 'ETC'
-    },
-    getDescription (item) {
-      return item.description
-    },
-    getURL (item) {
-      return `/blog/${item.slug}`
-    },
     async updatePage (newPage) {
       await this.fetchArticles(newPage)
     },
