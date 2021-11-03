@@ -9,17 +9,19 @@
         </v-col>
       </v-row>
     </v-parallax>
-    <nuxt-content id="article-body" :document="mainContents" />
+    <article-content :article="mainContents" />
   </div>
 </template>
 
 <script>
+import ArticleContent from '~/components/article-content.vue'
 import CareerList from '~/components/career-list'
 
 export default {
   components: {
     // eslint-disable-next-line vue/no-unused-components
-    CareerList
+    CareerList,
+    ArticleContent
   },
   async asyncData ({ $content }) {
     const mainContents = await $content('main_contents').fetch()

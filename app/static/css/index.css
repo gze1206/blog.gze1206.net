@@ -21,12 +21,6 @@
     background-color: #00000077;
     margin: -1em;
 }
-.nuxt-content#article-body {
-    margin-top: 400px;
-    padding: 2em;
-    padding-top: 5em;
-    word-break: keep-all;
-}
 
 .v-application,.v-card {
     background-color: var(--v-background-base) !important;

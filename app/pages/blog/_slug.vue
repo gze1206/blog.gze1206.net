@@ -12,13 +12,14 @@
         </v-col>
       </v-row>
     </v-parallax>
-    <nuxt-content id="article-body" :document="article" />
-    <comments />
+    <article-content :article="article" />
   </div>
 </template>
 
 <script>
+import articleContent from '~/components/article-content.vue'
 export default {
+  components: { articleContent },
   async asyncData ({ $content, params }) {
     const article = await $content('articles', params.slug).fetch()
 
