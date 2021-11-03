@@ -1,6 +1,8 @@
 ---
-order: 2
 title: AIARA
+korTitle: 아이아라
+slug: aiara
+order: 3
 from: 2020.04.01
 to: 2021.01.06
 department: 프로그램2팀
