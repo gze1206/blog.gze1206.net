@@ -47,14 +47,8 @@
 </template>
 
 <script>
+import { dateFormat } from '../commons/utils'
 import LazyImage from './lazy-image.vue'
-
-function dateFormat (date) {
-  const yyyy = date.getFullYear().toString()
-  const mm = (date.getMonth() + 1).toString().padStart(2, '0')
-
-  return `${yyyy}.${mm}`
-}
 
 export default {
   components: { LazyImage },
@@ -74,8 +68,9 @@ export default {
     formatDuration (item) {
       const from = new Date(item.from)
       const to = item.to ? new Date(item.to) : null
+      const format = 'yyyy.mm'
 
-      return `${dateFormat(from)} ~ ${to ? dateFormat(to) : '재직 중'}`
+      return `${dateFormat(from, format)} ~ ${to ? dateFormat(to, format) : '재직 중'}`
     },
     open (item) {
       if (item == null) {

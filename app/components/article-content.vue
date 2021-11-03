@@ -1,11 +1,11 @@
 <template>
   <div id="article-body">
     <div id="article-header">
-      <div v-if="article.date">
+      <div v-if="date">
         <v-icon class="mr-3">
           mdi-calendar
         </v-icon>
-        {{ date }} (KST)
+        {{ formattedDate }}
       </div>
     </div>
     <nuxt-content :document="article" />
@@ -29,15 +29,7 @@
 </template>
 
 <script>
-function dateFormat (date) {
-  const yyyy = date.getFullYear().toString()
-  const mm = (date.getMonth() + 1).toString().padStart(2, '0')
-  const dd = date.getDate().toString().padStart(2, '0')
-  const hh = date.getHours().toString().padStart(2, '0')
-  const MM = date.getMinutes().toString().padStart(2, '0')
-
-  return `${yyyy}.${mm}.${dd} ${hh}:${MM}`
-}
+import { dateFormat } from '../commons/utils'
 
 export default {
   props: {
@@ -53,7 +45,10 @@ export default {
   },
   computed: {
     date () {
-      return dateFormat(new Date(this.article?.date))
+      return this.article?.date ?? this.article.updatedAt
+    },
+    formattedDate () {
+      return dateFormat(new Date(this.date))
     }
   },
   created () {
