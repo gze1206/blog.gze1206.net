@@ -24,7 +24,7 @@
       </v-card-actions>
     </v-card>
 
-    <v-dialog v-model="dialog" scrollable max-width="80%" @click:outside="close">
+    <v-dialog v-model="dialog" scrollable max-width="1000px" @click:outside="close">
       <v-card v-if="selected">
         <lazy-image v-if="selected.cover" :src="selected.cover" />
         <v-card-title>{{ selected.title }}</v-card-title>
