@@ -25,7 +25,7 @@
     </v-card>
 
     <v-dialog v-model="dialog" scrollable max-width="1000px" @click:outside="close">
-      <v-card v-if="selected">
+      <v-card v-if="selected" @click.native="close">
         <lazy-image v-if="selected.cover" :src="selected.cover" />
         <v-card-title>{{ selected.title }}</v-card-title>
         <v-card-subtitle v-if="selected.korTitle" class="pb-0">
