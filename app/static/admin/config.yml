@@ -12,13 +12,36 @@ collections:
     folder: 'app/content/articles'
     create: true
     identifier_field: slug
+    summary: '{{fields.title}} - {{year}}.{{month}}.{{day}}'
+    sortable_fields: ['date', 'title']
     slug: '{{fields.slug}}'
     fields:
       - { label: 'Title', name: 'title', widget: 'string' }
-      - { label: 'Slug', name: 'slug', widget: slug, hint: 'slug' }
+      - { label: 'Slug', name: 'slug', widget: slug }
       - { label: 'Publish Date', name: 'date', widget: 'datetime' }
       - { label: 'Featured Image', name: 'thumbnail', widget: 'image', required: false }
       - { label: 'Description', name: 'description', widget: 'text', required: false }
       - { label: 'Category', name: 'category', widget: 'string', required: false, default: 'ETC' }
       - { label: 'Tags', name: 'tags', widget: 'list', required: false, default: [] }
+      - { label: 'Body', name: 'body', widget: 'markdown' }
+  - name: 'careers'
+    label: 'Careers'
+    format: 'frontmatter'
+    folder: 'app/content/careers'
+    create: true
+    identifier_field: 'fields.order'
+    summary: '{{order}} - {{fields.title}}'
+    sortable_fields: ['order', 'title']
+    slug: '{{fields.slug}}'
+    editor:
+      preview: false
+    fields:
+      - { label: 'Title', name: 'title', widget: 'string' }
+      - { label: 'Slug', name: 'slug', widget: 'slug' }
+      - { label: 'Order', name: 'order', widget: 'number', value_type: 'int', min: 1 }
+      - { label: 'From', name: 'from', widget: 'date' }
+      - { label: 'To', name: 'to', widget: 'date' }
+      - { label: 'Department', name: 'department', widget: 'text', required: false }
+      - { label: 'Project', name: 'project', widget: 'string', required: false, default: 'ETC' }
+      - { label: 'Cover image', name: 'cover', widget: 'image', required: false }
       - { label: 'Body', name: 'body', widget: 'markdown' }
