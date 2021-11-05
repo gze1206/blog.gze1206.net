@@ -1,11 +1,23 @@
+@function str-repeat($string, $times) {
+    $result: "";
+
+    @for $i from 1 to $times {
+        $result: $result + $string;
+    }
+
+    @return $result;
+}
+
 .nuxt-content {
     & .article-image {
         max-width: 500px;
     }
 
-    & h1,h2,h3,h4,h5,h6 {
-        span::before {
-            content: "# ";
+    @for $i from 1 to 6 {
+        & h#{$i} {
+            span::before {
+                content: "#{str-repeat('#', $i)} ";
+            }
         }
     }
 
