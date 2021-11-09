@@ -1,8 +1,8 @@
 <template>
-  <div class="full-width article-image mt-4" :style="{ 'max-width': width }">
+  <div class="full-width article-image mt-4" :style="{ 'max-width': width, 'max-height': height }">
     <if-wrap :if="to">
       <a :href="to" target="_blank">
-        <lazy-image :src="src" :max-width="width" />
+        <lazy-image :src="src" :max-width="width" :max-height="height" />
       </a>
     </if-wrap>
     <p v-if="text || ref" class="text-caption text-center">
@@ -26,7 +26,11 @@ export default {
     },
     width: {
       type: [Number, String],
-      default: () => null
+      default: () => '500px'
+    },
+    height: {
+      type: [Number, String],
+      default: () => '500px'
     },
     src: {
       type: String,

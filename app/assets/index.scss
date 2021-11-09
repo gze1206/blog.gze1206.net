@@ -9,10 +9,6 @@
 }
 
 .nuxt-content {
-    & .article-image {
-        max-width: 500px;
-    }
-
     @for $i from 1 to 6 {
         & h#{$i} {
             span::before {
