@@ -71,7 +71,7 @@ export default {
     thumbnail () {
       const defaultUrl = '/img/hero1.jpg'
       const ret = this.article?.thumbnail
-      if (ret == null && ret.length === 0) {
+      if (ret == null || ret.length === 0) {
         return defaultUrl
       }
       return ret
