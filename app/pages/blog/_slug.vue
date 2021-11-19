@@ -69,7 +69,12 @@ export default {
   },
   computed: {
     thumbnail () {
-      return this.article?.thumbnail ?? '/img/hero1.jpg'
+      const defaultUrl = '/img/hero1.jpg'
+      const ret = this.article?.thumbnail
+      if (ret == null && ret.length === 0) {
+        return defaultUrl
+      }
+      return ret
     }
   }
 }
