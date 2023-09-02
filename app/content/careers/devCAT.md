@@ -7,6 +7,7 @@ from: 2022.01.10
 to: 2023.08.29
 department: 게임로직3팀
 project: 마비노기 모바일
+cover: /img/mabinogi_mobile.jpg
 ---
 
 * 마비노기 모바일 개발 참여
