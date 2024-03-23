@@ -3,6 +3,7 @@
   <component name="UserContentModel">
     <attachedFolders>
       <Path>compose</Path>
+      <Path>docker</Path>
       <Path>frontend</Path>
     </attachedFolders>
     <explicitIncludes />
