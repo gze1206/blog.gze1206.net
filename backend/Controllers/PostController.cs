@@ -8,10 +8,12 @@ namespace backend.Controllers;
 public class PostController : ControllerBase
 {
     private readonly ILogger<PostController> logger;
+    private readonly AppDbContext dbContext;
 
-    public PostController(ILogger<PostController> logger)
+    public PostController(ILogger<PostController> logger, AppDbContext dbContext)
     {
         this.logger = logger;
+        this.dbContext = dbContext;
     }
 
     [HttpGet("")]
