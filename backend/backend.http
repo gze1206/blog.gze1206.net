@@ -1,6 +1,7 @@
-@backend_HostAddress = http://localhost:5068
+< {%
+    request.variables.set("hostAddress", "http://localhost:5870") %}
 
-GET {{backend_HostAddress}}/weatherforecast/
+GET {{hostAddress}}/post
 Accept: application/json
 
 ###

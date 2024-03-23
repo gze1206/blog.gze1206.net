@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  blog-db:
+    image: postgres:latest
+    ports:
+      - "${POSTGRES_PORT}:5432"
+  blog-redis:
+    image: redis:latest
+    ports:
+      - "${REDIS_PORT}:6379"
