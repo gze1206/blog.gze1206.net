@@ -2,9 +2,15 @@ version: '3.8'
 services:
   blog-db:
     image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
     ports:
       - "${POSTGRES_PORT}:5432"
   blog-redis:
     image: redis:latest
+    restart: always
     ports:
       - "${REDIS_PORT}:6379"
