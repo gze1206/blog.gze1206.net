@@ -1,0 +1,35 @@
+services:
+  backend:
+    image: backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "81:80"
+    depends_on:
+      - db
+
+  frontend:
+    image: frontend
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+      - backend
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
