@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "frontend", "frontend\frontend.csproj", "{1BC3CC89-3822-410F-BC17-82649219190C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "backend", "backend\backend.csproj", "{B3F8EE19-4A72-41EB-AB98-9D7CBBAB0C23}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1BC3CC89-3822-410F-BC17-82649219190C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BC3CC89-3822-410F-BC17-82649219190C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BC3CC89-3822-410F-BC17-82649219190C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BC3CC89-3822-410F-BC17-82649219190C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3F8EE19-4A72-41EB-AB98-9D7CBBAB0C23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3F8EE19-4A72-41EB-AB98-9D7CBBAB0C23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3F8EE19-4A72-41EB-AB98-9D7CBBAB0C23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3F8EE19-4A72-41EB-AB98-9D7CBBAB0C23}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
