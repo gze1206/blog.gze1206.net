@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getEntry, render } from 'astro:content';
+
+const mdEntry = await getEntry('posts', 'cil-smoke-test');
+if (!mdEntry) throw new Error('cil-smoke-test entry not found');
+const { Content: MdContent } = await render(mdEntry);
+
+const mdocEntry = await getEntry('posts', 'markdoc-smoke-test');
+if (!mdocEntry) throw new Error('markdoc-smoke-test entry not found');
+const { Content: MdocContent } = await render(mdocEntry);
+---
+
+<BaseLayout title="CIL 하이라이팅 스모크 테스트">
+  <main class="mx-auto max-w-3xl px-4 py-16">
+    <h1 class="text-2xl font-bold">CIL 하이라이팅 스모크 테스트</h1>
+    <p class="mt-2 text-sm text-gray-500">
+      .md와 .mdoc 양쪽 경로에서 CIL 하이라이팅이 동작하는지 확인합니다.
+    </p>
+
+    <section class="mt-12">
+      <h2 class="text-xl font-semibold">Markdown (.md) 경로</h2>
+      <hr class="my-4" />
+      <MdContent />
+    </section>
+
+    <section class="mt-12">
+      <h2 class="text-xl font-semibold">Markdoc (.mdoc) 경로</h2>
+      <hr class="my-4" />
+      <MdocContent />
+    </section>
+  </main>
+</BaseLayout>
