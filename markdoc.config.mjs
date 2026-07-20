@@ -1,6 +1,18 @@
 import { defineMarkdocConfig, component } from '@astrojs/markdoc/config';
+import shiki from '@astrojs/markdoc/shiki';
+import cilGrammar from './src/shiki/langs/cil.tmLanguage.json';
 
 export default defineMarkdocConfig({
+  extends: [
+    await shiki({
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark',
+      },
+      defaultColor: false,
+      langs: [cilGrammar],
+    }),
+  ],
   tags: {
     bookmark: {
       render: component('./src/components/markdoc/Bookmark.astro'),
