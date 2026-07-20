@@ -1,7 +1,7 @@
 ---
 issue: NOR-9
 title: Content Collections 스키마 정의 (posts·series·portfolio)
-status: in-progress
+status: done
 ---
 
 # NOR-9 — Content Collections 스키마 정의 (posts·series·portfolio)
