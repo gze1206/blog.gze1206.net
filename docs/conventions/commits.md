@@ -65,11 +65,14 @@ BREAKING CHANGE: 기존 tags 없는 글은 빌드 실패. 마이그레이션 필
 
 - **의미 단위로 작게.** 한 커밋 = 한 논리적 변경. 무관한 변경 섞지 않기.
 - 커밋은 **사용자가 요청할 때만** 생성합니다.
-- 에이전트 커밋 메시지 푸터에는 아래를 포함합니다:
+- AI 에이전트가 만든 커밋은 푸터에 **공동 작성자**를 표기합니다. 형식:
 
   ```
-  Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+  Co-Authored-By: <에이전트 이름> <이메일>
   ```
+
+  - 예: `Co-Authored-By: Claude <noreply@anthropic.com>`
+  - 사용하는 에이전트/모델에 맞춰 이름·이메일을 바꿔 씁니다(특정 모델 버전에 고정하지 않음).
 
 ## 관련 문서
 
