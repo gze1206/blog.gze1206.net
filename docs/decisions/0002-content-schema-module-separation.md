@@ -1,5 +1,5 @@
 ---
-number: "0002"
+number: '0002'
 title: 콘텐츠 스키마를 별도 모듈로 분리
 status: accepted
 date: 2026-07-20

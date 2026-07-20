@@ -80,9 +80,7 @@ describe('postSchema', () => {
   });
 
   it('series만 있고 seriesOrder 없으면 실패', () => {
-    expect(
-      postSchema.safeParse({ ...validPost, series: 'astro-guide' }).success,
-    ).toBe(false);
+    expect(postSchema.safeParse({ ...validPost, series: 'astro-guide' }).success).toBe(false);
   });
 
   it('seriesOrder만 있고 series 없으면 실패', () => {
@@ -137,15 +135,11 @@ describe('seriesSchema', () => {
   });
 
   it('slug가 영문 kebab-case면 성공', () => {
-    expect(
-      seriesSchema.safeParse({ ...validSeries, slug: 'my-series' }).success,
-    ).toBe(true);
+    expect(seriesSchema.safeParse({ ...validSeries, slug: 'my-series' }).success).toBe(true);
   });
 
   it('slug에 한글 포함 시 실패', () => {
-    expect(
-      seriesSchema.safeParse({ ...validSeries, slug: '한글-시리즈' }).success,
-    ).toBe(false);
+    expect(seriesSchema.safeParse({ ...validSeries, slug: '한글-시리즈' }).success).toBe(false);
   });
 
   it('description 누락 시 실패', () => {
@@ -170,15 +164,11 @@ describe('portfolioSchema', () => {
   });
 
   it('stack이 빈 배열이면 실패', () => {
-    expect(portfolioSchema.safeParse({ ...validPortfolio, stack: [] }).success).toBe(
-      false,
-    );
+    expect(portfolioSchema.safeParse({ ...validPortfolio, stack: [] }).success).toBe(false);
   });
 
   it('links가 빈 배열이면 실패', () => {
-    expect(portfolioSchema.safeParse({ ...validPortfolio, links: [] }).success).toBe(
-      false,
-    );
+    expect(portfolioSchema.safeParse({ ...validPortfolio, links: [] }).success).toBe(false);
   });
 
   it('links 항목에 유효한 URL만 허용', () => {
