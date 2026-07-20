@@ -1,7 +1,7 @@
 ---
 issue: NOR-N
 title: <일감 제목>
-status: draft   # draft | in-progress | done
+status: draft # draft | in-progress | done
 ---
 
 # NOR-N — <일감 제목>

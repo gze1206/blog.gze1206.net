@@ -30,20 +30,20 @@ BREAKING CHANGE: 기존 tags 없는 글은 빌드 실패. 마이그레이션 필
 
 ## type ↔ gitmoji 매핑
 
-| type | gitmoji | 용도 |
-|---|---|---|
-| `feat` | ✨ `:sparkles:` | 새 기능 |
-| `fix` | 🐛 `:bug:` | 버그 수정 |
-| `docs` | 📝 `:memo:` | 문서 |
-| `style` | 🎨 `:art:` | 포맷·구조(동작 변화 없음) |
-| `refactor` | ♻️ `:recycle:` | 리팩터링 |
-| `perf` | ⚡️ `:zap:` | 성능 개선 |
-| `test` | ✅ `:white_check_mark:` | 테스트 추가/수정 |
-| `build` | 📦 `:package:` / ➕ `:heavy_plus_sign:` | 빌드·의존성 |
-| `ci` | 👷 `:construction_worker:` | CI/배포 설정 |
-| `chore` | 🔧 `:wrench:` | 잡무·설정 |
-| (breaking) | 💥 `:boom:` | 호환성 파괴 변경 |
-| (wip) | 🚧 `:construction:` | 작업 중(로컬 한정, PR 전 정리) |
+| type       | gitmoji                                 | 용도                           |
+| ---------- | --------------------------------------- | ------------------------------ |
+| `feat`     | ✨ `:sparkles:`                         | 새 기능                        |
+| `fix`      | 🐛 `:bug:`                              | 버그 수정                      |
+| `docs`     | 📝 `:memo:`                             | 문서                           |
+| `style`    | 🎨 `:art:`                              | 포맷·구조(동작 변화 없음)      |
+| `refactor` | ♻️ `:recycle:`                          | 리팩터링                       |
+| `perf`     | ⚡️ `:zap:`                              | 성능 개선                      |
+| `test`     | ✅ `:white_check_mark:`                 | 테스트 추가/수정               |
+| `build`    | 📦 `:package:` / ➕ `:heavy_plus_sign:` | 빌드·의존성                    |
+| `ci`       | 👷 `:construction_worker:`              | CI/배포 설정                   |
+| `chore`    | 🔧 `:wrench:`                           | 잡무·설정                      |
+| (breaking) | 💥 `:boom:`                             | 호환성 파괴 변경               |
+| (wip)      | 🚧 `:construction:`                     | 작업 중(로컬 한정, PR 전 정리) |
 
 > 기능 성격이 더 구체적이면 gitmoji를 바꿔도 됩니다(예: 🔒 보안, 🔥 제거, 🚑 핫픽스). 단 **type은 표준 10종 안에서** 유지합니다.
 

@@ -19,13 +19,13 @@
 
 ## 작업 규약 (docs/conventions/)
 
-| 주제 | 문서 |
-|---|---|
-| 커밋 메시지 (gitmoji + Conventional + Linear ID) | [conventions/commits.md](./docs/conventions/commits.md) |
-| 브랜치·PR 전략 (일감 단위) | [conventions/branch-pr.md](./docs/conventions/branch-pr.md) |
-| 코딩 컨벤션 (TS strict·디렉토리·린트) | [conventions/coding.md](./docs/conventions/coding.md) |
-| 콘텐츠·접근성·SEO | [conventions/content-a11y-seo.md](./docs/conventions/content-a11y-seo.md) |
-| 작업 흐름 (PRD·ADR·spec·plan·TDD) | [conventions/workflow.md](./docs/conventions/workflow.md) |
+| 주제                                             | 문서                                                                      |
+| ------------------------------------------------ | ------------------------------------------------------------------------- |
+| 커밋 메시지 (gitmoji + Conventional + Linear ID) | [conventions/commits.md](./docs/conventions/commits.md)                   |
+| 브랜치·PR 전략 (일감 단위)                       | [conventions/branch-pr.md](./docs/conventions/branch-pr.md)               |
+| 코딩 컨벤션 (TS strict·디렉토리·린트)            | [conventions/coding.md](./docs/conventions/coding.md)                     |
+| 콘텐츠·접근성·SEO                                | [conventions/content-a11y-seo.md](./docs/conventions/content-a11y-seo.md) |
+| 작업 흐름 (PRD·ADR·spec·plan·TDD)                | [conventions/workflow.md](./docs/conventions/workflow.md)                 |
 
 산출물 위치: ADR [`docs/decisions/`](./docs/decisions/README.md) · spec [`docs/spec/`](./docs/spec/README.md) · PRD [`docs/prd/`](./docs/prd/README.md).
 
