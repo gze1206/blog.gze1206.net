@@ -1,0 +1,14 @@
+---
+interface Props {
+  repo: string;
+  description?: string;
+}
+
+const { repo, description } = Astro.props;
+const repoUrl = `https://github.com/${repo}`;
+---
+
+<div class="markdoc-github" data-repo={repo}>
+  <a href={repoUrl} target="_blank" rel="noopener noreferrer">{repo}</a>
+  {description && <p>{description}</p>}
+</div>
