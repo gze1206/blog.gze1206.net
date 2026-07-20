@@ -34,7 +34,7 @@
 - **TypeScript strict**, 콘텐츠는 항상 Content Collections(zod) 스키마 경유.
 - **정적 우선 · 점진적 향상**: 크롤러가 읽는 정적 HTML 먼저, 인터랙션은 아일랜드로 격리하고 폴백 존중.
 - **접근성·SEO는 기본기**(WCAG AA, canonical/OG/JSON-LD 누락 금지).
-- 커밋 전 `npm run build` + 린트 통과. 커밋은 사용자가 요청할 때만.
+- 커밋 전 `pnpm build` + 린트 통과. 커밋은 사용자가 요청할 때만.
 - **PR 전 셀프 리뷰 루프**: 셀프 리뷰 → 셀프 반영을 반복해 안정시킨 뒤 PR을 연다. **사용자 피드백은 PR에서** 받는다([conventions/workflow.md](./docs/conventions/workflow.md#셀프-리뷰-루프-pr-전-필수)).
 - 브랜치: 작업은 `v4`(통합) 기준, PR base는 `v4`, 런칭 시 `v4` → `master`.
 
@@ -42,9 +42,9 @@
 
 > Phase 0(NOR-5) 스캐폴딩 이후 실제 스크립트로 확정됩니다. 확정되면 [conventions/coding.md](./docs/conventions/coding.md) 와 함께 갱신하세요.
 
-- 개발 서버: `npm run dev`
-- 프로덕션 빌드: `npm run build` (출력 `dist/`)
-- 린트: `npm run lint`
+- 개발 서버: `pnpm dev`
+- 프로덕션 빌드: `pnpm build` (출력 `dist/`)
+- 린트: `pnpm lint`
 
 ## Linear 연동
 
