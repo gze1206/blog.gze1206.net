@@ -35,6 +35,30 @@ draft: true
 제목 없는 팁 콜아웃도 지원합니다.
 {% /callout %}
 
+## CIL 하이라이팅 (Markdoc 경로)
+
+```cil
+.assembly extern mscorlib {}
+.assembly MarkdocTest {}
+
+.class public auto ansi beforefieldinit Example
+  extends [mscorlib]System.Object
+{
+  .method public hidebysig static void Run() cil managed
+  {
+    .entrypoint
+    .maxstack 2
+
+    // 정수 덧셈 예제
+    ldc.i4.s 10
+    ldc.i4.s 20
+    add
+    call void [mscorlib]System.Console::WriteLine(int32)
+    ret
+  }
+}
+```
+
 ## 기본 Markdown 호환
 
 일반적인 **굵은 글씨**와 *기울임*도 정상 작동해야 합니다.
