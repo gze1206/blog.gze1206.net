@@ -1,4 +1,6 @@
 ---
+import '../styles/global.css';
+
 interface Props {
   title: string;
   description?: string;
@@ -18,7 +20,6 @@ const { title, description = 'gze1206의 개인 블로그' } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <link
       rel="stylesheet"
-      as="style"
       crossorigin
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
     />
@@ -28,7 +29,3 @@ const { title, description = 'gze1206의 개인 블로그' } = Astro.props;
     <slot />
   </body>
 </html>
-
-<style is:global>
-  @import '../styles/global.css';
-</style>
