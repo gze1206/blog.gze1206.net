@@ -58,7 +58,7 @@
 3. (선택) spec      복잡하면 docs/spec 에 명세 + 구현 계획
 4. 브랜치           feat/nor-N-slug 를 v4 에서 분기        [branch-pr.md]
 5. TDD 구현         테스트 먼저 → 구현 → 리팩터, 의미 단위 커밋   [commits.md]
-6. 검증             npm run build / lint, 완료 조건 체크
+6. 검증             pnpm build / lint, 완료 조건 체크
 7. 셀프 리뷰 루프    셀프 리뷰 → 셀프 반영, 안정될 때까지 반복 (↓)
 8. PR               루프 통과 후 v4 로 PR → **사용자 피드백은 PR에서** [branch-pr.md]
 9. Linear           PR 링크 첨부 + 완료 코멘트, 상태 이동(확인 가능 시)

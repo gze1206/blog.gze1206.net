@@ -30,8 +30,8 @@ docs/           # 계획·규약·산출물 (이 문서 포함)
 
 - **ESLint + Prettier + `.editorconfig`** (NOR-8). 커밋 전 로컬에서 통과시킬 것.
 - 명령(스캐폴딩 후 확정):
-  - `npm run lint`
-  - `npm run format` (또는 `prettier --write`)
+  - `pnpm lint`
+  - `pnpm format` (또는 `prettier --write`)
 - 가능하면 CI에서 린트 게이트를 건다.
 
 ## 네이밍
@@ -49,8 +49,8 @@ docs/           # 계획·규약·산출물 (이 문서 포함)
 
 ## 커밋 전 체크
 
-1. `npm run build` 성공 (출력 `dist/`).
-2. `npm run lint` 통과.
+1. `pnpm build` 성공 (출력 `dist/`).
+2. `pnpm lint` 통과.
 3. 관련 일감 완료 조건 충족.
 
 ## 관련 문서
