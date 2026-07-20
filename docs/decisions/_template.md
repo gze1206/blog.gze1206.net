@@ -1,7 +1,7 @@
 ---
 number: NNNN
 title: <결정 제목>
-status: proposed   # proposed | accepted | superseded by NNNN
+status: proposed # proposed | accepted | superseded by NNNN
 date: YYYY-MM-DD
 related: [NOR-N]
 ---
