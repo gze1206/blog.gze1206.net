@@ -1,0 +1,44 @@
+---
+title: 'Markdoc 스모크 테스트'
+description: 'Markdoc 커스텀 태그가 정상적으로 렌더되는지 확인하는 테스트 글입니다.'
+slug: 'markdoc-smoke-test'
+category: 'dev'
+tags: ['markdoc', 'test']
+publishedAt: 2026-07-21
+updatedAt: 2026-07-21
+draft: true
+---
+
+# Markdoc 스모크 테스트
+
+이 글은 Markdoc 커스텀 태그가 정상적으로 동작하는지 확인하기 위한 스모크 테스트입니다.
+
+## 북마크 태그
+
+{% bookmark url="https://markdoc.dev" title="Markdoc" description="Markdoc은 Stripe에서 만든 마크다운 기반 문서 저작 프레임워크입니다." /%}
+
+## GitHub 태그
+
+{% github repo="withastro/astro" description="Astro 웹 프레임워크" /%}
+
+## 콜아웃 태그
+
+{% callout type="note" title="참고" %}
+이것은 참고 콜아웃입니다.
+{% /callout %}
+
+{% callout type="warning" title="주의" %}
+이것은 경고 콜아웃입니다.
+{% /callout %}
+
+{% callout type="tip" %}
+제목 없는 팁 콜아웃도 지원합니다.
+{% /callout %}
+
+## 기본 Markdown 호환
+
+일반적인 **굵은 글씨**와 *기울임*도 정상 작동해야 합니다.
+
+- 목록 항목 1
+- 목록 항목 2
+- 목록 항목 3

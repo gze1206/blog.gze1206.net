@@ -1,0 +1,19 @@
+---
+interface Props {
+  type?: 'note' | 'warning' | 'error' | 'info' | 'tip';
+  title?: string;
+}
+
+const { type = 'note', title } = Astro.props;
+---
+
+<aside class="markdoc-callout" data-callout-type={type} role="note">
+  {
+    title && (
+      <p>
+        <strong>{title}</strong>
+      </p>
+    )
+  }
+  <slot />
+</aside>
