@@ -35,7 +35,7 @@
 - **정적 우선 · 점진적 향상**: 크롤러가 읽는 정적 HTML 먼저, 인터랙션은 아일랜드로 격리하고 폴백 존중.
 - **접근성·SEO는 기본기**(WCAG AA, canonical/OG/JSON-LD 누락 금지).
 - 커밋 전 `npm run build` + 린트 통과. 커밋은 사용자가 요청할 때만.
-- **PR 전 리뷰-피드백 루프**: 셀프 리뷰 → 사용자 피드백 반영 → 승인 후에 PR을 연다([conventions/workflow.md](./docs/conventions/workflow.md#리뷰-피드백-루프-pr-전-필수)).
+- **PR 전 셀프 리뷰 루프**: 셀프 리뷰 → 셀프 반영을 반복해 안정시킨 뒤 PR을 연다. **사용자 피드백은 PR에서** 받는다([conventions/workflow.md](./docs/conventions/workflow.md#셀프-리뷰-루프-pr-전-필수)).
 - 브랜치: 작업은 `v4`(통합) 기준, PR base는 `v4`, 런칭 시 `v4` → `master`.
 
 ## 빌드 / 검증
