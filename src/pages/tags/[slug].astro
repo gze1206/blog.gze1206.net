@@ -1,0 +1,38 @@
+---
+/**
+ * 태그별 글 목록 (NOR-16).
+ *
+ * 카테고리와 같은 원칙: 경로는 노출 대상 글에서 파생되므로 빈 태그 페이지는 생기지 않는다.
+ */
+import type { GetStaticPaths } from 'astro';
+import PostCard from '../../components/PostCard.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+import { getTagGroups, type Post } from '../../lib/content';
+
+export const getStaticPaths = (async () => {
+  const groups = await getTagGroups();
+  return groups.map((group) => ({
+    params: { slug: group.slug },
+    props: { label: group.label, posts: group.posts },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  label: string;
+  posts: Post[];
+}
+
+const { label, posts } = Astro.props;
+---
+
+<ListLayout
+  title={`태그: ${label} · gze1206.net`}
+  eyebrow="태그"
+  heading={`#${label}`}
+  description={`'${label}' 태그가 붙은 글 목록입니다.`}
+  lead={`글 ${posts.length}개`}
+>
+  <div>
+    {posts.map((post) => <PostCard post={post} />)}
+  </div>
+</ListLayout>

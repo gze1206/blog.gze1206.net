@@ -1,10 +1,31 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import { getVisiblePosts } from '../lib/content';
+
+// 루트 페이지의 서사·포트폴리오는 NOR-21~23 범위다. 여기서는 최신 글로 가는 길만 낸다.
+const recentPosts = (await getVisiblePosts()).slice(0, 3);
 ---
 
 <BaseLayout title="gze1206.net">
   <main class="mx-auto max-w-3xl px-4 py-16">
-    <h1 class="text-4xl font-bold">gze1206.net</h1>
+    <h1 class="text-4xl font-bold tracking-tight">gze1206.net</h1>
     <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">블로그 준비 중입니다.</p>
+
+    <h2 class="mt-12 text-2xl font-bold">최근 글</h2>
+    {
+      recentPosts.length === 0 ? (
+        <p class="mt-4 text-gray-600 dark:text-gray-400">아직 발행된 글이 없습니다.</p>
+      ) : (
+        <div>
+          {recentPosts.map((post) => (
+            <PostCard post={post} headingLevel={3} />
+          ))}
+        </div>
+      )
+    }
+    <p class="mt-8">
+      <a href="/blog" class="rounded font-semibold underline">블로그 글 전체 보기</a>
+    </p>
   </main>
 </BaseLayout>

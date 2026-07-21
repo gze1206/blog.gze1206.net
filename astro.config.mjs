@@ -10,6 +10,8 @@ import { codeBlockTransformers } from './src/shiki/transformers/index.ts';
 
 // https://astro.build/config
 export default defineConfig({
+  // canonical·sitemap·RSS·OG 절대 URL 이 전부 이 값을 전제로 한다 (NOR-27~30).
+  site: 'https://gze1206.net',
   integrations: [markdoc()],
   markdown: {
     shikiConfig: {

@@ -1,0 +1,29 @@
+---
+/** 카테고리 인덱스 (NOR-16). 노출 대상 글에서 파생된 카테고리만 나열한다. */
+import EmptyState from '../../components/EmptyState.astro';
+import TaxonomyIndex from '../../components/TaxonomyIndex.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+import { getCategoryGroups } from '../../lib/content';
+import { categoryPath } from '../../lib/routes';
+
+const groups = await getCategoryGroups();
+const items = groups.map((group) => ({
+  href: categoryPath(group.slug),
+  label: group.label,
+  count: group.posts.length,
+}));
+---
+
+<ListLayout
+  heading="카테고리"
+  description="글을 카테고리별로 모아 봅니다."
+  lead={items.length > 0 ? `카테고리 ${items.length}개` : undefined}
+>
+  {
+    items.length === 0 ? (
+      <EmptyState message="아직 카테고리가 없습니다." />
+    ) : (
+      <TaxonomyIndex items={items} />
+    )
+  }
+</ListLayout>

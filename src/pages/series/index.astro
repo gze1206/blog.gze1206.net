@@ -1,0 +1,35 @@
+---
+/** 시리즈 인덱스 (NOR-16). 노출 대상 글이 1개 이상인 시리즈만 나열한다. */
+import EmptyState from '../../components/EmptyState.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+import { getSeriesWithPosts } from '../../lib/content';
+import { seriesPath } from '../../lib/routes';
+
+const entries = await getSeriesWithPosts();
+---
+
+<ListLayout
+  heading="시리즈"
+  description="여러 편으로 이어지는 글 묶음입니다."
+  lead={entries.length > 0 ? `시리즈 ${entries.length}개` : undefined}
+>
+  {
+    entries.length === 0 ? (
+      <EmptyState message="아직 발행된 시리즈가 없습니다." />
+    ) : (
+      <ul class="space-y-6">
+        {entries.map(({ series, posts }) => (
+          <li class="border-b border-gray-200 pb-6 last:border-b-0 dark:border-gray-800">
+            <h2 class="text-xl font-bold">
+              <a href={seriesPath(series.data.slug)} class="rounded hover:underline">
+                {series.data.name}
+              </a>
+            </h2>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">{series.data.description}</p>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">전체 {posts.length}편</p>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</ListLayout>

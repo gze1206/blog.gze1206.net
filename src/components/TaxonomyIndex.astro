@@ -1,0 +1,38 @@
+---
+/**
+ * `/category`, `/tags` 인덱스에서 쓰는 분류 목록 (NOR-16).
+ *
+ * a11y: 링크 텍스트가 곧 분류 이름이고, 글 수는 `<span>` 으로 링크 안에 함께 읽힌다.
+ */
+interface Item {
+  href: string;
+  label: string;
+  count: number;
+}
+
+interface Props {
+  items: readonly Item[];
+}
+
+const { items } = Astro.props;
+---
+
+<ul class="flex flex-wrap gap-2">
+  {
+    items.map((item) => (
+      <li>
+        <a
+          href={item.href}
+          class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800"
+        >
+          <span>{item.label}</span>
+          <span class="text-gray-500 dark:text-gray-400">
+            <span class="sr-only">글 </span>
+            {item.count}
+            <span class="sr-only">개</span>
+          </span>
+        </a>
+      </li>
+    ))
+  }
+</ul>

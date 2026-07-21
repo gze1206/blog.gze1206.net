@@ -1,0 +1,48 @@
+---
+/**
+ * 사이트 공통 헤더 (NOR-16).
+ *
+ * 랜드마크(`header` > `nav`)를 제공하고, 현재 섹션에 `aria-current="page"` 를 준다.
+ * 시각 디자인 확정은 NOR-24(베이스 테마) 몫이라 여기서는 최소한만 둔다.
+ */
+const NAV_ITEMS = [
+  { href: '/blog', label: '블로그' },
+  { href: '/category', label: '카테고리' },
+  { href: '/tags', label: '태그' },
+  { href: '/series', label: '시리즈' },
+] as const;
+
+const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+/**
+ * 정확히 그 페이지면 `page`, 그 아래 하위 경로면 `true`(현재 섹션).
+ * 하위 글에서까지 `page` 를 주면 "지금 이 페이지"라는 뜻이 흐려진다.
+ */
+function currentState(href: string): 'page' | 'true' | undefined {
+  if (pathname === href) return 'page';
+  return pathname.startsWith(`${href}/`) ? 'true' : undefined;
+}
+---
+
+<header class="border-b border-gray-200 dark:border-gray-800">
+  <div class="mx-auto flex max-w-3xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-4">
+    <a href="/" class="rounded font-bold tracking-tight">gze1206.net</a>
+    <nav aria-label="주요">
+      <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        {
+          NAV_ITEMS.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={currentState(item.href)}
+                class="rounded text-gray-600 hover:text-gray-900 aria-[current]:font-semibold aria-[current]:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 dark:aria-[current]:text-gray-100"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>

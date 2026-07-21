@@ -1,0 +1,29 @@
+---
+/** 태그 인덱스 (NOR-16). 노출 대상 글에서 파생된 태그만 나열한다. */
+import EmptyState from '../../components/EmptyState.astro';
+import TaxonomyIndex from '../../components/TaxonomyIndex.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+import { getTagGroups } from '../../lib/content';
+import { tagPath } from '../../lib/routes';
+
+const groups = await getTagGroups();
+const items = groups.map((group) => ({
+  href: tagPath(group.slug),
+  label: `#${group.label}`,
+  count: group.posts.length,
+}));
+---
+
+<ListLayout
+  heading="태그"
+  description="글을 태그별로 모아 봅니다."
+  lead={items.length > 0 ? `태그 ${items.length}개` : undefined}
+>
+  {
+    items.length === 0 ? (
+      <EmptyState message="아직 태그가 없습니다." />
+    ) : (
+      <TaxonomyIndex items={items} />
+    )
+  }
+</ListLayout>
