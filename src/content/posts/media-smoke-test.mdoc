@@ -13,9 +13,15 @@ draft: true
 
 이 글은 미디어 관련 컴포넌트가 정상적으로 동작하는지 확인하기 위한 스모크 테스트입니다.
 
-## 이미지
+## 로컬 이미지 (Astro Image 최적화)
 
-기본 Markdoc 이미지 문법으로 렌더합니다. lazy loading과 alt 속성이 적용됩니다.
+co-locate된 로컬 이미지를 Astro `<Image>`로 최적화(WebP 변환·width/height·lazy)합니다.
+
+![로컬 테스트 이미지](./smoke-test-image.png)
+
+## Public 이미지 (img 폴백)
+
+public/ 경로 이미지는 `<img>` 폴백으로 렌더합니다.
 
 ![플레이스홀더 이미지](/smoke/placeholder.svg)
 
