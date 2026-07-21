@@ -18,8 +18,11 @@
   },
   "dependencies": {
     "@astrojs/markdoc": "^2.0.3",
+    "@markdoc/markdoc": "^0.5.8",
+    "@shikijs/transformers": "^4.3.1",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.1",
+    "shiki": "^4.3.1",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
