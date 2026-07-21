@@ -14,14 +14,7 @@ const isOptimizable = typeof src !== 'string';
 
 {
   isOptimizable ? (
-    <Image
-      src={src}
-      alt={alt}
-      title={title}
-      loading="lazy"
-      decoding="async"
-      style="max-width: 100%; height: auto;"
-    />
+    <Image src={src} alt={alt} title={title} layout="constrained" loading="lazy" decoding="async" />
   ) : (
     <img
       src={src}
