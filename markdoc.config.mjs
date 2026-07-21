@@ -1,4 +1,4 @@
-import { defineMarkdocConfig, component } from '@astrojs/markdoc/config';
+import { defineMarkdocConfig, component, nodes } from '@astrojs/markdoc/config';
 import { createHighlighter } from 'shiki';
 import Markdoc from '@markdoc/markdoc';
 import { unescapeHTML } from 'astro/runtime/server/index.js';
@@ -14,6 +14,10 @@ const highlighter = await createHighlighter({
 
 export default defineMarkdocConfig({
   nodes: {
+    image: {
+      ...nodes.image,
+      render: component('./src/components/markdoc/MarkdocImage.astro'),
+    },
     fence: {
       attributes: Markdoc.nodes.fence.attributes,
       async transform({ attributes }) {
@@ -104,6 +108,29 @@ export default defineMarkdocConfig({
         formula: { type: String, required: true },
       },
       selfClosing: true,
+    },
+    youtube: {
+      render: component('./src/islands/YouTubeEmbed.astro'),
+      attributes: {
+        id: { type: String, required: true },
+        title: { type: String },
+      },
+      selfClosing: true,
+    },
+    video: {
+      render: component('./src/components/markdoc/Video.astro'),
+      attributes: {
+        src: { type: String, required: true },
+        title: { type: String },
+        poster: { type: String },
+      },
+      selfClosing: true,
+    },
+    figure: {
+      render: component('./src/components/markdoc/Figure.astro'),
+      attributes: {
+        caption: { type: String },
+      },
     },
   },
 });
