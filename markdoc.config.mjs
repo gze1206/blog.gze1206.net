@@ -91,5 +91,19 @@ export default defineMarkdocConfig({
         title: { type: String },
       },
     },
+    math: {
+      render: component('./src/components/markdoc/Math.astro'),
+      attributes: {
+        formula: { type: String, required: true },
+      },
+      selfClosing: true,
+    },
+    mathblock: {
+      render: component('./src/components/markdoc/MathBlock.astro'),
+      attributes: {
+        formula: { type: String, required: true },
+      },
+      selfClosing: true,
+    },
   },
 });

@@ -1,0 +1,15 @@
+---
+import katex from 'katex';
+
+interface Props {
+  formula: string;
+}
+
+const { formula } = Astro.props;
+const html = katex.renderToString(formula, {
+  throwOnError: false,
+  output: 'htmlAndMathml',
+});
+---
+
+<span class="katex-inline" set:html={html} />
