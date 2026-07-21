@@ -35,12 +35,11 @@ NOR-14에서 콘텐츠에 이미지·로컬 영상·YouTube를 삽입하는 방�
 
 ## 근거 (Rationale)
 
-- **이미지**: 기존 `![alt](src)` 문법 호환을 유지하면서 lazy loading과 alt 필수를 보장한다. Astro의 `<Image>` 컴포넌트는 빌드타임에 로컬 이미지를 변환하지만, 콘텐츠 이미지는 public/ 또는 외부 URL이므로 네이티브 `<img>`에 lazy/decoding=async를 적용하는 것이 실용적이다.
+- **이미지**: 기존 `![alt](src)` 문법 호환을 유지하면서 빌드타임 이미지 최적화를 적용한다. Astro 공식 문서(@astrojs/markdoc 통합 가이드)는 Markdoc image 노드를 오버라이드할 때 `astro:assets`의 `<Image>` 컴포넌트에 `src: ImageMetadata`를 넘겨 **로컬 이미지를 빌드타임에 최적화**(WebP 변환·width/height 자동 추론·srcset 생성)하고, 원격 URL 문자열은 표준 `<img>`(lazy/decoding=async)로 렌더하는 패턴을 공식 제시한다. 이 공식 패턴을 채택하여 로컬 이미지는 `<Image>`로 최적화하고, public/ 경로나 외부 URL은 `<img>` 폴백으로 처리한다.
 - **YouTube**: 썸네일 선로드 방식은 iframe이 없어 초기 성능이 우수하고, youtube-nocookie.com으로 프라이버시를 보장한다. JS 미로드 시에도 링크로 접근 가능.
 - **영상**: 네이티브 `<video>`는 브라우저 접근성·키보드 지원이 내장되어 있어 커스텀 플레이어 대비 이점이 크다.
 
 ## 영향 (Consequences)
 
-- 긍정: 기존 이미지 문법 호환, YouTube 성능·프라이버시 향상, 접근성 기본 보장.
-- 부정/비용: YouTube 점진적 향상은 클라이언트 JS 아일랜드가 필요(islands/ 격리).
-- 후속 작업: 빌드타임 이미지 최적화(AVIF/WebP 변환)는 이미지 에셋 관리 체계(NOR 후속)에서 추가 가능.
+- 긍정: 기존 이미지 문법 호환, 로컬 이미지 빌드타임 최적화(WebP·width/height로 CLS 방지), YouTube 성능·프라이버시 향상, 접근성 기본 보장.
+- 부정/비용: YouTube 점진적 향상은 클라이언트 JS 아일랜드가 필요(islands/ 격리). 로컬 이미지 최적화를 위해 이미지를 `src/` 하위에 co-locate하거나 `src/assets/`에 배치해야 한다(public/ 이미지는 최적화 대상 아님).
