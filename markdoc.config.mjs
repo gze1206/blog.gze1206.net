@@ -68,31 +68,45 @@ export default defineMarkdocConfig({
     },
   },
   tags: {
+    // 커스텀 블럭(NOR-15). 속성 스키마는 NOR-20(Keystatic 삽입 UI)이 그대로 매핑한다.
+    // 의미·동작은 docs/spec/NOR-15-custom-blocks.md, 데이터 취득 전략은 ADR 0008 참고.
     bookmark: {
       render: component('./src/components/markdoc/Bookmark.astro'),
+      selfClosing: true,
       attributes: {
+        // 북마크 대상 절대 URL(http/https). 그 외 스킴은 폴백 렌더.
         url: { type: String, required: true },
-        title: { type: String },
-        description: { type: String },
-        image: { type: String },
+        // 아래 4개는 작성자 오버라이드. title 을 명시하면 빌드타임 fetch 를 건너뛴다.
+        title: { type: String, required: false },
+        description: { type: String, required: false },
+        image: { type: String, required: false },
+        siteName: { type: String, required: false },
       },
     },
     github: {
       render: component('./src/components/markdoc/GitHub.astro'),
+      selfClosing: true,
       attributes: {
+        // `owner/name` 또는 GitHub URL. 형식 위반은 폴백 렌더.
         repo: { type: String, required: true },
-        description: { type: String },
+        // 아래 3개는 작성자 오버라이드. description 을 명시하면 fetch 를 건너뛴다.
+        description: { type: String, required: false },
+        stars: { type: Number, required: false },
+        language: { type: String, required: false },
       },
     },
     callout: {
       render: component('./src/components/markdoc/Callout.astro'),
+      selfClosing: false,
       attributes: {
         type: {
           type: String,
+          required: false,
           default: 'note',
-          matches: ['note', 'warning', 'error', 'info', 'tip'],
+          matches: ['note', 'info', 'tip', 'success', 'warning', 'danger'],
         },
-        title: { type: String },
+        // 없으면 타입 기본 라벨(참고/정보/팁/성공/주의/위험)이 헤더에 노출된다.
+        title: { type: String, required: false },
       },
     },
     math: {

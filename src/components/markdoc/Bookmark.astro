@@ -1,18 +1,71 @@
 ---
+/**
+ * `{% bookmark url="https://…" /%}` — URL 프리뷰(OG 메타) 카드.
+ *
+ * 메타는 **빌드타임에** 가져와 정적 HTML 로 굽는다(ADR 0008). 런타임 fetch 없음.
+ * - 작성자가 `title` 을 명시하면 fetch 자체를 건너뛴다(오프라인/사설 URL 탈출구).
+ * - fetch 가 실패하면 예외를 던지지 않고 URL 링크만 있는 최소 카드로 폴백한다.
+ */
+import { DAY_MS, HOUR_MS, withCache } from '../../lib/disk-cache';
+import { fetchOpenGraph, isFetchableUrl, type OpenGraphMeta } from '../../lib/open-graph';
+
+/** OG 메타(제목·설명)는 거의 변하지 않는다. 길게 잡는다. */
+const OG_TTL_MS = 30 * DAY_MS;
+
 interface Props {
   url: string;
   title?: string;
   description?: string;
   image?: string;
+  siteName?: string;
 }
 
-const { url, title, description, image } = Astro.props;
+const { url, title, description, image, siteName } = Astro.props;
+
+const hasExplicitTitle = (title?.trim().length ?? 0) > 0;
+const fetchable = isFetchableUrl(url);
+
+if (!fetchable) {
+  console.warn(
+    `[blocks] bookmark url 이 http(s) 절대 URL 이 아닙니다 — "${url}". 링크 없이 폴백으로 렌더합니다.`,
+  );
+}
+
+let meta: OpenGraphMeta | null = null;
+if (!hasExplicitTitle && fetchable) {
+  meta = await withCache({ namespace: 'og', key: url, ttlMs: OG_TTL_MS, failTtlMs: HOUR_MS }, () =>
+    fetchOpenGraph(url),
+  );
+}
+
+const host = fetchable ? new URL(url).hostname.replace(/^www\./, '') : undefined;
+
+// 명시 속성이 fetch 결과를 이긴다. `image=""` 는 "이미지 없이" 라는 의도로 존중한다.
+const cardTitle = title?.trim() || meta?.title || host || url;
+const cardDescription = description?.trim() || meta?.description;
+const cardImage = image !== undefined ? image.trim() : meta?.image;
+const cardSite = siteName?.trim() || meta?.siteName || host || url;
+
+const state = hasExplicitTitle ? 'explicit' : meta ? 'fetched' : 'fallback';
+
+// http(s) 가 아닌 URL(`javascript:` 등)은 링크로 만들지 않는다 — 카드 내용만 남긴다.
+const Tag = fetchable ? 'a' : 'div';
+const linkProps = fetchable
+  ? ({ href: url, target: '_blank', rel: 'noopener noreferrer' } as const)
+  : {};
 ---
 
-<div class="markdoc-bookmark" data-url={url}>
-  {image && <img src={image} alt="" />}
-  <div>
-    <a href={url} target="_blank" rel="noopener noreferrer">{title ?? url}</a>
-    {description && <p>{description}</p>}
-  </div>
-</div>
+<Tag class="block-bookmark" data-block="bookmark" data-block-state={state} {...linkProps}>
+  <span class="block-bookmark-body">
+    <span class="block-bookmark-title">{cardTitle}</span>
+    {cardDescription && <span class="block-bookmark-desc">{cardDescription}</span>}
+    <span class="block-bookmark-site">{cardSite}</span>
+  </span>
+  {
+    cardImage && (
+      <span class="block-bookmark-thumb">
+        <img src={cardImage} alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+      </span>
+    )
+  }
+</Tag>

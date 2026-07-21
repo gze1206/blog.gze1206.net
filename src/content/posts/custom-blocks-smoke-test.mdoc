@@ -1,0 +1,100 @@
+---
+title: '커스텀 블럭 스모크 테스트'
+description: '북마크·GitHub 카드·콜아웃이 정상 렌더되고, 외부 취득 실패 시 폴백하는지 확인하는 테스트 글입니다.'
+slug: 'custom-blocks-smoke-test'
+category: 'dev'
+tags: ['markdoc', 'blocks', 'test']
+publishedAt: 2026-07-21
+updatedAt: 2026-07-21
+draft: true
+---
+
+# 커스텀 블럭 스모크 테스트
+
+`{% bookmark %}` · `{% github %}` · `{% callout %}` 세 커스텀 블럭의 렌더와 **폴백 경로**를 확인합니다.
+북마크/GitHub 메타는 빌드타임에 fetch 해서 정적 HTML 로 굽습니다(ADR 0008).
+
+## 북마크 — 빌드타임 OG 메타 (fetched)
+
+속성을 주지 않으면 빌드타임에 OG 메타를 가져와 카드를 채웁니다.
+
+{% bookmark url="https://markdoc.dev/" /%}
+
+{% bookmark url="https://astro.build/" /%}
+
+## 북마크 — 작성자 명시 (explicit)
+
+`title` 을 명시하면 fetch 를 건너뜁니다. 오프라인·사설 URL 대응 수단입니다.
+
+{% bookmark url="https://intranet.invalid/wiki/architecture" title="사내 위키 — 아키텍처 개요" description="네트워크로 도달할 수 없는 사설 URL 도 작성자가 값을 넣으면 온전한 카드가 됩니다." siteName="사내 위키" /%}
+
+## 북마크 — 폴백 (fallback)
+
+도달할 수 없는 도메인입니다. **빌드가 깨지지 않고** URL 링크만 있는 최소 카드로 폴백해야 합니다.
+
+{% bookmark url="https://nor15-this-domain-does-not-exist.invalid/some/page" /%}
+
+`javascript:` 같은 비 http(s) 스킴도 요청 없이 폴백합니다.
+
+{% bookmark url="javascript:alert(1)" /%}
+
+## GitHub 카드 — 빌드타임 API (fetched)
+
+{% github repo="withastro/astro" /%}
+
+{% github repo="markdoc/markdoc" /%}
+
+## GitHub 카드 — 작성자 명시 (explicit)
+
+{% github repo="gze1206/blog.gze1206.net" description="이 블로그의 소스 저장소입니다. description 을 명시하면 fetch 를 건너뜁니다." stars=1 language="Astro" /%}
+
+## GitHub 카드 — 폴백 (fallback)
+
+존재하지 않는 레포(404)와 형식이 잘못된 `repo` 값입니다. 둘 다 빌드를 깨뜨리지 않아야 합니다.
+
+{% github repo="gze1206/nor15-definitely-not-a-real-repository" /%}
+
+{% github repo="형식이/잘못된/레포" /%}
+
+## 콜아웃 — 6종
+
+{% callout type="note" %}
+기본값 `note` 입니다. 타입을 생략하면 "참고" 라벨이 붙습니다.
+{% /callout %}
+
+{% callout type="info" %}
+알아두면 좋은 사실을 담습니다. 아이콘은 원형 ⓘ 입니다.
+{% /callout %}
+
+{% callout type="tip" title="이렇게 쓰세요" %}
+`title` 을 주면 헤더 문구가 바뀝니다. 이때도 타입 라벨("팁")은 스크린 리더에 남습니다.
+{% /callout %}
+
+{% callout type="success" %}
+성공·권장 결과를 나타냅니다.
+{% /callout %}
+
+{% callout type="warning" title="주의" %}
+주의하지 않으면 문제가 되는 내용입니다. 색이 아니라 **삼각 경고 아이콘 + 텍스트 라벨**로 의미를 전달합니다.
+{% /callout %}
+
+{% callout type="danger" %}
+데이터 손실·보안처럼 파괴적인 결과를 경고합니다.
+{% /callout %}
+
+## 콜아웃 — 중첩 콘텐츠
+
+콜아웃 본문에는 임의의 Markdoc 블록을 넣을 수 있습니다.
+
+{% callout type="info" title="본문에 리스트와 코드블럭 넣기" %}
+확인할 항목:
+
+- 리스트가 정상 렌더된다
+- 코드블럭이 정상 렌더된다
+
+```ts title="example.ts"
+const blocks = ['bookmark', 'github', 'callout'] as const;
+```
+
+마지막 문단입니다.
+{% /callout %}
