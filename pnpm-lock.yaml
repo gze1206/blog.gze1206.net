@@ -11,12 +11,21 @@ importers:
       '@astrojs/markdoc':
         specifier: ^2.0.3
         version: 2.0.3(astro@7.1.1(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(jiti@2.7.0))
+      '@markdoc/markdoc':
+        specifier: ^0.5.8
+        version: 0.5.8
+      '@shikijs/transformers':
+        specifier: ^4.3.1
+        version: 4.3.1
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.1.5(esbuild@0.28.1)(jiti@2.7.0))
       astro:
         specifier: ^7.1.1
         version: 7.1.1(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(jiti@2.7.0)
+      shiki:
+        specifier: ^4.3.1
+        version: 4.3.1
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -778,6 +787,10 @@ packages:
 
   '@shikijs/themes@4.3.1':
     resolution: {integrity: sha512-dgpoJ4WqNi2yTmizQHBJ5zcX6j2lE6icN/0yt4l1kkf16jrY/pwPLoTb1ETsWMz0OBLf9ZNvwmxft+cH+N9qSA==}
+    engines: {node: '>=20'}
+
+  '@shikijs/transformers@4.3.1':
+    resolution: {integrity: sha512-z6ir0bGDgWcF2FduktEfPgIsdOtIlDiLAjFBgBzE42Q9xHbkkIXZtORHzlLVB71iZP9elEcqKg6keajvOUwE2A==}
     engines: {node: '>=20'}
 
   '@shikijs/types@4.3.1':
@@ -3168,6 +3181,11 @@ snapshots:
 
   '@shikijs/themes@4.3.1':
     dependencies:
+      '@shikijs/types': 4.3.1
+
+  '@shikijs/transformers@4.3.1':
+    dependencies:
+      '@shikijs/core': 4.3.1
       '@shikijs/types': 4.3.1
 
   '@shikijs/types@4.3.1':
