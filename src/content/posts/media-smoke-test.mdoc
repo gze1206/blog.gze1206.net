@@ -1,0 +1,54 @@
+---
+title: '미디어 스모크 테스트'
+description: '이미지·YouTube·영상·캡션이 정상적으로 렌더되는지 확인하는 테스트 글입니다.'
+slug: 'media-smoke-test'
+category: 'dev'
+tags: ['media', 'test']
+publishedAt: 2026-07-21
+updatedAt: 2026-07-21
+draft: true
+---
+
+# 미디어 스모크 테스트
+
+이 글은 미디어 관련 컴포넌트가 정상적으로 동작하는지 확인하기 위한 스모크 테스트입니다.
+
+## 이미지
+
+기본 Markdoc 이미지 문법으로 렌더합니다. lazy loading과 alt 속성이 적용됩니다.
+
+![플레이스홀더 이미지](/smoke/placeholder.svg)
+
+## SVG 인라인 이미지
+
+SVG 파일도 동일하게 렌더됩니다.
+
+![SVG 테스트 이미지](/smoke/placeholder.svg)
+
+## YouTube 임베드
+
+YouTube 영상 임베드입니다. 썸네일을 클릭하면 iframe이 로드됩니다.
+
+{% youtube id="dQw4w9WgXcQ" title="Rick Astley - Never Gonna Give You Up" /%}
+
+## 로컬 영상
+
+로컬 영상 재생 컴포넌트입니다. 브라우저 네이티브 컨트롤을 사용합니다.
+
+{% video src="/smoke/placeholder.svg" title="테스트 영상 (placeholder)" /%}
+
+## Figure + 캡션
+
+figure/figcaption 시맨틱 마크업으로 이미지에 캡션을 달 수 있습니다.
+
+{% figure caption="이것은 플레이스홀더 이미지에 달린 캡션입니다." %}
+![캡션이 있는 플레이스홀더 이미지](/smoke/placeholder.svg)
+{% /figure %}
+
+## Figure + YouTube 캡션
+
+YouTube 임베드에도 캡션을 달 수 있습니다.
+
+{% figure caption="Rick Astley의 Never Gonna Give You Up 뮤직비디오" %}
+{% youtube id="dQw4w9WgXcQ" title="Rick Astley - Never Gonna Give You Up" /%}
+{% /figure %}
