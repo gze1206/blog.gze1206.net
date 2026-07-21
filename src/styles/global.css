@@ -312,3 +312,318 @@ pre.astro-code:hover > .code-copy-btn {
   height: auto;
   border-radius: 0.5rem;
 }
+
+/* --- Custom blocks: 북마크 카드 (NOR-15) --- */
+.block-bookmark {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.block-bookmark:hover {
+  border-color: #9ca3af;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+.block-bookmark:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.block-bookmark-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.block-bookmark-title {
+  font-weight: 600;
+  line-height: 1.4;
+  color: #111827;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.block-bookmark-desc {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #4b5563;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.block-bookmark-site {
+  margin-top: auto;
+  padding-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  overflow-wrap: anywhere;
+}
+
+/* 썸네일은 자리(비율·폭)를 고정해 CLS 를 막는다. */
+.block-bookmark-thumb {
+  flex: 0 0 clamp(7rem, 30%, 12rem);
+  aspect-ratio: 1.91 / 1;
+  background: #f3f4f6;
+}
+
+.block-bookmark-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 30rem) {
+  .block-bookmark {
+    flex-direction: column-reverse;
+  }
+
+  .block-bookmark-thumb {
+    flex: none;
+    width: 100%;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .block-bookmark {
+    border-color: #374151;
+    background: #111827;
+  }
+
+  .block-bookmark:hover {
+    border-color: #6b7280;
+  }
+
+  .block-bookmark-title {
+    color: #f3f4f6;
+  }
+
+  .block-bookmark-desc {
+    color: #d1d5db;
+  }
+
+  .block-bookmark-site {
+    color: #9ca3af;
+  }
+
+  .block-bookmark-thumb {
+    background: #1f2937;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block-bookmark {
+    transition: none;
+  }
+}
+
+/* --- Custom blocks: GitHub 레포 카드 (NOR-15) --- */
+.block-github {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.block-github:hover {
+  border-color: #9ca3af;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+.block-github:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.block-github-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.block-github-mark {
+  flex: none;
+  color: #111827;
+}
+
+.block-github-name {
+  font-weight: 600;
+  color: #111827;
+  overflow-wrap: anywhere;
+}
+
+.block-github-desc {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+.block-github-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.block-github-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .block-github {
+    border-color: #374151;
+    background: #111827;
+  }
+
+  .block-github:hover {
+    border-color: #6b7280;
+  }
+
+  .block-github-mark,
+  .block-github-name {
+    color: #f3f4f6;
+  }
+
+  .block-github-desc {
+    color: #d1d5db;
+  }
+
+  .block-github-meta {
+    color: #9ca3af;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block-github {
+    transition: none;
+  }
+}
+
+/* --- Custom blocks: 콜아웃 (NOR-15) ---
+   의미는 아이콘(형태) + 텍스트 라벨로 전달한다. 색은 보조 신호일 뿐이다(WCAG 1.4.1).
+   accent/본문 대비비는 라이트·다크 모두 AA(4.5:1) 이상. */
+.block-callout {
+  --callout-bg: #f3f4f6;
+  --callout-accent: #374151;
+  --callout-fg: #1f2937;
+
+  margin: 1.5rem 0;
+  padding: 0.875rem 1rem;
+  border-left: 4px solid var(--callout-accent);
+  border-radius: 0 0.375rem 0.375rem 0;
+  background: var(--callout-bg);
+  color: var(--callout-fg);
+}
+
+.block-callout[data-callout='info'] {
+  --callout-bg: #eff6ff;
+  --callout-accent: #1d4ed8;
+}
+
+.block-callout[data-callout='tip'] {
+  --callout-bg: #f5f3ff;
+  --callout-accent: #6d28d9;
+}
+
+.block-callout[data-callout='success'] {
+  --callout-bg: #ecfdf5;
+  --callout-accent: #047857;
+}
+
+.block-callout[data-callout='warning'] {
+  --callout-bg: #fffbeb;
+  --callout-accent: #b45309;
+}
+
+.block-callout[data-callout='danger'] {
+  --callout-bg: #fef2f2;
+  --callout-accent: #b91c1c;
+}
+
+.block-callout-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.375rem;
+  font-weight: 600;
+  color: var(--callout-accent);
+}
+
+.block-callout-icon {
+  flex: none;
+}
+
+.block-callout-body > :first-child {
+  margin-top: 0;
+}
+
+.block-callout-body > :last-child {
+  margin-bottom: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .block-callout {
+    --callout-bg: #111827;
+    --callout-accent: #d1d5db;
+    --callout-fg: #e5e7eb;
+  }
+
+  .block-callout[data-callout='info'] {
+    --callout-bg: #0f1d38;
+    --callout-accent: #93c5fd;
+  }
+
+  .block-callout[data-callout='tip'] {
+    --callout-bg: #1c1836;
+    --callout-accent: #c4b5fd;
+  }
+
+  .block-callout[data-callout='success'] {
+    --callout-bg: #042f26;
+    --callout-accent: #6ee7b7;
+  }
+
+  .block-callout[data-callout='warning'] {
+    --callout-bg: #2e2205;
+    --callout-accent: #fcd34d;
+  }
+
+  .block-callout[data-callout='danger'] {
+    --callout-bg: #300f11;
+    --callout-accent: #fca5a5;
+  }
+}
