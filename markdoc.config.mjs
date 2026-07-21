@@ -1,18 +1,68 @@
 import { defineMarkdocConfig, component } from '@astrojs/markdoc/config';
-import shiki from '@astrojs/markdoc/shiki';
+import { createHighlighter } from 'shiki';
+import Markdoc from '@markdoc/markdoc';
+import { unescapeHTML } from 'astro/runtime/server/index.js';
 import cilGrammar from './src/shiki/langs/cil.tmLanguage.json';
+import { codeBlockTransformers } from './src/shiki/transformers/index.ts';
+
+const themes = { light: 'github-light', dark: 'github-dark' };
+
+const highlighter = await createHighlighter({
+  themes: Object.values(themes),
+  langs: ['plaintext', cilGrammar],
+});
 
 export default defineMarkdocConfig({
-  extends: [
-    await shiki({
-      themes: {
-        light: 'github-light',
-        dark: 'github-dark',
+  nodes: {
+    fence: {
+      attributes: Markdoc.nodes.fence.attributes,
+      async transform({ attributes }) {
+        const raw = typeof attributes.language === 'string' ? attributes.language : '';
+        let lang = raw;
+        let meta = '';
+
+        const titleMatch = raw.match(/\btitle="([^"]+)"/);
+        if (titleMatch) {
+          meta = titleMatch[0];
+          lang = raw.replace(titleMatch[0], '').trim();
+        }
+
+        if (!lang) lang = 'plaintext';
+
+        const loadedLangs = highlighter.getLoadedLanguages();
+        if (!loadedLangs.includes(lang)) {
+          try {
+            await highlighter.loadLanguage(lang);
+          } catch {
+            lang = 'plaintext';
+          }
+        }
+
+        const code = attributes.content.replace(/(?:\r\n|\r|\n)$/, '');
+        const html = highlighter.codeToHtml(code, {
+          lang,
+          themes,
+          defaultColor: false,
+          meta: meta ? { __raw: meta } : undefined,
+          transformers: [
+            {
+              pre(node) {
+                const cls = node.properties.class;
+                const classValue = Array.isArray(cls) ? cls.join(' ') : String(cls || '');
+                node.properties.class = classValue.replace(/shiki/g, 'astro-code');
+                node.properties.dataLanguage = lang;
+                const style = node.properties.style;
+                const styleValue = Array.isArray(style) ? style.join(';') : String(style || '');
+                node.properties.style = styleValue + '; overflow-x: auto;';
+              },
+            },
+            ...codeBlockTransformers,
+          ],
+        });
+        return unescapeHTML(html);
       },
-      defaultColor: false,
-      langs: [cilGrammar],
-    }),
-  ],
+    },
+  },
   tags: {
     bookmark: {
       render: component('./src/components/markdoc/Bookmark.astro'),
