@@ -1,0 +1,17 @@
+---
+title: 'CIL 읽는 법 맛보기'
+description: 'C# 코드가 어떤 CIL 로 컴파일되는지 읽는 최소한의 감각을 잡아봅니다.'
+slug: 'dotnet-cil-basics'
+category: 'dev'
+tags: ['.NET', 'cil']
+publishedAt: 2026-05-16
+updatedAt: 2026-05-16
+---
+
+## 스택 머신
+
+CIL 은 스택 기반이다. `ldarg` 로 올리고 `add` 로 더하고 `ret` 로 돌려준다.
+
+## 어디서 보나
+
+`ildasm` 이나 온라인 디컴파일러로 바로 확인할 수 있다.

@@ -1,0 +1,19 @@
+---
+title: 'Markdoc으로 커스텀 블럭 쓰기'
+description: 'Markdoc 태그를 등록해 글 안에서 재사용 가능한 블럭을 쓰는 흐름을 정리합니다.'
+slug: 'astro-markdoc-workflow'
+category: 'dev'
+tags: ['astro', 'markdoc']
+series: 'astro-guide'
+seriesOrder: 2
+publishedAt: 2026-06-20
+updatedAt: 2026-06-20
+---
+
+## 태그 등록
+
+`markdoc.config.mjs` 에 태그를 등록하면 글에서 `{% tag %}` 문법으로 컴포넌트를 부를 수 있다.
+
+## 마크다운과 병행
+
+기존 `.md` 글을 그대로 두고 새 글만 `.mdoc` 으로 써도 된다.
