@@ -10,6 +10,11 @@
 
 ## 목록
 
-| 일감 | 제목        | 상태 |
-| ---- | ----------- | ---- |
-| —    | (아직 없음) |      |
+| 일감   | 제목                                                                              | 상태        |
+| ------ | --------------------------------------------------------------------------------- | ----------- |
+| NOR-9  | [Content Collections 스키마 정의](./NOR-9-content-schema.md)                        | done        |
+| NOR-10 | [Markdoc 통합 & 커스텀 태그 등록 골격](./NOR-10-markdoc.md)                         | in-progress |
+| NOR-11 | [Shiki + CIL(.NET) 커스텀 하이라이팅](./NOR-11-shiki-cil.md)                        | in-progress |
+| NOR-13 | [KaTeX 수식 + Mermaid 다이어그램](./NOR-13-katex-mermaid.md)                        | in-progress |
+| NOR-14 | [미디어 — 이미지 최적화 + 영상/YouTube 임베드](./NOR-14-media.md)                   | draft       |
+| NOR-15 | [커스텀 블럭 — URL 북마크 · GitHub 카드 · 콜아웃](./NOR-15-custom-blocks.md)        | done        |
