@@ -1,0 +1,56 @@
+---
+/**
+ * 글 목차 (NOR-17, ADR 0010).
+ *
+ * - **JS 없는 정적 마크업**이다. 링크는 브라우저 기본 프래그먼트 이동으로 동작한다.
+ * - `entries` 가 비면 아무것도 렌더하지 않는다. 빈 목차 상자는 정보가 아니라 소음이다.
+ *   판단은 호출부가 아니라 `buildToc` 하나가 한다.
+ * - 깊이는 최대 두 단계다(`TOC_MAX_DEPTH`). 그래서 재귀 없이 두 겹으로 그린다.
+ * - 긴 목차가 본문을 밀어내지 않도록 좁은 화면에서 높이를 제한한다(`.post-toc-list`).
+ *   높이는 CSS 로 고정돼 있어 렌더 전후 레이아웃이 움직이지 않는다(CLS 0).
+ */
+import type { TocEntry } from '../lib/toc';
+
+interface Props {
+  entries: readonly TocEntry[];
+}
+
+const { entries } = Astro.props;
+---
+
+{
+  entries.length > 0 && (
+    <nav
+      aria-label="목차"
+      class="post-toc my-8 rounded-lg border border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-900"
+    >
+      <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400">목차</h2>
+      <ol class="post-toc-list mt-3 space-y-1.5 text-sm">
+        {entries.map((entry) => (
+          <li>
+            <a
+              href={`#${entry.id}`}
+              class="rounded text-gray-700 hover:underline dark:text-gray-300"
+            >
+              {entry.text}
+            </a>
+            {entry.children.length > 0 && (
+              <ol class="mt-1.5 space-y-1.5 border-l border-gray-200 pl-3 dark:border-gray-700">
+                {entry.children.map((child) => (
+                  <li>
+                    <a
+                      href={`#${child.id}`}
+                      class="rounded text-gray-600 hover:underline dark:text-gray-400"
+                    >
+                      {child.text}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}

@@ -15,6 +15,72 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+/* --- 앵커 이동 (NOR-17) ---
+   프래그먼트로 점프했을 때 헤딩이 뷰포트 맨 위에 딱 붙지 않도록 여유를 준다. */
+:target {
+  scroll-margin-top: 1.5rem;
+}
+
+/* 부드러운 스크롤은 '움직임 줄이기'를 켠 사용자에게는 적용하지 않는다. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* --- 헤딩 앵커 링크 (NOR-17) ---
+   `.md`(rehype) 와 `.mdoc`(Markdoc) 이 같은 마크업을 만든다: 자식이 없는 `<a class="heading-anchor">`.
+   보이는 `#` 는 여기서 그린다 — 텍스트로 넣으면 목차 텍스트가 오염되고 스크린리더가
+   "링크, 우물 정"으로 읽는다. 접근 가능한 이름은 마크업의 `aria-label` 이 준다. */
+.heading-anchor {
+  margin-left: 0.35em;
+  font-weight: 400;
+  /* 흐린 회색은 대비가 모자란다. 보이는 동안에는 본문 대비 AA(4.5:1) 를 넘겨야 한다. */
+  color: #6b7280;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+@media (prefers-color-scheme: dark) {
+  .heading-anchor {
+    color: #9ca3af;
+  }
+}
+
+.heading-anchor::before {
+  content: '#';
+}
+
+/* 호버뿐 아니라 **포커스에서도** 보여야 한다. 키보드 사용자가 못 쓰는 앵커는 없는 것과 같다. */
+.post-body :is(h1, h2, h3, h4, h5, h6):hover > .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+
+/* 호버가 없는 기기(터치)에서는 늘 보여 준다. 반투명으로 두면 대비만 깎이고 쓸 수는 없다. */
+@media (hover: none) {
+  .heading-anchor {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heading-anchor {
+    transition: none;
+  }
+}
+
+/* --- 목차 (NOR-17) ---
+   긴 목차가 좁은 화면에서 본문을 밀어내지 않도록 높이를 제한한다.
+   높이는 CSS 로 고정돼 있고 JS 가 관여하지 않으므로 렌더 후 레이아웃이 움직이지 않는다(CLS 0). */
+@media (max-width: 48rem) {
+  .post-toc-list {
+    max-height: 45vh;
+    overflow-y: auto;
+  }
+}
+
 /* --- 글 본문 타이포그래피 (NOR-16) ---
    본문 가독성 확정은 NOR-24(베이스 테마) 몫이다. 여기서는 읽을 수 있는 최소치만 둔다. */
 .post-body {

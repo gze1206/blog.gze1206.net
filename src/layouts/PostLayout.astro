@@ -1,27 +1,36 @@
 ---
 /**
- * 글 상세 레이아웃 (NOR-16).
+ * 글 상세 레이아웃 (NOR-16, NOR-17).
  *
  * 헤딩 계층: 글 제목이 `h1`, 본문 헤딩은 `h2` 부터 쓰는 것을 전제로 한다.
  *
+ * 파생 데이터(목차·읽기 시간·ISO 날짜)는 여기서 계산하지 않고 `derivePostDetail` 이 만든
+ * {@link PostDetail} 을 받는다. 같은 값을 Phase 7(JSON-LD)이 다시 쓰기 때문이다 —
+ * 표시용 계산을 템플릿에 묻어두면 구조화 데이터와 조용히 어긋난다. 읽기 시간을
+ * `<time datetime="PT3M">` 으로 내보내는 것도 같은 이유다(JSON-LD `timeRequired` 와 같은 값).
+ *
  * 확장 지점(이번 일감 범위 밖): 본문 뒤 `<slot name="after-content">` 가 비어 있다.
- * NOR-17(TOC·앵커·읽기시간)·NOR-18(시리즈 이전/다음 편)이 이 자리에 얹힌다.
+ * NOR-18(시리즈 이전/다음 편)이 이 자리에 얹힌다.
  */
 import BaseLayout from './BaseLayout.astro';
-import { formatKoreanDate, toISODate } from '../lib/date';
+import TableOfContents from '../components/TableOfContents.astro';
+import { formatKoreanDate } from '../lib/date';
 import { categoryPath, seriesPath, tagPath } from '../lib/routes';
 import { toSlug } from '../lib/slug';
 import type { Post, Series } from '../lib/content';
+import type { PostDetail } from '../lib/post-detail';
 
 interface Props {
   post: Post;
+  /** 목차·읽기 시간·ISO 날짜. `derivePostDetail(...)` 의 결과를 그대로 넘긴다. */
+  detail: PostDetail;
   /** 글이 시리즈에 속할 때 그 시리즈 정의. 상세에서는 소속 표시까지만 한다(내비게이션은 NOR-18). */
   series?: Series | undefined;
 }
 
-const { post, series } = Astro.props;
+const { post, detail, series } = Astro.props;
 const { title, description, category, tags, publishedAt, updatedAt, draft } = post.data;
-const isUpdated = updatedAt.getTime() !== publishedAt.getTime();
+const { toc, readingTime, publishedISO, updatedISO, isUpdated } = detail;
 ---
 
 <BaseLayout title={`${title} · gze1206.net`} description={description}>
@@ -41,14 +50,15 @@ const isUpdated = updatedAt.getTime() !== publishedAt.getTime();
         <div
           class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 dark:text-gray-400"
         >
-          <time datetime={toISODate(publishedAt)}>{formatKoreanDate(publishedAt)}</time>
+          <time datetime={publishedISO}>{formatKoreanDate(publishedAt)}</time>
           {
             isUpdated && (
               <span>
-                (수정 <time datetime={toISODate(updatedAt)}>{formatKoreanDate(updatedAt)}</time>)
+                (수정 <time datetime={updatedISO}>{formatKoreanDate(updatedAt)}</time>)
               </span>
             )
           }
+          <span>읽는 시간 <time datetime={readingTime.iso}>{readingTime.label}</time></span>
           <a href={categoryPath(toSlug(category))} class="rounded hover:underline">{category}</a>
         </div>
 
@@ -63,6 +73,8 @@ const isUpdated = updatedAt.getTime() !== publishedAt.getTime();
           )
         }
       </header>
+
+      <TableOfContents entries={toc} />
 
       <div class="post-body">
         <slot />

@@ -9,6 +9,7 @@ import type { GetStaticPaths } from 'astro';
 import { render } from 'astro:content';
 import PostLayout from '../../layouts/PostLayout.astro';
 import { getSeriesById, getVisiblePosts, type Post, type Series } from '../../lib/content';
+import { derivePostDetail } from '../../lib/post-detail';
 
 export const getStaticPaths = (async () => {
   const [posts, seriesById] = await Promise.all([getVisiblePosts(), getSeriesById()]);
@@ -29,9 +30,21 @@ interface Props {
 }
 
 const { post, series } = Astro.props;
-const { Content } = await render(post);
+
+/**
+ * `headings` 는 **렌더러가 실제로 붙인 헤딩 id** 다(`.md` 는 rehype, `.mdoc` 은 Markdoc
+ * `nodes.heading` 이 만든다). 목차를 본문 원문에서 다시 파싱하지 않고 이 값을 쓰기 때문에
+ * 목차 링크가 본문 앵커와 어긋날 수 없다.
+ */
+const { Content, headings } = await render(post);
+const detail = derivePostDetail({
+  publishedAt: post.data.publishedAt,
+  updatedAt: post.data.updatedAt,
+  body: post.body,
+  headings,
+});
 ---
 
-<PostLayout post={post} series={series}>
+<PostLayout post={post} detail={detail} series={series}>
   <Content />
 </PostLayout>
