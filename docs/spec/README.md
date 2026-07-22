@@ -22,3 +22,4 @@
 | NOR-17 | [글 상세 — TOC·헤딩 앵커·읽기 시간·작성/수정일](./NOR-17-post-detail.md)     | done        |
 | NOR-18 | [시리즈 내비게이션 (이전/다음 편)](./NOR-18-series-nav.md)                   | done        |
 | NOR-19 | [Keystatic 설치·구성 (Content Collections 매핑)](./NOR-19-keystatic.md)      | done        |
+| NOR-27 | [메타 위생 — title/description/canonical/robots/OG](./NOR-27-meta.md)        | done        |
