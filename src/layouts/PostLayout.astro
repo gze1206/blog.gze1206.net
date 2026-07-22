@@ -1,0 +1,92 @@
+---
+/**
+ * 글 상세 레이아웃 (NOR-16).
+ *
+ * 헤딩 계층: 글 제목이 `h1`, 본문 헤딩은 `h2` 부터 쓰는 것을 전제로 한다.
+ *
+ * 확장 지점(이번 일감 범위 밖): 본문 뒤 `<slot name="after-content">` 가 비어 있다.
+ * NOR-17(TOC·앵커·읽기시간)·NOR-18(시리즈 이전/다음 편)이 이 자리에 얹힌다.
+ */
+import BaseLayout from './BaseLayout.astro';
+import { formatKoreanDate, toISODate } from '../lib/date';
+import { categoryPath, seriesPath, tagPath } from '../lib/routes';
+import { toSlug } from '../lib/slug';
+import type { Post, Series } from '../lib/content';
+
+interface Props {
+  post: Post;
+  /** 글이 시리즈에 속할 때 그 시리즈 정의. 상세에서는 소속 표시까지만 한다(내비게이션은 NOR-18). */
+  series?: Series | undefined;
+}
+
+const { post, series } = Astro.props;
+const { title, description, category, tags, publishedAt, updatedAt, draft } = post.data;
+const isUpdated = updatedAt.getTime() !== publishedAt.getTime();
+---
+
+<BaseLayout title={`${title} · gze1206.net`} description={description}>
+  <main class="mx-auto max-w-3xl px-4 py-10 sm:py-14">
+    <article>
+      <header class="mb-8 border-b border-gray-200 pb-6 dark:border-gray-800">
+        {
+          draft && (
+            <p class="mb-3 inline-block rounded bg-amber-100 px-2 py-1 text-sm font-semibold text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+              초안 — 개발 서버에서만 보입니다
+            </p>
+          )
+        }
+        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
+        <p class="mt-3 text-gray-600 dark:text-gray-400">{description}</p>
+
+        <div
+          class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 dark:text-gray-400"
+        >
+          <time datetime={toISODate(publishedAt)}>{formatKoreanDate(publishedAt)}</time>
+          {
+            isUpdated && (
+              <span>
+                (수정 <time datetime={toISODate(updatedAt)}>{formatKoreanDate(updatedAt)}</time>)
+              </span>
+            )
+          }
+          <a href={categoryPath(toSlug(category))} class="rounded hover:underline">{category}</a>
+        </div>
+
+        {
+          series && (
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+              시리즈{' '}
+              <a href={seriesPath(series.data.slug)} class="rounded font-medium hover:underline">
+                {series.data.name}
+              </a>
+            </p>
+          )
+        }
+      </header>
+
+      <div class="post-body">
+        <slot />
+      </div>
+
+      <slot name="after-content" />
+
+      <footer class="mt-12 border-t border-gray-200 pt-6 dark:border-gray-800">
+        <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400">태그</h2>
+        <ul class="mt-3 flex flex-wrap gap-2">
+          {
+            tags.map((tag) => (
+              <li>
+                <a
+                  href={tagPath(toSlug(tag))}
+                  class="inline-block rounded-full bg-gray-100 px-2.5 py-0.5 text-sm text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                  #{tag}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </footer>
+    </article>
+  </main>
+</BaseLayout>

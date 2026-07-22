@@ -1,0 +1,39 @@
+---
+/**
+ * 카테고리별 글 목록 (NOR-16).
+ *
+ * 경로는 노출 대상 글에서 파생되므로 **글이 0개인 카테고리 페이지는 아예 생기지 않는다.**
+ * (존재하지 않는 조합은 정적 사이트에서 404 가 맞다.)
+ */
+import type { GetStaticPaths } from 'astro';
+import PostCard from '../../components/PostCard.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+import { getCategoryGroups, type Post } from '../../lib/content';
+
+export const getStaticPaths = (async () => {
+  const groups = await getCategoryGroups();
+  return groups.map((group) => ({
+    params: { slug: group.slug },
+    props: { label: group.label, posts: group.posts },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  label: string;
+  posts: Post[];
+}
+
+const { label, posts } = Astro.props;
+---
+
+<ListLayout
+  title={`카테고리: ${label} · gze1206.net`}
+  eyebrow="카테고리"
+  heading={label}
+  description={`'${label}' 카테고리의 글 목록입니다.`}
+  lead={`글 ${posts.length}개`}
+>
+  <div>
+    {posts.map((post) => <PostCard post={post} />)}
+  </div>
+</ListLayout>

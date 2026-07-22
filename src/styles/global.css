@@ -7,6 +7,115 @@
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
 }
 
+/* --- 키보드 포커스 가시성 (NOR-16) ---
+   브라우저 기본 outline 이 요소 배경에 묻히는 경우가 있어 전역으로 한 번 고정한다. */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* --- 글 본문 타이포그래피 (NOR-16) ---
+   본문 가독성 확정은 NOR-24(베이스 테마) 몫이다. 여기서는 읽을 수 있는 최소치만 둔다. */
+.post-body {
+  line-height: 1.75;
+  overflow-wrap: break-word;
+}
+
+.post-body > * + * {
+  margin-top: 1.25rem;
+}
+
+.post-body h2 {
+  margin-top: 2.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.post-body h3 {
+  margin-top: 2rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.post-body h4 {
+  margin-top: 1.5rem;
+  font-weight: 700;
+}
+
+.post-body ul,
+.post-body ol {
+  padding-left: 1.5rem;
+}
+
+.post-body ul {
+  list-style: disc;
+}
+
+.post-body ol {
+  list-style: decimal;
+}
+
+.post-body li + li {
+  margin-top: 0.375rem;
+}
+
+.post-body a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.post-body blockquote {
+  padding-left: 1rem;
+  border-left: 4px solid #d1d5db;
+  color: #4b5563;
+}
+
+.post-body :not(pre) > code {
+  padding: 0.15em 0.35em;
+  border-radius: 0.25rem;
+  background: #f3f4f6;
+  font-size: 0.9em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.post-body hr {
+  border-top: 1px solid #e5e7eb;
+}
+
+.post-body table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.post-body th,
+.post-body td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+@media (prefers-color-scheme: dark) {
+  .post-body blockquote {
+    border-left-color: #4b5563;
+    color: #9ca3af;
+  }
+
+  .post-body :not(pre) > code {
+    background: #1f2937;
+  }
+
+  .post-body hr,
+  .post-body th,
+  .post-body td {
+    border-color: #374151;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   .astro-code,
   .astro-code span {

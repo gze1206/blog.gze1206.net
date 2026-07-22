@@ -1,0 +1,37 @@
+---
+/**
+ * 글 상세 (NOR-16). URL 은 **프론트매터 slug** 를 쓴다(파일명 기반 `entry.id` 가 아니다).
+ *
+ * 경로 목록을 `getVisiblePosts()` 에서 받으므로, 프로덕션 빌드에서는 draft 글의
+ * 페이지 자체가 생성되지 않는다 — 목록에서 숨기는 것만으로는 URL 을 아는 사람에게 그대로 보인다.
+ */
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import PostLayout from '../../layouts/PostLayout.astro';
+import { getSeriesById, getVisiblePosts, type Post, type Series } from '../../lib/content';
+
+export const getStaticPaths = (async () => {
+  const [posts, seriesById] = await Promise.all([getVisiblePosts(), getSeriesById()]);
+
+  return posts.map((post) => ({
+    params: { slug: post.data.slug },
+    props: {
+      post,
+      // 참조 무결성은 `assertSeriesIntegrity` 가 보장하므로 여기서 미존재는 일어나지 않는다.
+      series: post.data.series === undefined ? undefined : seriesById.get(post.data.series),
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  post: Post;
+  series: Series | undefined;
+}
+
+const { post, series } = Astro.props;
+const { Content } = await render(post);
+---
+
+<PostLayout post={post} series={series}>
+  <Content />
+</PostLayout>

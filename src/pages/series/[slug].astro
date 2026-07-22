@@ -1,0 +1,46 @@
+---
+/**
+ * 시리즈별 글 목록 (NOR-16). 시리즈 안 정렬은 `seriesOrder` 오름차순이다(발행일순이 아니다).
+ *
+ * 이전/다음 편 내비게이션·진행도는 NOR-18 범위라 여기서는 순서만 보여준다.
+ */
+import type { GetStaticPaths } from 'astro';
+import PostCard from '../../components/PostCard.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+import { getSeriesWithPosts, type Post, type Series } from '../../lib/content';
+
+export const getStaticPaths = (async () => {
+  const entries = await getSeriesWithPosts();
+  return entries.map(({ series, posts }) => ({
+    params: { slug: series.data.slug },
+    props: { series, posts },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  series: Series;
+  posts: Post[];
+}
+
+const { series, posts } = Astro.props;
+---
+
+<ListLayout
+  title={`시리즈: ${series.data.name} · gze1206.net`}
+  eyebrow="시리즈"
+  heading={series.data.name}
+  description={series.data.description}
+  lead={series.data.description}
+>
+  <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">전체 {posts.length}편 · 연재 순서</p>
+  <ol class="list-none">
+    {
+      posts.map((post, index) => (
+        <li>
+          <p class="mt-6 text-sm font-semibold text-gray-500 dark:text-gray-400">{index + 1}편</p>
+          <PostCard post={post} />
+        </li>
+      ))
+    }
+  </ol>
+</ListLayout>

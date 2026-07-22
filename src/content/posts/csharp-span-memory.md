@@ -1,0 +1,17 @@
+---
+title: 'C#의 Span<T>로 할당 줄이기'
+description: '배열 슬라이싱과 문자열 파싱에서 Span 을 써서 힙 할당을 줄이는 사례를 정리합니다.'
+slug: 'csharp-span-memory'
+category: 'dev'
+tags: ['C#', '.NET']
+publishedAt: 2026-05-09
+updatedAt: 2026-05-09
+---
+
+## 스택 위의 뷰
+
+`Span<T>` 는 연속된 메모리에 대한 뷰다. 슬라이싱해도 새 배열을 만들지 않는다.
+
+## 어디에 쓰나
+
+파싱 루프처럼 짧게 살고 자주 도는 코드에서 효과가 크다.

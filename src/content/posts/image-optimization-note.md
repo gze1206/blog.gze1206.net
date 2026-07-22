@@ -1,0 +1,17 @@
+---
+title: '이미지 최적화로 LCP 줄이기'
+description: 'AVIF/WebP 변환과 크기 지정만으로 LCP 를 눈에 띄게 줄인 기록입니다.'
+slug: 'image-optimization-note'
+category: '웹 성능'
+tags: ['웹 성능', '이미지']
+publishedAt: 2026-04-10
+updatedAt: 2026-04-10
+---
+
+## 포맷과 크기
+
+포맷 변환보다 먼저 할 일은 실제로 필요한 크기로 내려받게 만드는 것이다.
+
+## 자리 예약
+
+`width`/`height` 를 명시하면 이미지가 늦게 와도 레이아웃이 흔들리지 않는다.

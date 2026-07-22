@@ -1,0 +1,62 @@
+---
+/**
+ * 목록 페이지네이션 (NOR-16).
+ *
+ * a11y: `<nav>` + `aria-label`, 현재 페이지에 `aria-current="page"`.
+ * 현재 페이지는 링크가 아니라 `<span>` 이다 — 자기 자신으로 가는 링크는 노이즈다.
+ */
+import { blogPagePath } from '../lib/routes';
+
+interface Props {
+  currentPage: number;
+  lastPage: number;
+}
+
+const { currentPage, lastPage } = Astro.props;
+const pages = Array.from({ length: lastPage }, (_, index) => index + 1);
+const linkClass =
+  'inline-flex min-w-9 items-center justify-center rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800';
+---
+
+{
+  lastPage > 1 && (
+    <nav aria-label="블로그 목록 페이지네이션" class="mt-10">
+      <ul class="flex flex-wrap items-center justify-center gap-2">
+        {currentPage > 1 && (
+          <li>
+            <a href={blogPagePath(currentPage - 1)} rel="prev" class={linkClass}>
+              이전 페이지
+            </a>
+          </li>
+        )}
+        {pages.map((pageNumber) =>
+          pageNumber === currentPage ? (
+            <li>
+              <span
+                aria-current="page"
+                class="inline-flex min-w-9 items-center justify-center rounded border border-gray-900 bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900"
+              >
+                <span class="sr-only">현재 페이지, </span>
+                {pageNumber}
+              </span>
+            </li>
+          ) : (
+            <li>
+              <a href={blogPagePath(pageNumber)} class={linkClass}>
+                <span class="sr-only">페이지 </span>
+                {pageNumber}
+              </a>
+            </li>
+          ),
+        )}
+        {currentPage < lastPage && (
+          <li>
+            <a href={blogPagePath(currentPage + 1)} rel="next" class={linkClass}>
+              다음 페이지
+            </a>
+          </li>
+        )}
+      </ul>
+    </nav>
+  )
+}

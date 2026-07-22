@@ -1,0 +1,20 @@
+---
+title: 'Astro 콘텐츠 컬렉션으로 글 관리하기'
+description: 'glob 로더와 zod 스키마로 마크다운 글을 타입 안전하게 다루는 방법을 정리합니다.'
+slug: 'astro-content-collections'
+category: 'dev'
+tags: ['astro', 'content collections']
+series: 'astro-guide'
+seriesOrder: 1
+publishedAt: 2026-06-01
+updatedAt: 2026-06-01
+---
+
+## 왜 컬렉션인가
+
+파일을 직접 읽는 대신 컬렉션을 쓰면 프론트매터가 스키마를 통과해야만 빌드가 성공한다.
+필드 오타가 런타임이 아니라 빌드에서 잡힌다.
+
+## 로더 고르기
+
+로컬 마크다운은 `glob()`, 단일 JSON 목록은 `file()` 로더를 쓴다.
