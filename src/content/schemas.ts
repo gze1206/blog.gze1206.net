@@ -1,8 +1,7 @@
 import { z } from 'astro/zod';
+import { SLUG_PATTERN } from './slug-pattern';
 
-const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
-const slugSchema = z.string().regex(slugPattern);
+const slugSchema = z.string().regex(SLUG_PATTERN);
 
 const portfolioLinkSchema = z
   .object({

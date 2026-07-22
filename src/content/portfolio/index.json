@@ -1,9 +1,0 @@
-[
-  {
-    "id": "blog-v4",
-    "title": "블로그 v4",
-    "summary": "Astro + TypeScript + Tailwind 기반 개인 블로그 재구축",
-    "stack": ["Astro", "TypeScript", "Tailwind CSS", "Cloudflare Pages"],
-    "links": [{ "repo": "https://github.com/gze1206/blog.gze1206.net" }]
-  }
-]

@@ -23,3 +23,4 @@
 | 0009 | [블로그 라우팅 · 슬러그 · draft 처리 전략](./0009-blog-routing-slug-draft-strategy.md)                    | accepted | NOR-16    |
 | 0010 | [헤딩 id 규칙 · 읽기 시간 산정 · 목차/스크롤 스파이 전략](./0010-heading-id-reading-time-toc-strategy.md) | accepted | NOR-17    |
 | 0011 | [시리즈 내비게이션 — 이전/다음 산출 기준과 목록 분량 정책](./0011-series-navigation-derivation.md)        | accepted | NOR-18    |
+| 0012 | [Keystatic 통합 전략 — 정적 출력 유지와 series/portfolio 매핑](./0012-keystatic-integration-strategy.md)  | accepted | NOR-19    |
