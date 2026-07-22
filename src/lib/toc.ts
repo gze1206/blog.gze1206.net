@@ -1,0 +1,76 @@
+/**
+ * 목차(TOC) 트리 구성 (NOR-17, ADR 0010).
+ *
+ * 입력은 렌더러가 돌려준 헤딩 목록이다(`render(post)` 의 `headings`). **렌더러가 실제로 붙인 id**
+ * 를 그대로 쓰기 때문에 TOC 링크의 `href` 와 본문 헤딩 `id` 가 어긋날 수 없다.
+ * `.md`(rehype) 와 `.mdoc`(Markdoc) 은 렌더 경로가 다르지만 이 자료구조로 만나 같은 함수를 탄다.
+ */
+
+/** 렌더러가 돌려주는 헤딩 한 줄. Astro 의 `MarkdownHeading` 과 구조가 같다. */
+export interface HeadingRef {
+  readonly depth: number;
+  readonly slug: string;
+  readonly text: string;
+}
+
+/** TOC 항목. 중첩은 한 단계까지만 생긴다({@link TOC_MAX_DEPTH} 참고). */
+export interface TocEntry {
+  readonly id: string;
+  readonly text: string;
+  readonly children: readonly TocEntry[];
+}
+
+/**
+ * TOC 에 담는 헤딩 깊이 범위.
+ *
+ * 글 제목이 `h1` 이므로 본문 헤딩은 `h2` 부터다. `h4` 이하까지 넣으면 목차가 본문만큼 길어져
+ * "훑어보기"라는 목적을 잃는다. 그래서 `h2`~`h3` 두 단계로 자른다(ADR 0010).
+ */
+const TOC_MIN_DEPTH = 2;
+const TOC_MAX_DEPTH = 3;
+
+/**
+ * TOC 를 렌더할 최소 헤딩 수.
+ *
+ * 헤딩이 0~1개인 글에서 목차는 정보가 아니라 소음이다. 항목 하나짜리 목차 상자는 만들지 않는다.
+ */
+const TOC_MIN_HEADINGS = 2;
+
+/**
+ * 헤딩 목록에서 TOC 트리를 만든다.
+ *
+ * @returns 담을 헤딩이 {@link TOC_MIN_HEADINGS} 개 미만이면 **빈 배열**.
+ *          호출부는 이때 TOC 를 렌더하지 않는다 — 판단은 이 함수 하나가 한다.
+ */
+export function buildToc(headings: readonly HeadingRef[]): TocEntry[] {
+  const usable = headings.filter(
+    (heading) =>
+      heading.depth >= TOC_MIN_DEPTH &&
+      heading.depth <= TOC_MAX_DEPTH &&
+      heading.slug.length > 0 &&
+      heading.text.trim().length > 0,
+  );
+
+  if (usable.length < TOC_MIN_HEADINGS) return [];
+
+  const roots: TocEntry[] = [];
+  /** 지금 열려 있는 최상위(h2) 항목의 자식 목록. 아직 h2 가 없으면 `null`. */
+  let openChildren: TocEntry[] | null = null;
+
+  for (const heading of usable) {
+    const id = heading.slug;
+    const text = heading.text.trim();
+
+    if (heading.depth === TOC_MIN_DEPTH) {
+      const children: TocEntry[] = [];
+      roots.push({ id, text, children });
+      openChildren = children;
+      continue;
+    }
+
+    // h2 없이 h3 가 먼저 나오는 글도 있다. 부모가 없으면 최상위로 올린다 — 조용히 버리지 않는다.
+    (openChildren ?? roots).push({ id, text, children: [] });
+  }
+
+  return roots;
+}

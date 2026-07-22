@@ -8,6 +8,13 @@ export default tseslint.config(
   ...eslintPluginAstro.configs.recommended,
   ...eslintPluginAstro.configs['jsx-a11y-recommended'],
   {
+    // 루트 설정 파일(.mjs)은 빌드 중 Node 에서 실행된다. Node 전역을 인정해 준다.
+    files: ['*.mjs'],
+    languageOptions: {
+      globals: { console: 'readonly', process: 'readonly' },
+    },
+  },
+  {
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'error',

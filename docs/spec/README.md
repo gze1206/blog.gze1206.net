@@ -19,3 +19,4 @@
 | NOR-14 | [미디어 — 이미지 최적화 + 영상/YouTube 임베드](./NOR-14-media.md)            | draft       |
 | NOR-15 | [커스텀 블럭 — URL 북마크 · GitHub 카드 · 콜아웃](./NOR-15-custom-blocks.md) | done        |
 | NOR-16 | [블로그 목록/상세 + 카테고리·태그·시리즈 페이지](./NOR-16-blog-pages.md)     | done        |
+| NOR-17 | [글 상세 — TOC·헤딩 앵커·읽기 시간·작성/수정일](./NOR-17-post-detail.md)     | done        |

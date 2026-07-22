@@ -7,6 +7,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import cilGrammar from './src/shiki/langs/cil.tmLanguage.json';
 import { codeBlockTransformers } from './src/shiki/transformers/index.ts';
+import { rehypeHeadingAnchors } from './src/rehype/heading-anchors.ts';
 
 // https://astro.build/config
 export default defineConfig({
@@ -25,7 +26,10 @@ export default defineConfig({
     },
     processor: unified({
       remarkPlugins: [remarkMath],
-      rehypePlugins: [rehypeKatex],
+      // 헤딩 앵커(NOR-17)는 rehypeKatex 보다 **앞**이어야 한다. 뒤에 두면 수식이 MathML 로
+      // 부풀어 오른 뒤라 헤딩 텍스트가 오염된 id 가 나온다. 자세한 순서 설명은 플러그인 주석 참고.
+      // `.mdoc` 은 이 파이프라인을 타지 않는다 — markdoc.config.mjs 의 nodes.heading 이 짝이다.
+      rehypePlugins: [rehypeHeadingAnchors, rehypeKatex],
     }),
   },
   vite: {
