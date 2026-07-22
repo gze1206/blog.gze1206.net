@@ -9,6 +9,7 @@ import cilGrammar from './src/shiki/langs/cil.tmLanguage.json';
 import { codeBlockTransformers } from './src/shiki/transformers/index.ts';
 import { rehypeHeadingAnchors } from './src/rehype/heading-anchors.ts';
 import { keystaticDev } from './src/integrations/keystatic-dev.ts';
+import { ogImageAudit } from './src/integrations/og-image-audit.ts';
 
 // https://astro.build/config
 export default defineConfig({
@@ -20,7 +21,8 @@ export default defineConfig({
   trailingSlash: 'never',
   // `output` 을 지정하지 않는다 = 완전한 정적 출력. Keystatic 어드민은 온디맨드 라우트라
   // 정적 출력과 공존할 수 없어서 개발 서버에서만 붙인다(ADR 0012).
-  integrations: [markdoc(), keystaticDev()],
+  // `ogImageAudit` 는 빌드 끝에 dist 의 og:image 참조가 실재하는지 확인만 한다(경고만, NOR-28).
+  integrations: [markdoc(), keystaticDev(), ogImageAudit()],
   markdown: {
     shikiConfig: {
       themes: {

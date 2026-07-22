@@ -16,10 +16,16 @@
  *
  * | 일감   | 쓰는 것                                                              |
  * | ------ | -------------------------------------------------------------------- |
- * | NOR-28 | {@link SeoInput.image} 에 생성한 OG 이미지 경로를 넘긴다              |
  * | NOR-29 | {@link absoluteUrl} 로 JSON-LD 의 `@id`·`url` 을 만든다               |
  * | NOR-30 | {@link absoluteUrl} · {@link isIndexablePath} 로 사이트맵 항목을 거른다 |
+ *
+ * NOR-28(OG 이미지)은 {@link SeoInput.image} 를 쓰지 않고 **경로 규칙**으로 붙었다 —
+ * 색인 대상 페이지는 자동으로 `ogImagePath(경로)` 를 가리킨다. 페이지가 이미지를 넘겨줄
+ * 필요가 없으므로 "이 페이지만 OG 이미지를 빠뜨렸다" 가 구조적으로 불가능하다.
  */
+
+import { OG_IMAGE_HEIGHT, OG_IMAGE_TYPE, OG_IMAGE_WIDTH } from './og-card';
+import { normalizePath, ogImagePath } from './routes';
 
 export const SITE_NAME = 'gze1206.net';
 /** `<html lang>` 값. `og:locale` 과 짝이다. */
@@ -28,8 +34,10 @@ export const SITE_LOCALE = 'ko_KR';
 /** description 이 비었을 때의 마지막 방어선. 빈 description 을 내보내는 것보다 낫다. */
 export const DEFAULT_DESCRIPTION = 'gze1206의 개인 블로그';
 /**
- * OG 이미지 폴백. per-글 이미지 **생성**은 NOR-28 범위다 — 여기서는 정적 1장만 둔다.
- * NOR-28 은 {@link SeoInput.image} 에 경로를 넘기기만 하면 되고 메타 구조는 그대로다.
+ * OG 이미지 폴백.
+ *
+ * 색인 대상 페이지는 빌드타임에 생성한 per-페이지 카드를 쓴다(NOR-28). 이 정적 1장은
+ * **색인 대상이 아닌 경로**(`/smoke/*`)와, 규칙 밖에서 이미지를 못 정한 경우의 마지막 방어선이다.
  */
 export const DEFAULT_OG_IMAGE = '/og-default.png';
 
@@ -56,12 +64,11 @@ export function formatTitle(pageTitle?: string | undefined): string {
   return `${trimmed}${TITLE_SUFFIX}`;
 }
 
-/** 경로를 canonical 정책(선행 슬래시 1개, 끝 슬래시 없음, 루트만 `/`)으로 정규화한다. */
-export function normalizePath(pathname: string): string {
-  const collapsed = `/${pathname}`.replace(/\/{2,}/g, '/');
-  const trimmed = collapsed.replace(/\/+$/, '');
-  return trimmed === '' ? '/' : trimmed;
-}
+/**
+ * 경로 정규화는 URL 조립의 단일 출처인 `routes.ts` 가 갖는다 (ADR 0013).
+ * canonical 과 내부 링크가 같은 함수를 쓰도록 여기서는 다시 내보내기만 한다.
+ */
+export { normalizePath };
 
 function isExternalUrl(value: string): boolean {
   return /^https?:\/\//i.test(value);
@@ -101,7 +108,12 @@ export interface SeoInput {
   readonly description?: string | undefined;
   /** 목록·인덱스는 `website`(기본), 글 상세만 `article`. */
   readonly type?: OgType | undefined;
-  /** 루트 상대 경로 또는 http(s) 절대 URL. 생략하면 {@link DEFAULT_OG_IMAGE}. */
+  /**
+   * 루트 상대 경로 또는 http(s) 절대 URL.
+   *
+   * 생략하면 **경로 규칙**으로 정한다(NOR-28): 색인 대상이면 그 페이지의 생성 카드,
+   * 아니면 {@link DEFAULT_OG_IMAGE}. 페이지가 직접 넘길 일은 거의 없다.
+   */
   readonly image?: string | undefined;
   /** `type: 'article'` 일 때만 반영된다. */
   readonly article?: ArticleTimes | undefined;
@@ -125,6 +137,12 @@ export interface SeoMeta {
   /** canonical 과 같은 값. og:url 이 canonical 과 어긋나면 SNS 가 다른 페이지를 가리킨다. */
   readonly ogUrl: string;
   readonly ogImage: string;
+  /** 카드에 실제로 보이는 내용을 설명한다(제목 + 사이트 이름). */
+  readonly ogImageAlt: string;
+  /** SNS 가 이미지를 받기 전에 자리를 잡을 수 있도록 규격을 함께 내보낸다. */
+  readonly ogImageWidth: number;
+  readonly ogImageHeight: number;
+  readonly ogImageType: string;
   readonly siteName: string;
   readonly locale: string;
   readonly twitterCard: 'summary_large_image';
@@ -137,9 +155,17 @@ function normalizeDescription(description: string | undefined): string {
   return text ? text : DEFAULT_DESCRIPTION;
 }
 
-function resolveImage(image: string | undefined, site: URL | string | undefined): string {
-  const source = image?.trim() || DEFAULT_OG_IMAGE;
-  // NOR-28 이 외부 스토리지에 이미지를 올리는 선택을 하더라도 메타 구조를 바꾸지 않아도 되게 둔다.
+function resolveImage(
+  image: string | undefined,
+  pathname: string,
+  indexable: boolean,
+  site: URL | string | undefined,
+): string {
+  // 색인 대상 페이지는 빌드타임에 생성한 카드를 쓴다. 색인 대상이 아닌 `/smoke/*` 는
+  // 카드를 만들지 않으므로(만들 이유가 없다) 정적 기본 이미지로 둔다.
+  const generated = indexable ? ogImagePath(pathname) : DEFAULT_OG_IMAGE;
+  const source = image?.trim() || generated;
+  // 외부 스토리지에 올린 이미지를 넘기더라도 메타 구조를 바꾸지 않아도 되게 둔다.
   return isExternalUrl(source) ? source : absoluteUrl(source, site);
 }
 
@@ -150,15 +176,20 @@ export function buildSeoMeta(input: SeoInput, context: SeoContext): SeoMeta {
   const indexable = input.noindex !== true && isIndexablePath(context.pathname);
   // 글이 아닌 페이지에 article:* 을 붙이면 크롤러가 목록을 글로 오인한다.
   const times = ogType === 'article' ? input.article : undefined;
+  const title = formatTitle(input.title);
 
   return {
-    title: formatTitle(input.title),
+    title,
     description: normalizeDescription(input.description),
     canonical,
     robots: indexable ? ROBOTS_INDEX : ROBOTS_NOINDEX,
     ogType,
     ogUrl: canonical,
-    ogImage: resolveImage(input.image, context.site),
+    ogImage: resolveImage(input.image, context.pathname, indexable, context.site),
+    ogImageAlt: `${title} 대표 이미지`,
+    ogImageWidth: OG_IMAGE_WIDTH,
+    ogImageHeight: OG_IMAGE_HEIGHT,
+    ogImageType: OG_IMAGE_TYPE,
     siteName: SITE_NAME,
     locale: SITE_LOCALE,
     twitterCard: 'summary_large_image',

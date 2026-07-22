@@ -176,16 +176,39 @@ describe('buildSeoMeta', () => {
     expect(buildSeoMeta({ description: '앞\n  뒤' }, ctx('/')).description).toBe('앞 뒤');
   });
 
-  it('og:image 기본값은 정적 폴백의 절대 URL 이다 (NOR-28 전까지)', () => {
+  it('색인 대상 페이지는 그 페이지의 생성 카드를 절대 URL 로 가리킨다 (NOR-28)', () => {
     expect(buildSeoMeta({ description: 'x' }, ctx('/')).ogImage).toBe(
+      'https://gze1206.net/og/index.png',
+    );
+    expect(buildSeoMeta({ description: 'x' }, ctx('/blog/hello-world')).ogImage).toBe(
+      'https://gze1206.net/og/blog/hello-world.png',
+    );
+    expect(buildSeoMeta({ description: 'x' }, ctx(blogPagePath(2))).ogImage).toBe(
+      'https://gze1206.net/og/blog/2.png',
+    );
+  });
+
+  it('색인 대상이 아닌 경로는 정적 폴백을 쓴다 (스모크는 카드를 만들지 않는다)', () => {
+    expect(buildSeoMeta({ description: 'x' }, ctx('/smoke/cil')).ogImage).toBe(
+      `https://gze1206.net${DEFAULT_OG_IMAGE}`,
+    );
+    expect(buildSeoMeta({ description: 'x', noindex: true }, ctx('/blog')).ogImage).toBe(
       `https://gze1206.net${DEFAULT_OG_IMAGE}`,
     );
   });
 
-  it('og:image 로 넘긴 루트 상대 경로를 절대화한다 (NOR-28 확장 지점)', () => {
-    expect(buildSeoMeta({ description: 'x', image: '/og/hello.png' }, ctx('/')).ogImage).toBe(
-      'https://gze1206.net/og/hello.png',
+  it('og:image 로 넘긴 루트 상대 경로가 규칙을 이긴다', () => {
+    expect(buildSeoMeta({ description: 'x', image: '/custom.png' }, ctx('/')).ogImage).toBe(
+      'https://gze1206.net/custom.png',
     );
+  });
+
+  it('이미지 규격과 alt 를 함께 낸다 (SNS 레이아웃·접근성)', () => {
+    const meta = buildSeoMeta({ title: '글 제목', description: 'x' }, ctx('/blog/hello-world'));
+    expect(meta.ogImageWidth).toBe(1200);
+    expect(meta.ogImageHeight).toBe(630);
+    expect(meta.ogImageType).toBe('image/png');
+    expect(meta.ogImageAlt).toBe(`글 제목 · ${SITE_NAME} 대표 이미지`);
   });
 
   it('og:image 가 이미 절대 URL 이면 그대로 쓴다', () => {
