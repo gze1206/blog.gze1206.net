@@ -26,10 +26,10 @@ const { label, posts } = Astro.props;
 ---
 
 <ListLayout
-  title={`태그: ${label} · gze1206.net`}
+  title={`태그: ${label}`}
   eyebrow="태그"
   heading={`#${label}`}
-  description={`'${label}' 태그가 붙은 글 목록입니다.`}
+  description={`'${label}' 태그가 붙은 글 ${posts.length}개를 모았습니다.`}
   lead={`글 ${posts.length}개`}
 >
   <div>

@@ -14,6 +14,10 @@ import { keystaticDev } from './src/integrations/keystatic-dev.ts';
 export default defineConfig({
   // canonical·sitemap·RSS·OG 절대 URL 이 전부 이 값을 전제로 한다 (NOR-27~30).
   site: 'https://gze1206.net',
+  // trailing slash 없음이 이 사이트의 URL 정책이다 (ADR 0013). `src/lib/routes.ts` 가 만드는
+  // 내부 링크(`/blog`, `/blog/2`)와 `src/lib/site-meta.ts` 가 만드는 canonical 이 같은 모양이라,
+  // 여기까지 맞춰 두면 dev 서버·프로덕션·canonical 이 한 벌로 움직인다.
+  trailingSlash: 'never',
   // `output` 을 지정하지 않는다 = 완전한 정적 출력. Keystatic 어드민은 온디맨드 라우트라
   // 정적 출력과 공존할 수 없어서 개발 서버에서만 붙인다(ADR 0012).
   integrations: [markdoc(), keystaticDev()],

@@ -1,34 +1,40 @@
 ---
+/**
+ * 모든 페이지의 문서 골격.
+ *
+ * 메타(title·description·canonical·robots·OG/Twitter)는 여기서 `SeoMeta` 를 **한 번만**
+ * 호출해 만든다(NOR-27). 하위 레이아웃·페이지는 프롭을 넘기기만 하고 스스로 태그를 내지 않는다 —
+ * 레이아웃이 중첩되며 같은 태그가 두 번 들어가는 사고를 구조적으로 막기 위해서다.
+ *
+ * `title` 은 **사이트 이름을 붙이지 않은 맨 제목**을 넘긴다. ` · gze1206.net` 접미사는
+ * `formatTitle` 이 붙이고, 홈처럼 제목이 사이트 이름과 같으면 중복해 붙지 않는다.
+ */
 import '../styles/global.css';
 import 'katex/dist/katex.min.css';
 import CodeBlockEnhancer from '../components/CodeBlockEnhancer.astro';
+import SeoMeta from '../components/SeoMeta.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import MermaidDiagram from '../islands/MermaidDiagram.astro';
+import { SITE_LANG, type SeoInput } from '../lib/site-meta';
 
-interface Props {
-  title: string;
-  description?: string;
-}
-
-const { title, description = 'gze1206의 개인 블로그' } = Astro.props;
+type Props = SeoInput;
 ---
 
 <!doctype html>
-<html lang="ko">
+<html lang={SITE_LANG}>
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <link
       rel="stylesheet"
       crossorigin
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
     />
-    <title>{title}</title>
+    <SeoMeta {...Astro.props} />
   </head>
   <body
     class="flex min-h-screen flex-col bg-white text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100"
