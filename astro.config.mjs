@@ -8,12 +8,15 @@ import rehypeKatex from 'rehype-katex';
 import cilGrammar from './src/shiki/langs/cil.tmLanguage.json';
 import { codeBlockTransformers } from './src/shiki/transformers/index.ts';
 import { rehypeHeadingAnchors } from './src/rehype/heading-anchors.ts';
+import { keystaticDev } from './src/integrations/keystatic-dev.ts';
 
 // https://astro.build/config
 export default defineConfig({
   // canonical·sitemap·RSS·OG 절대 URL 이 전부 이 값을 전제로 한다 (NOR-27~30).
   site: 'https://gze1206.net',
-  integrations: [markdoc()],
+  // `output` 을 지정하지 않는다 = 완전한 정적 출력. Keystatic 어드민은 온디맨드 라우트라
+  // 정적 출력과 공존할 수 없어서 개발 서버에서만 붙인다(ADR 0012).
+  integrations: [markdoc(), keystaticDev()],
   markdown: {
     shikiConfig: {
       themes: {
