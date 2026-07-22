@@ -3,11 +3,15 @@
  * 목록 성격 페이지(`/blog`, `/category`, `/tags`, `/series` 및 그 하위)의 공통 골격 (NOR-16).
  *
  * `<main>` 랜드마크와 페이지 `h1` 을 여기서 한 번만 만든다. 슬롯 안의 헤딩은 `h2` 부터 시작한다.
+ *
+ * 메타는 만들지 않고 `BaseLayout` 으로 넘기기만 한다(NOR-27). `description` 을 필수로 둔 것은
+ * 분류 페이지가 프론트매터 description 없이 만들어지기 때문이다 — 빈 description 이 나가지
+ * 않도록 호출부에 문장을 강제한다.
  */
 import BaseLayout from './BaseLayout.astro';
 
 interface Props {
-  /** `<title>` 용. 생략하면 heading 을 그대로 쓴다. */
+  /** **사이트 이름 없는** 맨 제목. 생략하면 heading 을 그대로 쓴다. */
   title?: string;
   description: string;
   /** 페이지 h1 위에 붙는 작은 분류 라벨. 예: "카테고리". */
@@ -20,7 +24,7 @@ interface Props {
 const { title, description, eyebrow, heading, lead } = Astro.props;
 ---
 
-<BaseLayout title={title ?? `${heading} · gze1206.net`} description={description}>
+<BaseLayout title={title ?? heading} description={description}>
   <main class="mx-auto max-w-3xl px-4 py-10 sm:py-14">
     <div class="mb-8">
       {eyebrow && <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">{eyebrow}</p>}

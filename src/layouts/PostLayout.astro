@@ -9,6 +9,12 @@
  * 표시용 계산을 템플릿에 묻어두면 구조화 데이터와 조용히 어긋난다. 읽기 시간을
  * `<time datetime="PT3M">` 으로 내보내는 것도 같은 이유다(JSON-LD `timeRequired` 와 같은 값).
  *
+ * 메타(NOR-27)도 같은 원칙이다 — `og:type=article` 과 `article:published_time` /
+ * `article:modified_time` 을 `BaseLayout` 에 넘기되, 시각은 {@link PostDetail} 의 ISO 값을
+ * **재사용**한다. 화면은 `isUpdated` 가 false 면 수정일을 감추지만 OG 는 감추지 않는다 —
+ * `updatedAt` 은 스키마 필수 필드라 항상 실재하고, 크롤러에게는 "발행일과 같음"이 더 정확한
+ * 정보이기 때문이다(spec NOR-27 결정 7).
+ *
  * 확장 지점: 본문 뒤 `<slot name="after-content">`. NOR-18 의 시리즈 내비게이션이 여기 들어온다.
  * 레이아웃은 그 안에 무엇이 오는지 알지 못한다 — 시리즈 내비게이션을 렌더할지 말지는
  * `buildSeriesNav`(ADR 0011)가 판단하고, 레이아웃은 자리만 내준다.
@@ -37,7 +43,12 @@ const { title, description, category, tags, publishedAt, updatedAt, draft } = po
 const { toc, readingTime, publishedISO, updatedISO, isUpdated } = detail;
 ---
 
-<BaseLayout title={`${title} · gze1206.net`} description={description}>
+<BaseLayout
+  title={title}
+  description={description}
+  type="article"
+  article={{ publishedTime: publishedISO, modifiedTime: updatedISO }}
+>
   <main class="mx-auto max-w-3xl px-4 py-10 sm:py-14">
     <article>
       <header class="mb-8 border-b border-gray-200 pb-6 dark:border-gray-800">
