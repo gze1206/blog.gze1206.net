@@ -20,3 +20,4 @@
 | NOR-15 | [커스텀 블럭 — URL 북마크 · GitHub 카드 · 콜아웃](./NOR-15-custom-blocks.md) | done        |
 | NOR-16 | [블로그 목록/상세 + 카테고리·태그·시리즈 페이지](./NOR-16-blog-pages.md)     | done        |
 | NOR-17 | [글 상세 — TOC·헤딩 앵커·읽기 시간·작성/수정일](./NOR-17-post-detail.md)     | done        |
+| NOR-18 | [시리즈 내비게이션 (이전/다음 편)](./NOR-18-series-nav.md)                   | done        |
