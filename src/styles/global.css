@@ -7,10 +7,12 @@
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
 }
 
-/* --- 키보드 포커스 가시성 (NOR-16) ---
-   브라우저 기본 outline 이 요소 배경에 묻히는 경우가 있어 전역으로 한 번 고정한다. */
+/* --- 키보드 포커스 가시성 (NOR-16, NOR-18) ---
+   브라우저 기본 outline 이 요소 배경에 묻히는 경우가 있어 전역으로 한 번 고정한다.
+   `<summary>` 도 기본 포커스 대상이다(시리즈 목록 접기 — NOR-18). 링크·버튼과 같게 맞춘다. */
 a:focus-visible,
-button:focus-visible {
+button:focus-visible,
+summary:focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
 }

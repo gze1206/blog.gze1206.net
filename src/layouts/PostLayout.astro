@@ -9,8 +9,9 @@
  * 표시용 계산을 템플릿에 묻어두면 구조화 데이터와 조용히 어긋난다. 읽기 시간을
  * `<time datetime="PT3M">` 으로 내보내는 것도 같은 이유다(JSON-LD `timeRequired` 와 같은 값).
  *
- * 확장 지점(이번 일감 범위 밖): 본문 뒤 `<slot name="after-content">` 가 비어 있다.
- * NOR-18(시리즈 이전/다음 편)이 이 자리에 얹힌다.
+ * 확장 지점: 본문 뒤 `<slot name="after-content">`. NOR-18 의 시리즈 내비게이션이 여기 들어온다.
+ * 레이아웃은 그 안에 무엇이 오는지 알지 못한다 — 시리즈 내비게이션을 렌더할지 말지는
+ * `buildSeriesNav`(ADR 0011)가 판단하고, 레이아웃은 자리만 내준다.
  */
 import BaseLayout from './BaseLayout.astro';
 import TableOfContents from '../components/TableOfContents.astro';
@@ -24,7 +25,10 @@ interface Props {
   post: Post;
   /** 목차·읽기 시간·ISO 날짜. `derivePostDetail(...)` 의 결과를 그대로 넘긴다. */
   detail: PostDetail;
-  /** 글이 시리즈에 속할 때 그 시리즈 정의. 상세에서는 소속 표시까지만 한다(내비게이션은 NOR-18). */
+  /**
+   * 글이 시리즈에 속할 때 그 시리즈 정의. **헤더의 소속 표시(이름 + 링크) 전용**이다.
+   * 이전/다음·목록·진행도는 `after-content` 슬롯의 `SeriesNav` 가 그린다(NOR-18).
+   */
   series?: Series | undefined;
 }
 
