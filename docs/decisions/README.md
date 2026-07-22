@@ -25,3 +25,4 @@
 | 0011 | [시리즈 내비게이션 — 이전/다음 산출 기준과 목록 분량 정책](./0011-series-navigation-derivation.md)                   | accepted | NOR-18    |
 | 0012 | [Keystatic 통합 전략 — 정적 출력 유지와 series/portfolio 매핑](./0012-keystatic-integration-strategy.md)             | accepted | NOR-19    |
 | 0013 | [canonical URL 정책 — trailing slash 없음 · 페이지네이션은 자기 자신](./0013-canonical-url-trailing-slash-policy.md) | accepted | NOR-27    |
+| 0014 | [OG 이미지 생성 전략 — 빌드타임 Satori · 폰트 임베드 · 캐시 · 폴백](./0014-og-image-generation-strategy.md)          | accepted | NOR-28    |
