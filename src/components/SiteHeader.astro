@@ -5,6 +5,8 @@
  * 랜드마크(`header` > `nav`)를 제공하고, 현재 섹션에 `aria-current="page"` 를 준다.
  * 시각 디자인 확정은 NOR-24(베이스 테마) 몫이라 여기서는 최소한만 둔다.
  */
+import ThemeToggle from '../islands/ThemeToggle';
+
 const NAV_ITEMS = [
   { href: '/blog', label: '블로그' },
   { href: '/category', label: '카테고리' },
@@ -44,5 +46,6 @@ function currentState(href: string): 'page' | 'true' | undefined {
         }
       </ul>
     </nav>
+    <ThemeToggle client:load />
   </div>
 </header>

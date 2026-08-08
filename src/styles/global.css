@@ -1,10 +1,88 @@
 @import 'tailwindcss';
 
+/* Tailwind의 `dark:` 유틸리티도 시스템 설정이 아니라 문서의 실제 선택값을 기준으로 한다. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans:
     'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto,
     'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic',
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+  --color-background: var(--theme-background);
+  --color-foreground: var(--theme-foreground);
+  --color-surface: var(--theme-surface);
+  --color-muted: var(--theme-muted);
+  --color-border: var(--theme-border);
+  --color-accent: var(--theme-accent);
+  --color-accent-foreground: #ffffff;
+  --spacing-page: clamp(1rem, 2vw, 1.5rem);
+}
+
+:root {
+  --theme-background: #fcfcfd;
+  --theme-foreground: #172033;
+  --theme-surface: #ffffff;
+  --theme-muted: #526077;
+  --theme-border: #d7dce5;
+  --theme-accent: #1d4ed8;
+}
+
+.dark {
+  --theme-background: #0d111a;
+  --theme-foreground: #f1f5f9;
+  --theme-surface: #151b27;
+  --theme-muted: #a7b0c0;
+  --theme-border: #303a4b;
+  --theme-accent: #93c5fd;
+}
+
+html {
+  background: var(--theme-background);
+}
+
+body {
+  background: var(--theme-background);
+  color: var(--theme-foreground);
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 50;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  background: var(--theme-accent);
+  color: #fff;
+  font-weight: 700;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-left: auto;
+  border: 1px solid var(--theme-border);
+  border-radius: 9999px;
+  background: var(--theme-surface);
+  color: var(--theme-foreground);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: var(--theme-accent);
+  color: var(--theme-accent);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--theme-accent);
+  outline-offset: 2px;
 }
 
 /* --- 키보드 포커스 가시성 (NOR-16, NOR-18) ---
@@ -44,7 +122,7 @@ summary:focus-visible {
   transition: opacity 0.15s;
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .heading-anchor {
     color: #9ca3af;
   }
@@ -167,7 +245,7 @@ summary:focus-visible {
   text-align: left;
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .post-body blockquote {
     border-left-color: #4b5563;
     color: #9ca3af;
@@ -184,7 +262,7 @@ summary:focus-visible {
   }
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .astro-code,
   .astro-code span {
     color: var(--shiki-dark) !important;
@@ -217,7 +295,7 @@ summary:focus-visible {
   border-radius: 0 0 0.375rem 0.375rem;
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .code-block-title {
     background: #1e293b;
     color: #cbd5e1;
@@ -232,7 +310,7 @@ summary:focus-visible {
   background: rgba(101, 117, 133, 0.16);
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .astro-code .line.highlighted {
     background: rgba(148, 163, 184, 0.14);
   }
@@ -270,7 +348,7 @@ summary:focus-visible {
   color: #dc2626;
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .astro-code .line.diff.add {
     background: rgba(34, 197, 94, 0.15);
   }
@@ -327,7 +405,7 @@ pre.astro-code:hover > .code-copy-btn {
   opacity: 1;
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .code-copy-btn {
     border-color: #4b5563;
     background: rgba(30, 41, 59, 0.8);
@@ -346,7 +424,7 @@ pre.astro-code:hover > .code-copy-btn {
 }
 
 /* --- KaTeX: dark mode --- */
-@media (prefers-color-scheme: dark) {
+.dark {
   .katex {
     color: #e5e7eb;
   }
@@ -376,7 +454,7 @@ pre.astro-code:hover > .code-copy-btn {
   font-size: 0.875rem;
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .mermaid-container {
     background: #111827;
     border-color: #374151;
@@ -413,7 +491,7 @@ pre.astro-code:hover > .code-copy-btn {
   color: #6b7280;
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .media-figure > figcaption {
     color: #9ca3af;
   }
@@ -582,7 +660,7 @@ pre.astro-code:hover > .code-copy-btn {
   }
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .block-bookmark {
     border-color: #374151;
     background: #111827;
@@ -680,7 +758,7 @@ pre.astro-code:hover > .code-copy-btn {
   gap: 0.25rem;
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .block-github {
     border-color: #374151;
     background: #111827;
@@ -772,7 +850,7 @@ pre.astro-code:hover > .code-copy-btn {
   margin-bottom: 0;
 }
 
-@media (prefers-color-scheme: dark) {
+.dark {
   .block-callout {
     --callout-bg: #111827;
     --callout-accent: #d1d5db;
