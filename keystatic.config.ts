@@ -11,12 +11,57 @@
  */
 
 import { collection, config, fields } from '@keystatic/core';
+import { block, wrapper } from '@keystatic/core/content-components';
 import { SLUG_PATTERN, SLUG_PATTERN_MESSAGE } from './src/content/slug-pattern';
 
 const slugPatternValidation = {
   regex: SLUG_PATTERN,
   message: SLUG_PATTERN_MESSAGE,
 } as const;
+
+const postContentComponents = {
+  bookmark: block({
+    label: '북마크',
+    schema: {
+      url: fields.url({ label: 'URL', validation: { isRequired: true } }),
+      title: fields.text({ label: '제목' }),
+      description: fields.text({ label: '설명', multiline: true }),
+      image: fields.text({ label: '대표 이미지 URL' }),
+      siteName: fields.text({ label: '사이트 이름' }),
+    },
+    ContentView: () => null,
+  }),
+  github: block({
+    label: 'GitHub 카드',
+    schema: {
+      repo: fields.text({ label: '저장소', validation: { isRequired: true } }),
+      description: fields.text({ label: '설명', multiline: true }),
+      stars: fields.integer({ label: '스타 수', validation: { min: 0 } }),
+      language: fields.text({ label: '주 언어' }),
+    },
+    ContentView: () => null,
+  }),
+  callout: wrapper({
+    label: '콜아웃',
+    schema: {
+      type: fields.select({
+        label: '유형',
+        defaultValue: 'note',
+        options: [
+          { label: '참고', value: 'note' },
+          { label: '정보', value: 'info' },
+          { label: '팁', value: 'tip' },
+          { label: '성공', value: 'success' },
+          { label: '주의', value: 'warning' },
+          { label: '위험', value: 'danger' },
+        ],
+      }),
+      title: fields.text({ label: '제목' }),
+      children: fields.child({ kind: 'block', placeholder: '콜아웃 내용' }),
+    },
+    ContentView: () => null,
+  }),
+};
 
 /**
  * 프론트매터/JSON 의 `slug` 값과 파일명을 **같은 문자열**로 묶는다.
@@ -112,8 +157,13 @@ export default config({
         content: fields.markdoc({
           label: '본문',
           extension: 'mdoc',
-          // 이미지 업로드 경로와 커스텀 블럭 삽입 UI 는 NOR-20 범위다. 여기서는 끄고 간다.
-          options: { image: false },
+          options: {
+            image: {
+              directory: 'public/uploads',
+              publicPath: '/uploads/',
+            },
+          },
+          components: postContentComponents,
         }),
       },
     }),
