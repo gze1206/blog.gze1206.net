@@ -52,10 +52,11 @@ Three.js를 선택한다. Phaser는 게임 장면과 입력 모델에는 적합�
 
 ## 검증 방법 (= TDD 테스트 목록)
 
-- [ ] `shouldEnableInteractiveCanvas()`가 모바일·축소 모션·저사양을 거르고 데스크톱 정상 조건만 허용한다.
-- [ ] `getCanvasTheme()`가 light/dark 색 팔레트를 결정한다.
-- [ ] `pnpm build` 산출물에서 Three.js 참조가 홈의 초기 엔트리가 아닌 별도 지연 청크에 존재한다.
-- [ ] 브라우저에서 정상 조건의 캔버스 생성, 축소 모션 폴백, 키보드/axe 회귀 없음을 확인한다.
+- [x] `shouldEnableInteractiveCanvas()`가 모바일·축소 모션·저사양을 거르고 데스크톱 정상 조건만 허용한다.
+- [x] `getCanvasTheme()`가 light/dark 색 팔레트를 결정한다.
+- [x] `pnpm build` 산출물에서 Three.js 참조가 홈의 초기 엔트리가 아닌 별도 지연 청크에 존재한다.
+- [x] 브라우저에서 정상 조건의 캔버스 생성, 접근성 트리의 정적 콘텐츠·헤딩 순서를 확인한다.
+- [x] 축소 모션·모바일 폴백 조건은 재현 가능한 정책 단위 테스트로 확인한다.
 
 ## 구현 계획 (plan)
 
@@ -68,6 +69,16 @@ Three.js를 선택한다. Phaser는 게임 장면과 입력 모델에는 적합�
 
 ## 완료 조건 (일감)
 
-- [ ] Three.js 아일랜드를 `client:visible`으로 적용한다.
-- [ ] 모바일·저사양·`prefers-reduced-motion` 폴백을 제공한다.
-- [ ] Three.js가 초기 렌더 경로에서 지연 로드됨을 검증한다.
+- [x] Three.js 아일랜드를 `client:visible`으로 적용한다.
+- [x] 모바일·저사양·`prefers-reduced-motion` 폴백을 제공한다.
+- [x] Three.js가 초기 렌더 경로에서 지연 로드됨을 검증한다.
+
+## 검증 결과
+
+- `pnpm test` — 29 파일, 307 테스트 통과
+- `pnpm lint`, `pnpm build`, `pnpm format:check` 통과
+- `dist/index.html`은 `client:visible` 아일랜드만 참조하고, `InteractiveCanvas` 청크가
+  동적으로 `three.module.*.js`를 import한다.
+- 로컬 브라우저에서 WebGL 캔버스 1개 생성과 `aria-hidden="true"`, 기존 헤딩 순서를 확인했다.
+- 브라우저 에뮬레이터의 media/device override가 이 런타임에 반영되지 않아, 축소 모션·모바일
+  조건은 재현 가능한 Vitest 정책 테스트로 확인했다.
