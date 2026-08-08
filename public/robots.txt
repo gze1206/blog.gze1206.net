@@ -5,9 +5,10 @@
 # 와 이중으로 건다 — robots.txt 만으로는 외부 링크를 통한 색인을 막지 못하고,
 # meta 만으로는 크롤 예산을 계속 소모하기 때문이다.
 #
-# TODO(NOR-30): 사이트맵을 만들면 아래에 `Sitemap: https://gze1206.net/sitemap-index.xml` 을 추가한다.
-#               사이트맵에서도 /smoke/* 는 제외한다.
+# 사이트맵도 /smoke/* 검증 경로를 제외한다(NOR-30).
 
 User-agent: *
 Allow: /
 Disallow: /smoke/
+
+Sitemap: https://gze1206.net/sitemap-index.xml
