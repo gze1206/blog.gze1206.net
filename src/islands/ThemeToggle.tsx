@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../components/ui/Button';
 import {
+  getThemeTogglePresentation,
   normalizeThemePreference,
   resolveTheme,
   THEME_STORAGE_KEY,
@@ -51,7 +52,7 @@ export default function ThemeToggle() {
       ? 'light'
       : resolveTheme(preference, window.matchMedia('(prefers-color-scheme: dark)').matches);
   const nextPreference: ThemePreference = resolved === 'dark' ? 'light' : 'dark';
-  const label = resolved === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환';
+  const { icon, label } = getThemeTogglePresentation(resolved);
 
   function toggleTheme(): void {
     try {
@@ -71,7 +72,7 @@ export default function ThemeToggle() {
       title={label}
       onClick={toggleTheme}
     >
-      <span aria-hidden="true">{resolved === 'dark' ? '☀︎' : '☾'}</span>
+      <span aria-hidden="true">{icon}</span>
     </Button>
   );
 }
