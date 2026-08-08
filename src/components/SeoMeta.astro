@@ -16,6 +16,7 @@ const meta = buildSeoMeta(Astro.props, {
   pathname: Astro.url.pathname,
   site: Astro.site,
 });
+const jsonLd = Astro.props.jsonLd;
 ---
 
 <title>{meta.title}</title>
@@ -40,6 +41,7 @@ const meta = buildSeoMeta(Astro.props, {
 <meta name="twitter:description" content={meta.description} />
 <meta name="twitter:image" content={meta.ogImage} />
 <meta name="twitter:image:alt" content={meta.ogImageAlt} />
+{jsonLd !== undefined && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
 
 {
   meta.publishedTime !== undefined && (

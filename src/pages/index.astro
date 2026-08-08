@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
 import { getVisiblePosts } from '../lib/content';
+import { buildPersonJsonLd } from '../lib/json-ld';
 
 // 루트 페이지의 서사·포트폴리오는 NOR-21~23 범위다. 여기서는 최신 글로 가는 길만 낸다.
 const recentPosts = (await getVisiblePosts()).slice(0, 3);
@@ -10,6 +11,7 @@ const recentPosts = (await getVisiblePosts()).slice(0, 3);
 <BaseLayout
   title="gze1206.net"
   description="게임 개발과 웹·서버 개발을 기록하는 gze1206의 개인 블로그입니다."
+  jsonLd={buildPersonJsonLd('https://gze1206.net/')}
 >
   <main id="main-content" class="mx-auto max-w-3xl px-4 py-16">
     <section aria-labelledby="about-heading">

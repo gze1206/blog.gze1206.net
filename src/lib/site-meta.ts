@@ -103,6 +103,7 @@ export interface ArticleTimes {
 
 /** 페이지가 넘기는 메타 재료. 전부 선택값이라 스모크 페이지도 그대로 통과한다. */
 export interface SeoInput {
+  readonly jsonLd?: unknown;
   /** **사이트 이름을 붙이지 않은** 맨 제목. 접미사는 {@link formatTitle} 이 붙인다. */
   readonly title?: string | undefined;
   readonly description?: string | undefined;

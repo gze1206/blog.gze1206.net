@@ -26,6 +26,7 @@ import { categoryPath, seriesPath, tagPath } from '../lib/routes';
 import { toSlug } from '../lib/slug';
 import type { Post, Series } from '../lib/content';
 import type { PostDetail } from '../lib/post-detail';
+import { buildArticleJsonLd, buildBreadcrumbJsonLd } from '../lib/json-ld';
 
 interface Props {
   post: Post;
@@ -41,6 +42,15 @@ interface Props {
 const { post, detail, series } = Astro.props;
 const { title, description, category, tags, publishedAt, updatedAt, draft } = post.data;
 const { toc, readingTime, publishedISO, updatedISO, isUpdated } = detail;
+const url = `https://gze1206.net/blog/${post.data.slug}`;
+const jsonLd = [
+  buildArticleJsonLd({ title, description, url, published: publishedISO, modified: updatedISO }),
+  buildBreadcrumbJsonLd([
+    { name: '홈', url: 'https://gze1206.net/' },
+    { name: '블로그', url: 'https://gze1206.net/blog' },
+    { name: title, url },
+  ]),
+];
 ---
 
 <BaseLayout
@@ -48,6 +58,7 @@ const { toc, readingTime, publishedISO, updatedISO, isUpdated } = detail;
   description={description}
   type="article"
   article={{ publishedTime: publishedISO, modifiedTime: updatedISO }}
+  jsonLd={jsonLd}
 >
   <main id="main-content" class="mx-auto max-w-3xl px-4 py-10 sm:py-14">
     <article data-pagefind-body>
