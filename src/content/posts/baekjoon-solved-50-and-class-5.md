@@ -1,6 +1,6 @@
 ---
-title: "백준 50문제 해결 & CLASS 5 도달"
-description: "Ruby와 C#으로 백준 문제 50개를 해결하고 CLASS 5에 도달한 과정과 언어별 실행 시간·메모리 한계를 기록합니다."
+title: '백준 50문제 해결 & CLASS 5 도달'
+description: 'Ruby와 C#으로 백준 문제 50개를 해결하고 CLASS 5에 도달한 과정과 언어별 실행 시간·메모리 한계를 기록합니다.'
 slug: baekjoon-solved-50-and-class-5
 category: Programming
 tags:

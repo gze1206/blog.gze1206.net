@@ -14,7 +14,7 @@
 - Preserve original `title`, `slug`, `date`, `category`, and `tags`.
 - Set `publishedAt` and `updatedAt` to the original `date`; set `draft: false`.
 - Generate descriptions from each post's content; ignore legacy descriptions.
-- Remove `<!--more-->`, replace `:br` with paragraph spacing, and convert ````lang[filename]` to ````lang title="filename"`.
+- Remove `<!--more-->`, replace `:br` with paragraph spacing, and convert ``lang[filename]` to ``lang title="filename"`.
 - Do not change custom domains, DNS, or redirects.
 - Do not create a commit unless the user explicitly asks for one.
 
@@ -23,17 +23,19 @@
 ### Task 1: Test and implement legacy body normalization
 
 **Files:**
+
 - Create: `src/lib/legacy-post-migration.ts`
 - Create: `src/lib/legacy-post-migration.test.ts`
 
 **Interfaces:**
+
 - Produces: `normalizeLegacyPostBody(body: string): string`
 - Produces: `legacyDateToPostDates(date: string): { publishedAt: string; updatedAt: string }`
 - Produces: `assertLegacyPostMetadata(metadata: LegacyPostMetadata): void`
 
 - [ ] **Step 1: Write the failing tests**
 
-```ts
+````ts
 import { describe, expect, it } from 'vitest';
 import {
   assertLegacyPostMetadata,
@@ -43,8 +45,9 @@ import {
 
 describe('normalizeLegacyPostBody', () => {
   it('removes excerpt markers, expands Nuxt line-break tokens, and converts file-name fences', () => {
-    expect(normalizeLegacyPostBody('첫 문단\n<!--more-->\n:br\n```ruby[answer.rb]\nputs 1\n```'))
-      .toBe('첫 문단\n\n```ruby title="answer.rb"\nputs 1\n```');
+    expect(
+      normalizeLegacyPostBody('첫 문단\n<!--more-->\n:br\n```ruby[answer.rb]\nputs 1\n```'),
+    ).toBe('첫 문단\n\n```ruby title="answer.rb"\nputs 1\n```');
   });
 });
 
@@ -62,7 +65,7 @@ describe('assertLegacyPostMetadata', () => {
     expect(() => assertLegacyPostMetadata({ title: '제목' } as never)).toThrow('slug');
   });
 });
-```
+````
 
 - [ ] **Step 2: Run the tests to verify the expected failure**
 
@@ -72,7 +75,7 @@ Expected: FAIL because `./legacy-post-migration` does not exist.
 
 - [ ] **Step 3: Implement the smallest typed converter**
 
-```ts
+````ts
 export interface LegacyPostMetadata {
   title: string;
   slug: string;
@@ -89,7 +92,7 @@ export function normalizeLegacyPostBody(body: string): string {
     .replaceAll(/\n{3,}/g, '\n\n')
     .trim();
 }
-```
+````
 
 Add date mapping and required-field validation with explicit errors for `title`, `slug`, `date`, `category`, and an empty `tags` array.
 
@@ -102,6 +105,7 @@ Expected: PASS.
 ### Task 2: Add the four migrated posts and their referenced legacy image
 
 **Files:**
+
 - Create: `src/content/posts/baekjoon-15663-n-and-m-9-ruby.md`
 - Create: `src/content/posts/baekjoon-solved-50-and-class-5.md`
 - Create: `src/content/posts/c-9-0-record-type.md`
@@ -109,6 +113,7 @@ Expected: PASS.
 - Copy: `master:app/static/img/kakaotalk_20211116_122629464.png` → `public/img/kakaotalk_20211116_122629464.png`
 
 **Interfaces:**
+
 - Consumes: source articles at `master:app/content/articles/*.md`
 - Consumes: `normalizeLegacyPostBody` transformation rules from Task 1
 - Produces: four files satisfying `postSchema` in `src/content/schemas.ts`
@@ -155,10 +160,12 @@ Expected: four new posts, valid YAML frontmatter, no whitespace errors.
 ### Task 3: Validate the imported site
 
 **Files:**
+
 - Test: `src/lib/legacy-post-migration.test.ts`
 - Validate: `src/content/posts/*.md`
 
 **Interfaces:**
+
 - Consumes: migrated posts and the current Astro Content Collection schema
 - Produces: a successful local production build with all migrated routes generated
 

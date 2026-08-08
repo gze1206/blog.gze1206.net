@@ -19,10 +19,12 @@
 ### Task 1: Test and configure Keystatic authoring blocks
 
 **Files:**
+
 - Create: `keystatic.config.test.ts`
 - Modify: `keystatic.config.ts`
 
 **Interfaces:**
+
 - Produces: posts `content` editor with `componentBlocks` and `{ directory: 'public/uploads', publicPath: '/uploads/' }` image options.
 
 - [ ] **Step 1: Write failing configuration assertions**

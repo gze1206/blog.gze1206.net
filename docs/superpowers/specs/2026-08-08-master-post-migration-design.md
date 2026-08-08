@@ -12,15 +12,15 @@
 
 ## 데이터 변환
 
-| 기존 필드/표기 | 새 형식 |
-| --- | --- |
-| `title`, `slug`, `category`, `tags` | 동일 값 보존 |
-| `date` | `publishedAt`, `updatedAt`에 같은 ISO 시각 설정 |
-| 기존 `description` | 사용하지 않음 |
-| 본문 첫 의미 단락 | 글 내용을 바탕으로 작성한 한국어 `description` |
-| `<!--more-->` | 제거 |
-| `:br` | 빈 줄로 정규화 |
-| ````lang[filename]` | ````lang title="filename"` |
+| 기존 필드/표기                      | 새 형식                                         |
+| ----------------------------------- | ----------------------------------------------- |
+| `title`, `slug`, `category`, `tags` | 동일 값 보존                                    |
+| `date`                              | `publishedAt`, `updatedAt`에 같은 ISO 시각 설정 |
+| 기존 `description`                  | 사용하지 않음                                   |
+| 본문 첫 의미 단락                   | 글 내용을 바탕으로 작성한 한국어 `description`  |
+| `<!--more-->`                       | 제거                                            |
+| `:br`                               | 빈 줄로 정규화                                  |
+| ````lang[filename]`                 | ````lang title="filename"`                      |
 
 모든 이관 게시글에는 `draft: false`를 명시한다. 시리즈 정보는 원본에 없으므로 추가하지 않는다.
 
