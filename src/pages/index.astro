@@ -3,9 +3,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
 import { getVisiblePosts } from '../lib/content';
 import { buildPersonJsonLd } from '../lib/json-ld';
+import { getCollection } from 'astro:content';
 
 // 루트 페이지의 서사·포트폴리오는 NOR-21~23 범위다. 여기서는 최신 글로 가는 길만 낸다.
 const recentPosts = (await getVisiblePosts()).slice(0, 3);
+const portfolio = await getCollection('portfolio');
 ---
 
 <BaseLayout
@@ -38,6 +40,41 @@ const recentPosts = (await getVisiblePosts()).slice(0, 3);
             Cloudflare
           </p>
         </section>
+      </div>
+    </section>
+
+    <section class="mt-14" aria-labelledby="portfolio-heading">
+      <h2 id="portfolio-heading" class="text-2xl font-bold">프로젝트</h2>
+      <div class="mt-5 grid gap-4">
+        {
+          portfolio.map((entry) => (
+            <article class="border-border bg-surface rounded-lg border p-5">
+              <h3 class="text-xl font-bold">{entry.data.title}</h3>
+              <p class="mt-2 text-gray-700 dark:text-gray-300">{entry.data.summary}</p>
+              <ul class="mt-3 flex flex-wrap gap-2" aria-label={`${entry.data.title} 기술 스택`}>
+                {entry.data.stack.map((technology) => (
+                  <li class="rounded bg-gray-100 px-2 py-1 text-sm dark:bg-gray-800">
+                    {technology}
+                  </li>
+                ))}
+              </ul>
+              <div class="mt-4 flex flex-wrap gap-3">
+                {entry.data.links
+                  .flatMap((link) => Object.entries(link))
+                  .map(([kind, url]) => (
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="rounded font-semibold underline"
+                    >
+                      {kind}
+                    </a>
+                  ))}
+              </div>
+            </article>
+          ))
+        }
       </div>
     </section>
 
