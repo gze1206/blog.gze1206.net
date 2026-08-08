@@ -8,6 +8,7 @@ import {
   postPath,
   seriesPath,
   tagPath,
+  topicsPath,
 } from './routes';
 
 describe('postPath', () => {
@@ -38,6 +39,10 @@ describe('분류 경로', () => {
   it('한글 슬러그는 퍼센트 인코딩한다', () => {
     expect(tagPath('웹-성능')).toBe(`/tags/${encodeURIComponent('웹-성능')}`);
     expect(categoryPath('회고')).toBe(`/category/${encodeURIComponent('회고')}`);
+  });
+
+  it('통합 분류 인덱스는 /topics 이다', () => {
+    expect(topicsPath()).toBe('/topics');
   });
 });
 

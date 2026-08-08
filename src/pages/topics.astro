@@ -1,0 +1,20 @@
+---
+import TaxonomyExplorer from '../components/TaxonomyExplorer.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCategoryGroups, getTagGroups } from '../lib/content';
+
+const [categories, tags] = await Promise.all([getCategoryGroups(), getTagGroups()]);
+---
+
+<BaseLayout title="분류" description="카테고리와 태그로 gze1206.net의 글을 탐색합니다.">
+  <main id="main-content" class="mx-auto max-w-3xl px-4 py-10 sm:py-14">
+    <header class="max-w-2xl">
+      <p class="text-accent text-sm font-semibold">Explore</p>
+      <h1 class="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">분류</h1>
+      <p class="text-muted mt-3 text-lg">큰 주제는 카테고리로, 세부 주제는 태그로 탐색합니다.</p>
+    </header>
+    <div class="mt-12">
+      <TaxonomyExplorer categories={categories} tags={tags} />
+    </div>
+  </main>
+</BaseLayout>

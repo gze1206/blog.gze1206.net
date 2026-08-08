@@ -93,15 +93,13 @@ export function buildTaxonomyGraph(posts: readonly PostLike[]): TaxonomyGraph {
       label,
       count,
     }));
-  const tagNodes = [...tags.values()]
-    .sort(compareLabels)
-    .map(({ slug, label, count }) => ({
-      id: `tag:${slug}`,
-      kind: 'tag' as const,
-      slug,
-      label,
-      count,
-    }));
+  const tagNodes = [...tags.values()].sort(compareLabels).map(({ slug, label, count }) => ({
+    id: `tag:${slug}`,
+    kind: 'tag' as const,
+    slug,
+    label,
+    count,
+  }));
   const categoryLabels = new Map(categoryNodes.map((node) => [node.slug, node.label]));
   const tagLabels = new Map(tagNodes.map((node) => [node.slug, node.label]));
 

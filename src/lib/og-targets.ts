@@ -26,6 +26,7 @@ import {
   postPath,
   seriesPath,
   tagPath,
+  topicsPath,
 } from './routes';
 
 /** 만들어야 할 이미지 한 장. */
@@ -95,6 +96,12 @@ export function buildOgTargets(input: OgTargetsInput): OgTarget[] {
       kind: 'list',
       title: '태그',
       description: '글을 태그별로 모아 봅니다.',
+      brand,
+    }),
+    target(topicsPath(), {
+      kind: 'list',
+      title: '분류',
+      description: '카테고리와 태그로 글을 탐색합니다.',
       brand,
     }),
     target('/series', {
