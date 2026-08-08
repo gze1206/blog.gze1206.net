@@ -786,6 +786,46 @@ pre.astro-code:hover > .code-copy-btn {
   .block-github {
     transition: none;
   }
+
+  .taxonomy-graph-section {
+    display: none;
+  }
+}
+
+/* --- 분류 관계 그래프 (NOR-135) --- */
+.taxonomy-graph-scroll {
+  overflow-x: auto;
+}
+
+.taxonomy-graph {
+  display: block;
+  min-width: 55rem;
+  color: var(--theme-foreground);
+}
+
+.taxonomy-graph-edge {
+  stroke: var(--color-border);
+  opacity: 0.72;
+}
+
+.taxonomy-graph-node {
+  color: var(--color-accent);
+}
+
+.taxonomy-graph-node circle {
+  fill: currentColor;
+}
+
+.taxonomy-graph-node text {
+  fill: var(--theme-foreground);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.taxonomy-graph-node:hover text,
+.taxonomy-graph-node:focus text {
+  fill: var(--color-accent);
+  text-decoration: underline;
 }
 
 /* --- Custom blocks: 콜아웃 (NOR-15) ---

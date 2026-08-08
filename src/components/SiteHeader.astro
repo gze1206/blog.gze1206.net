@@ -6,11 +6,11 @@
  * 시각 디자인 확정은 NOR-24(베이스 테마) 몫이라 여기서는 최소한만 둔다.
  */
 import ThemeToggle from '../islands/ThemeToggle';
+import { topicsPath } from '../lib/routes';
 
 const NAV_ITEMS = [
   { href: '/blog', label: '블로그' },
-  { href: '/category', label: '카테고리' },
-  { href: '/tags', label: '태그' },
+  { href: topicsPath(), label: '분류' },
   { href: '/series', label: '시리즈' },
 ] as const;
 

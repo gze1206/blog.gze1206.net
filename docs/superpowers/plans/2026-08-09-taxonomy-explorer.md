@@ -27,6 +27,7 @@
 - Create: `src/islands/TaxonomyGraph.tsx` — 보조 SVG 링크 그래프를 렌더한다.
 - Create: `src/pages/topics.astro` — 목록과 `client:visible` 아일랜드를 조립한다.
 - Modify: `src/lib/routes.ts`, `src/lib/routes.test.ts` — `topicsPath()` 단일 URL 출처를 제공한다.
+- Modify: `src/lib/og-targets.ts`, `src/lib/og-targets.test.ts` — `/topics`의 색인용 OG 카드를 같은 경로 규칙으로 만든다.
 - Modify: `src/components/SiteHeader.astro` — 두 인덱스 메뉴를 `/topics`의 `분류` 하나로 바꾼다.
 - Modify: `src/pages/category/index.astro`, `src/pages/tags/index.astro` — 기존 목록을 보존하고 통합 인덱스 안내를 추가한다.
 - Modify: `src/styles/global.css` — SVG 컨테이너와 모션 축소 폴백만 추가한다.
@@ -108,11 +109,13 @@ git commit -m "✨ feat(topics): 분류 관계 그래프 데이터 추가 (NOR-1
 - Create: `src/pages/topics.astro`
 - Modify: `src/lib/routes.ts`
 - Modify: `src/lib/routes.test.ts`
+- Modify: `src/lib/og-targets.ts`
+- Modify: `src/lib/og-targets.test.ts`
 
 **Interfaces:**
 
 - Consumes: `getCategoryGroups()`, `getTagGroups()`, `getVisiblePosts()`, `buildTaxonomyGraph()` and `topicsPath()`.
-- Produces: `/topics` static HTML containing all category and tag result links.
+- Produces: `/topics` static HTML, `/og/topics.png`, and all category/tag result links.
 
 - [ ] **Step 1: Write a failing route helper test**
 
@@ -134,16 +137,18 @@ export function topicsPath(): string {
 
 `TaxonomyExplorer` receives category and tag groups, creates `section` elements for categories, category-scoped tags, and all tags, and uses `categoryPath()`/`tagPath()` for every href. `topics.astro` obtains all data at build time and renders the component before the graph island.
 
+Add `target(topicsPath(), { kind: 'list', title: '분류', description: '카테고리와 태그로 글을 탐색합니다.', brand })` to `buildOgTargets()`, and extend `og-targets.test.ts` to require `/og/topics.png`.
+
 - [ ] **Step 3: Verify the static fallback**
 
-Run: `pnpm test -- src/lib/routes.test.ts && pnpm build && rg -q '카테고리별 태그' dist/topics/index.html && rg -q '/category/' dist/topics/index.html && rg -q '/tags/' dist/topics/index.html`
+Run: `pnpm test -- src/lib/routes.test.ts src/lib/og-targets.test.ts && pnpm build && rg -q '카테고리별 태그' dist/topics/index.html && rg -q '/category/' dist/topics/index.html && rg -q '/tags/' dist/topics/index.html && test -f dist/og/topics.png`
 
 Expected: PASS and `/topics` contains all three textual navigation sections.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/lib/routes.ts src/lib/routes.test.ts src/components/TaxonomyExplorer.astro src/pages/topics.astro
+git add src/lib/routes.ts src/lib/routes.test.ts src/lib/og-targets.ts src/lib/og-targets.test.ts src/components/TaxonomyExplorer.astro src/pages/topics.astro
 git commit -m "✨ feat(topics): 정적 통합 분류 탐색 추가 (NOR-135)"
 ```
 

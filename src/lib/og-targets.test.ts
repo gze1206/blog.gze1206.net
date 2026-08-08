@@ -27,6 +27,7 @@ describe('buildOgTargets', () => {
         '/og/blog.png',
         '/og/category.png',
         '/og/tags.png',
+        '/og/topics.png',
         '/og/series.png',
       ]),
     );
@@ -110,6 +111,7 @@ describe('buildOgTargets', () => {
       '/og/blog.png',
       '/og/category.png',
       '/og/tags.png',
+      '/og/topics.png',
       '/og/series.png',
     ]);
   });

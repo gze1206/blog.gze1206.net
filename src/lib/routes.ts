@@ -27,6 +27,11 @@ export function tagPath(slug: string): string {
   return `/tags/${segment(slug)}`;
 }
 
+/** 카테고리와 태그를 함께 탐색하는 통합 인덱스. */
+export function topicsPath(): string {
+  return '/topics';
+}
+
 export function seriesPath(slug: string): string {
   return `/series/${segment(slug)}`;
 }
