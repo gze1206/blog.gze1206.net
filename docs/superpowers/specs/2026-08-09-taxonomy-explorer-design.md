@@ -8,6 +8,7 @@
 ## 범위와 URL
 
 - 새 정적 인덱스는 `/topics`이며 제목과 헤더 표기는 `분류`로 한다.
+- `/topics`는 색인 대상이므로 기존 OG 경로 규칙에 따라 `/og/topics.png` 카드를 빌드한다.
 - `/category/[slug]`, `/tags/[slug]`는 각각 결과 목록 URL로 그대로 유지한다. `categoryPath()`와
   `tagPath()`도 바꾸지 않는다.
 - 기존 `/category`, `/tags`는 삭제·리다이렉트하지 않는다. 외부 링크와 검색 결과의 호환성을 위해
@@ -61,8 +62,8 @@ getVisiblePosts()
 
 - 그래프 파생 단위 테스트: 중복 태그 제거, 간선 가중치, 가나다 결정 순서, draft 미포함 입력의
   데이터 보존.
-- 빌드 산출물 검사: `/topics`·기존 인덱스·개별 결과 URL이 생성되고, 정적 링크와 헤더의
-  `분류` 링크가 존재한다.
+- 빌드 산출물 검사: `/topics`·`/og/topics.png`·기존 인덱스·개별 결과 URL이 생성되고, 정적
+  링크와 헤더의 `분류` 링크가 존재한다.
 - 키보드/보조 기술: `/topics`의 정적 링크만으로 모든 카테고리·태그 결과에 도달할 수 있다.
 - `pnpm test`, `pnpm lint`, `pnpm build`, `pnpm format:check`가 모두 통과해야 한다.
 
