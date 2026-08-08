@@ -3,7 +3,6 @@
  * `/topics`의 정적 탐색 레이어. 그래프가 로드되지 않아도 모든 분류 결과로 갈 수 있게 한다.
  */
 import type { PostLike, TaxonomyGroup } from '../lib/posts';
-import { groupByTag } from '../lib/posts';
 import { categoryPath, tagPath } from '../lib/routes';
 
 interface Props {
@@ -20,40 +19,17 @@ const { categories, tags } = Astro.props;
     <p class="text-muted mt-2">글의 큰 주제를 기준으로 탐색합니다.</p>
     <ul class="mt-5 grid gap-4 sm:grid-cols-2">
       {
-        categories.map((category) => {
-          const categoryTags = groupByTag(category.posts);
-          return (
-            <li class="border-border bg-surface rounded-lg border p-5">
-              <a
-                href={categoryPath(category.slug)}
-                class="rounded text-lg font-semibold hover:underline"
-              >
-                {category.label}
-                <span class="text-muted ml-2 text-sm font-normal">
-                  글 {category.posts.length}개
-                </span>
-              </a>
-              {categoryTags.length > 0 && (
-                <div class="mt-4">
-                  <h3 class="text-muted text-sm font-semibold">세부 태그</h3>
-                  <ul class="mt-2 flex flex-wrap gap-2">
-                    {categoryTags.map((tag) => (
-                      <li>
-                        <a
-                          href={tagPath(tag.slug)}
-                          class="border-border hover:border-accent hover:text-accent inline-flex rounded-full border px-2.5 py-1 text-sm"
-                        >
-                          #{tag.label}
-                          <span class="text-muted ml-1">{tag.posts.length}</span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </li>
-          );
-        })
+        categories.map((category) => (
+          <li class="border-border bg-surface rounded-lg border p-5">
+            <a
+              href={categoryPath(category.slug)}
+              class="rounded text-lg font-semibold hover:underline"
+            >
+              {category.label}
+              <span class="text-muted ml-2 text-sm font-normal">글 {category.posts.length}개</span>
+            </a>
+          </li>
+        ))
       }
     </ul>
   </section>
