@@ -11,6 +11,7 @@
  */
 import '../styles/global.css';
 import 'katex/dist/katex.min.css';
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import CodeBlockEnhancer from '../components/CodeBlockEnhancer.astro';
 import SeoMeta from '../components/SeoMeta.astro';
 import SiteFooter from '../components/SiteFooter.astro';
@@ -51,11 +52,6 @@ const themeInitScript = `(() => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
     <script is:inline set:html={themeInitScript} />
-    <link
-      rel="stylesheet"
-      crossorigin
-      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
-    />
     <SeoMeta {...Astro.props} />
   </head>
   <body class="bg-background text-foreground flex min-h-screen flex-col antialiased">

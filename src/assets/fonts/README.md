@@ -1,7 +1,8 @@
 # OG 이미지용 폰트
 
 여기 있는 폰트는 **빌드타임 OG 이미지 렌더링 전용**이다(NOR-28). 브라우저로 나가지 않는다 —
-사이트 웹폰트는 `BaseLayout.astro` 가 CDN 에서 불러오는 Pretendard Variable 이고, 이 파일들은
+사이트 웹폰트는 `BaseLayout.astro` 가 `pretendard` 패키지의 동적 서브셋으로 제공하는 Pretendard
+Variable 이고, 이 파일들은
 `src/lib/og-render.ts` 가 Node 에서 읽어 Satori 에 넘길 뿐이다.
 
 | 파일                     | 용도              | 크기   |
