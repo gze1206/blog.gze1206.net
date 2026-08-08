@@ -1,9 +1,16 @@
 ---
 import TaxonomyExplorer from '../components/TaxonomyExplorer.astro';
+import TaxonomyGraph from '../islands/TaxonomyGraph';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getCategoryGroups, getTagGroups } from '../lib/content';
+import { getCategoryGroups, getTagGroups, getVisiblePosts } from '../lib/content';
+import { buildTaxonomyGraph, layoutTaxonomyGraph } from '../lib/taxonomy-graph';
 
-const [categories, tags] = await Promise.all([getCategoryGroups(), getTagGroups()]);
+const [categories, tags, posts] = await Promise.all([
+  getCategoryGroups(),
+  getTagGroups(),
+  getVisiblePosts(),
+]);
+const graph = layoutTaxonomyGraph(buildTaxonomyGraph(posts));
 ---
 
 <BaseLayout title="분류" description="카테고리와 태그로 gze1206.net의 글을 탐색합니다.">
@@ -15,6 +22,7 @@ const [categories, tags] = await Promise.all([getCategoryGroups(), getTagGroups(
     </header>
     <div class="mt-12">
       <TaxonomyExplorer categories={categories} tags={tags} />
+      <TaxonomyGraph client:visible graph={graph} />
     </div>
   </main>
 </BaseLayout>
