@@ -24,6 +24,11 @@ describe('/topics 정적 탐색과 분류 맵 계약', () => {
     expect(graphSource).toContain('<desc id="topics-graph-description">');
   });
 
+  it('SVG 내부 링크의 접근 가능한 이름을 평탄화하지 않는다', () => {
+    expect(graphSource).not.toContain('role="img"');
+    expect(graphSource).toContain('aria-labelledby="topics-graph-title topics-graph-description"');
+  });
+
   it('SVG 노드를 분류 결과의 앵커 링크로 만든다', () => {
     expect(graphSource).toContain(
       "const href = node.kind === 'category' ? categoryPath(node.slug) : tagPath(node.slug);",

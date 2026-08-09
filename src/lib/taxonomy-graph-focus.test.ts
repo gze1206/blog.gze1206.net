@@ -17,6 +17,16 @@ describe('getRelatedGraphIds', () => {
     );
   });
 
+  it('활성 태그와 직접 연결된 카테고리를 강조 대상으로 반환한다', () => {
+    expect(getRelatedGraphIds(graph, 'tag:typescript')).toEqual(
+      new Set(['tag:typescript', 'category:개발', 'category:회고']),
+    );
+  });
+
+  it('직접 관계가 아닌 태그와 카테고리는 강조 대상에서 제외한다', () => {
+    expect(getRelatedGraphIds(graph, 'tag:astro')).toEqual(new Set(['tag:astro', 'category:개발']));
+  });
+
   it('활성 노드가 없으면 강조 대상을 만들지 않는다', () => {
     expect(getRelatedGraphIds(graph, null)).toEqual(new Set());
   });

@@ -65,7 +65,6 @@ export default function TaxonomyGraph({ graph }: Props) {
       </div>
       <div className="taxonomy-graph-scroll border-border bg-surface mt-5 rounded-lg border p-3">
         <svg
-          role="img"
           aria-labelledby="topics-graph-title topics-graph-description"
           viewBox={`0 0 ${graph.width} ${graph.height}`}
           width={graph.width}
