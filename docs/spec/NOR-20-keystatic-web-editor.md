@@ -1,6 +1,6 @@
 ---
 issue: NOR-20
-title: Keystatic 블럭 삽입과 이미지 업로드
+title: Keystatic 원격 웹 에디터와 안전한 발행
 status: in-progress
 ---
 
@@ -10,28 +10,31 @@ status: in-progress
 
 ## 목표
 
-로컬 Keystatic 글 편집기에서 Markdoc `bookmark`, `github`, `callout` 블럭을 폼으로 삽입하고,
-글 이미지를 `public/uploads/`에 저장해 `/uploads/` URL로 본문에 넣는다.
+브라우저에서 GitHub 인증으로 Keystatic을 열어 Markdoc `bookmark`, `github`, `callout` 블럭과
+이미지를 편집하고, 미리보기 검토 뒤 안전하게 발행한다.
 
 ## 범위와 외부 보류 항목
 
-ADR 0012의 완전 정적 출력은 유지한다. 따라서 GitHub OAuth 자격 증명과 공개 어드민 호스팅은
-외부 공개 작업으로 보류한다. 이 저장소에는 비밀값·서버 어댑터·공개 `/keystatic` 라우트를 추가하지 않는다.
+ADR 0015에 따라 공개 콘텐츠는 prerender를 유지하고, Keystatic API만 Cloudflare Worker에서 실행한다.
+GitHub App 비밀값과 Cloudflare Access 정책은 저장소에 기록하지 않는다. Worker 호환성 검증을 통과하지
+못하면 별도 Node 관리자 런타임으로 전환하며, 검증되지 않은 공개 어드민은 배포하지 않는다.
 
 ## 입력 / 출력
 
-- 입력: Keystatic `fields.markdoc` 편집기에서 선택한 컴포넌트 블럭 또는 이미지 파일.
-- 출력: 기존 `markdoc.config.mjs` 태그와 동일한 속성의 `.mdoc`, 그리고 `public/uploads/<file>` 및
-  Markdown `/uploads/<file>` 참조.
+- 입력: GitHub로 인증한 작성자가 content 브랜치의 Keystatic `fields.markdoc` 편집기에서 선택한
+  컴포넌트 블럭 또는 이미지 파일.
+- 출력: 기존 `markdoc.config.mjs` 태그와 동일한 속성의 `.mdoc`, `public/uploads/<file>`,
+  Cloudflare 미리보기, 그리고 `v4` 병합 뒤의 공개 정적 페이지.
 
 ## 검증 방법
 
-- [ ] Keystatic 설정을 import한 테스트가 블럭 스키마와 이미지 디렉터리·publicPath를 확인한다.
-- [ ] `pnpm test`, `pnpm lint`, `pnpm build`가 통과하고 프로덕션 산출물에 `/keystatic`·`/api/keystatic`이 없다.
-- [ ] `pnpm dev`에서 편집기가 기동하며 컴포넌트 블럭과 이미지 UI가 노출된다.
+- [ ] Keystatic 설정 테스트가 GitHub 저장소·블럭 스키마·이미지 디렉터리·publicPath를 확인한다.
+- [ ] Worker 빌드와 로컬 preview에서 `/keystatic`·`/api/keystatic`이 동적 라우트로 응답한다.
+- [ ] 휴대기기에서 GitHub 인증, 블럭 3종 삽입, 이미지 업로드, branch preview 렌더를 확인한다.
+- [ ] `draft: true` 콘텐츠가 공개 빌드·RSS·사이트맵·검색에 나오지 않음을 확인한다.
 
 ## 구현 계획
 
-1. 설정 검사 테스트를 추가해 블럭 이름·속성·이미지 경로를 고정한다.
-2. `keystatic.config.ts`의 Markdoc 필드에 세 컴포넌트 블럭과 이미지 구성을 매핑한다.
-3. 개발 서버와 정적 빌드를 검증하고, 외부 GitHub 모드 준비 절차를 최종 외부 작업 보고서에 남긴다.
+1. Astro Cloudflare Worker 호환성 스파이크를 테스트·로컬 preview로 증명한다.
+2. Keystatic을 GitHub 모드로 전환하고 기존 작성 대상 글을 `.mdoc`으로 이관한다.
+3. GitHub App·Cloudflare Access·브랜치 미리보기 발행 절차를 비밀값 없이 문서화하고 실기기에서 검증한다.
