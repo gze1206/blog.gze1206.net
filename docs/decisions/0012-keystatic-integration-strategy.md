@@ -1,12 +1,15 @@
 ---
 number: '0012'
 title: Keystatic 통합 전략 — 정적 출력 유지와 series/portfolio 매핑
-status: accepted
+status: partially superseded by 0015
 date: 2026-07-22
 related: [NOR-19]
 ---
 
 # 0012. Keystatic 통합 전략 — 정적 출력 유지와 series/portfolio 매핑
+
+> 2026-08-09: 정적 출력·series/portfolio 매핑 결정은 유지한다. 원격 Keystatic 런타임의 dev 전용
+> 제한은 [ADR 0015](./0015-cms-publishing-runtime-and-workflow.md)로 대체됐다.
 
 ## 맥락 (Context)
 

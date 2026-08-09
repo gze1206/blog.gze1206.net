@@ -6,8 +6,8 @@
  * 그래서 필드 이름·타입·필수 여부·기본값은 zod 와 1:1 로 맞춰 두었다. 대응표와 Keystatic
  * 으로 표현할 수 없는 제약(동반 필수 등)은 `docs/spec/NOR-19-keystatic.md` 에 있다.
  *
- * 어드민 UI 는 **개발 서버에서만** 붙는다(ADR 0012). 프로덕션 빌드에는 `/keystatic`,
- * `/api/keystatic` 라우트가 아예 존재하지 않는다 — `src/integrations/keystatic-dev.ts` 참고.
+ * 어드민 UI 는 Cloudflare Worker 의 `/keystatic`과 `/api/keystatic`에서 실행한다(ADR 0015).
+ * GitHub App 비밀값은 배포 환경 변수로만 제공하며 이 파일에는 넣지 않는다.
  */
 
 import { collection, config, fields } from '@keystatic/core';
@@ -88,7 +88,7 @@ function slugField(label: string, description: string) {
 }
 
 export default config({
-  storage: { kind: 'local' },
+  storage: { kind: 'github', repo: 'gze1206/blog.gze1206.net' },
 
   ui: {
     brand: { name: 'gze1206.net' },

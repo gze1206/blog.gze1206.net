@@ -6,6 +6,7 @@ node_modules/
 dist/
 .output/
 .astro/
+.wrangler/
 .vercel/
 .netlify/
 
@@ -16,6 +17,7 @@ public/pagefind/
 .env
 .env.*
 !.env.example
+.dev.vars
 
 # Logs
 *.log

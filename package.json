@@ -39,6 +39,7 @@
     "three": "0.185.1"
   },
   "devDependencies": {
+    "@astrojs/cloudflare": "14.1.4",
     "@astrojs/react": "^6.0.1",
     "@eslint/js": "^10.0.1",
     "@keystar/ui": "0.8.0",
@@ -59,6 +60,7 @@
     "react-stately": "3.48.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.64.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "wrangler": "4.120.0"
   }
 }
