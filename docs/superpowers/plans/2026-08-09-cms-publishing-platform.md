@@ -112,7 +112,7 @@ git commit -m "✨ feat(cms): Cloudflare Worker 기반 원격 편집기 구성 (
 - Consumes: `postSchema`, `fields.markdoc`, and `RAW_POST_SOURCES`.
 - Produces: one `posts` Keystatic collection containing every author-editable article as `.mdoc`.
 
-- [ ] **Step 1: Write a migration inventory test**
+- [x] **Step 1: Write a migration inventory test**
 
 ```ts
 it('has no author-editable Markdown article outside the mdoc collection', async () => {
@@ -121,23 +121,23 @@ it('has no author-editable Markdown article outside the mdoc collection', async 
 });
 ```
 
-- [ ] **Step 2: Run the focused test before moving content**
+- [x] **Step 2: Run the focused test before moving content**
 
 Run: `pnpm test scripts/verify-mdoc-migration.test.ts`
 
 Expected: FAIL with the exact list of `.md` source files selected for migration.
 
-- [ ] **Step 3: Move and validate content conservatively**
+- [x] **Step 3: Move and validate content conservatively**
 
 For every selected post, retain YAML frontmatter, body bytes, slug, dates, draft flag, and URL; change only the extension to `.mdoc`. Exclude test fixtures by an explicit basename allowlist in `verify-mdoc-migration.mjs`, never by a broad date or filename heuristic.
 
-- [ ] **Step 4: Verify rendered URL stability**
+- [x] **Step 4: Verify rendered URL stability**
 
 Run: `pnpm test scripts/verify-mdoc-migration.test.ts && pnpm build`.
 
 Expected: PASS; every prior non-draft `/blog/<slug>` is still generated and no duplicate source slug error occurs.
 
-- [ ] **Step 5: Commit the migration**
+- [x] **Step 5: Commit the migration**
 
 ```bash
 git add src/content/posts src/content.config.ts src/lib/content.ts scripts/verify-mdoc-migration.mjs scripts/verify-mdoc-migration.test.ts
