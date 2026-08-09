@@ -108,7 +108,7 @@ export default config({
           multiline: true,
           validation: { isRequired: true },
         }),
-        skills: fields.array(fields.text({ label: '기술' }), {
+        skills: fields.array(fields.text({ label: '기술', validation: { isRequired: true } }), {
           label: '주요 기술',
           validation: { length: { min: 1 } },
         }),
