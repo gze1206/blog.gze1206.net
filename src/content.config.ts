@@ -1,6 +1,12 @@
 import { defineCollection } from 'astro:content';
-import { glob } from 'astro/loaders';
-import { postSchema, seriesSchema, portfolioSchema } from './content/schemas';
+import { file, glob } from 'astro/loaders';
+import {
+  experienceSchema,
+  portfolioSchema,
+  postSchema,
+  profileSchema,
+  seriesSchema,
+} from './content/schemas';
 
 const posts = defineCollection({
   loader: glob({ base: './src/content/posts', pattern: '**/*.{md,mdx,mdoc}' }),
@@ -25,4 +31,18 @@ const portfolio = defineCollection({
   schema: portfolioSchema,
 });
 
-export const collections = { posts, series, portfolio };
+// file loader는 최상위 키를 entry id로 쓴다. Keystatic singleton은 평면 JSON을 저장하므로
+// loader 경계에서만 `profile` id를 부여해 CMS 파일 형식을 그대로 유지한다.
+const profile = defineCollection({
+  loader: file('src/content/profile.json', {
+    parser: (text) => ({ profile: JSON.parse(text) }),
+  }),
+  schema: profileSchema,
+});
+
+const experience = defineCollection({
+  loader: glob({ base: './src/content/experience', pattern: '**/*.json' }),
+  schema: experienceSchema,
+});
+
+export const collections = { posts, series, portfolio, profile, experience };

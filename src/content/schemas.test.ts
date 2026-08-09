@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { postSchema, seriesSchema, portfolioSchema } from './schemas';
+import {
+  experienceSchema,
+  portfolioSchema,
+  postSchema,
+  profileSchema,
+  seriesSchema,
+} from './schemas';
 
 const validPost = {
   title: '첫 번째 글',
@@ -28,6 +34,22 @@ const validPortfolio = {
   summary: '개인 블로그 재구축 프로젝트',
   stack: ['Astro', 'TypeScript', 'Tailwind'],
   links: [{ repo: 'https://github.com/gze1206/blog.gze1206.net' }],
+};
+
+const validProfile = {
+  name: 'gze1206',
+  headline: '소프트웨어 개발자',
+  introduction: '게임과 웹을 만듭니다.',
+  skills: ['C#'],
+};
+
+const validExperience = {
+  organization: '공개 조직',
+  role: '개발자',
+  period: '2024.01 — 현재',
+  endDate: null,
+  highlights: ['공개 성과'],
+  visible: true,
 };
 
 describe('postSchema', () => {
@@ -197,5 +219,24 @@ describe('portfolioSchema', () => {
       }).success,
     ).toBe(true);
     expect(portfolioSchema.safeParse(validPortfolio).success).toBe(true);
+  });
+});
+
+describe('profileSchema', () => {
+  it('소개와 기술은 빈 값 없이 입력해야 한다', () => {
+    expect(profileSchema.safeParse(validProfile).success).toBe(true);
+    expect(profileSchema.safeParse({ ...validProfile, skills: [] }).success).toBe(false);
+  });
+});
+
+describe('experienceSchema', () => {
+  it('공개 설정과 기간을 포함한 경력만 허용한다', () => {
+    expect(experienceSchema.safeParse(validExperience).success).toBe(true);
+    expect(experienceSchema.safeParse({ ...validExperience, visible: undefined }).success).toBe(
+      false,
+    );
+    expect(experienceSchema.safeParse({ ...validExperience, period: undefined }).success).toBe(
+      false,
+    );
   });
 });
