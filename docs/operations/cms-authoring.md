@@ -12,7 +12,7 @@ Keystatic은 GitHub 저장소를 콘텐츠 원본으로 사용한다. 공개 블
 - 소유자 GitHub 계정만 접근하도록 Cloudflare Access를 `/keystatic*`, `/api/keystatic*` 앞에 설정한다.
 - GitHub App은 `gze1206/blog.gze1206.net` 단일 저장소에만 설치하고 Contents 읽기/쓰기 권한만 부여한다.
   설치 범위에서 **All repositories를 선택하지 않는다**. OAuth callback은 Worker의
-  `/keystatic/api/github/oauth/callback` 경로로 제한한다.
+  `/api/keystatic/github/oauth/callback` 경로로 제한한다.
 - `.env.example`의 네 값은 이름만 공유하는 템플릿이다. 실제 값은 저장소·커밋·이슈·문서에 넣지 않고,
   Cloudflare Worker의 암호화된 비밀값/환경 변수에만 등록한다.
 - 콘텐츠 브랜치의 Cloudflare preview가 준비돼 있어야 한다. preview가 없거나 인증이 실패하면 저장하거나

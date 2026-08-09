@@ -234,7 +234,7 @@ PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=
 
 - [ ] **Step 2: Configure the GitHub App and Cloudflare Worker manually**
 
-Set the OAuth callback to `https://<worker-host>/keystatic/api/github/oauth/callback`, grant only this repository’s Contents read/write permission, and save the four values only in Cloudflare encrypted Worker secrets/variables. Add Cloudflare Access in front of `/keystatic*` and `/api/keystatic*` with the owner’s GitHub identity.
+Set the OAuth callback to `https://<worker-host>/api/keystatic/github/oauth/callback`, grant only this repository’s Contents read/write permission, and save the four values only in Cloudflare encrypted Worker secrets/variables. Add Cloudflare Access in front of `/keystatic*` and `/api/keystatic*` with the owner’s GitHub identity.
 
 - [ ] **Step 3: Perform the real-device acceptance path**
 

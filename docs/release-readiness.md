@@ -33,8 +33,9 @@
 
 1. Cloudflare Workers에서 Git 연동 Worker를 만들고 `gze1206/blog.gze1206.net` 저장소와 `v4` 브랜치를
    연결한다. `master`는 현재 운영 중인 Nuxt 사이트이므로 이 단계에서 연결하지 않는다.
-2. Build command는 `pnpm build`, deploy command는 `pnpm exec wrangler deploy`로 설정한다. `dist/server`
-   Worker와 `dist/client` 정적 Assets가 함께 배포되는지 빌드 로그로 확인한다.
+2. Build command는 `pnpm build`, deploy command는
+   `pnpm exec wrangler deploy --config dist/server/wrangler.json`로 설정한다. `dist/server` Worker와
+   `dist/client` 정적 Assets가 함께 배포되는지 빌드 로그로 확인한다.
 3. 처음에는 Worker의 제공 URL에서 공개 경로와 `/keystatic`을 확인한다. `v4 → master` 병합은 전체
    전환 승인 뒤에만 수행한다.
 
@@ -65,7 +66,7 @@ Keystatic은 `github` storage와 Cloudflare Worker UI/API 브리지로 전환됐
   `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG`는 Cloudflare Worker의 암호화된 환경 변수/비밀값으로만 등록한다.
 - GitHub App은 `gze1206/blog.gze1206.net` 단일 저장소에만 Contents 읽기/쓰기 권한을 준다. 설치 범위에서
   **All repositories를 선택하지 않고**, callback URL은 Worker의
-  `/keystatic/api/github/oauth/callback` 경로로 제한한다.
+  `/api/keystatic/github/oauth/callback` 경로로 제한한다.
 - 공개 경로는 `dist/client` 정적 Assets로 남기고, 비밀값은 `/api/keystatic/*` Worker 실행 경로에만
   제공한다.
 - Cloudflare Access는 `/keystatic*`, `/api/keystatic*`를 소유자의 GitHub 신원으로 보호한다.
