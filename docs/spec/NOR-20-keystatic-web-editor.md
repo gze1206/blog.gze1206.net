@@ -48,7 +48,8 @@ Cloudflare Access 정책은 저장소에 기록하지 않는다. 인증·저장 
 
 다음은 아직 외부에서 수행하거나 증거를 남기지 않았다.
 
-- GitHub App을 이 저장소로 제한하고 Contents 읽기/쓰기 권한과 Worker callback을 실제로 설정
+- GitHub App을 `gze1206/blog.gze1206.net` 단일 저장소로 제한하고(All repositories 금지), Contents
+  읽기/쓰기 권한과 Worker callback을 실제로 설정
 - Cloudflare Access 보호와 Worker 비밀값/환경 변수 등록
 - 휴대기기 GitHub 인증, 이미지 업로드와 세 커스텀 블럭의 branch preview 확인
 - `draft` 제외, 발행 뒤 공개 페이지·RSS·사이트맵·검색 색인의 실제 확인

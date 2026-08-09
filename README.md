@@ -46,15 +46,18 @@ Keystatic은 GitHub storage를 사용한다. 공개 블로그는 정적 HTML로 
 ## 디렉토리 구조
 
 ```
-keystatic.config.ts  # CMS 스키마 (dev 전용 어드민)
+keystatic.config.ts  # GitHub storage CMS 스키마
 src/
   components/   # 정적 Astro 컴포넌트
   content/      # Content Collections
-  integrations/ # Astro 통합 (Keystatic dev 전용 등록 등)
+  integrations/ # keystaticWorker()를 포함한 Astro 통합
   islands/      # 인터랙티브 아일랜드 (client:* 격리)
   layouts/      # 페이지 레이아웃
-  pages/        # 라우트
+  pages/        # /api/keystatic 동적 Worker API를 포함한 라우트
   styles/       # Tailwind 진입점·전역 스타일
 public/         # 정적 에셋
 docs/           # 규약·로드맵·산출물
 ```
+
+Astro는 `keystaticWorker()`로 `/keystatic` 동적 UI 라우트를 등록하고, Cloudflare Worker는
+`/api/keystatic/*` 동적 API 라우트를 제공한다.
