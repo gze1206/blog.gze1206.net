@@ -45,43 +45,262 @@ body {
   color: var(--theme-foreground);
 }
 
-/* NOR-22: WebGL은 뒤늦게 올라오는 순수 장식이다. 이 정적인 배경이 저사양·축소 모션 폴백이다. */
-.interactive-canvas-shell {
+/* NOR-137: 홈은 읽기와 작업물을 앞세운 정적인 포트폴리오 표면이다. */
+.home-page {
+  width: 100%;
+}
+
+.home-hero {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-radius: 0.75rem;
+  padding: clamp(2rem, 6vw, 4.5rem);
+  border: 1px solid var(--theme-border);
+  border-radius: 1rem;
+  background: var(--theme-surface);
+  box-shadow: 0 1px 2px rgb(23 32 51 / 0.04);
 }
 
-.interactive-canvas-shell::before {
+.home-hero__decoration {
   position: absolute;
   z-index: -1;
   inset: 0;
   background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--theme-accent) 5%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(color-mix(in srgb, var(--theme-accent) 5%, transparent) 1px, transparent 1px),
     radial-gradient(
-      circle at 84% 22%,
-      color-mix(in srgb, var(--theme-accent) 14%, transparent),
-      transparent 42%
+      circle at 92% 6%,
+      color-mix(in srgb, var(--theme-accent) 12%, transparent),
+      transparent 34%
     ),
     radial-gradient(
-      circle at 16% 80%,
-      color-mix(in srgb, var(--theme-accent) 8%, transparent),
-      transparent 48%
+      circle at 8% 100%,
+      color-mix(in srgb, var(--theme-accent) 6%, transparent),
+      transparent 36%
     );
-  content: '';
-}
-
-.interactive-canvas {
-  position: absolute;
-  z-index: 0;
-  inset: 0;
+  background-size:
+    2rem 2rem,
+    2rem 2rem,
+    auto,
+    auto;
   pointer-events: none;
 }
 
-.interactive-canvas__surface {
-  display: block;
-  width: 100%;
-  height: 100%;
+.home-hero__content {
+  max-width: 48rem;
+}
+
+.home-eyebrow,
+.home-section__eyebrow {
+  color: var(--theme-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.home-title {
+  margin-top: 0.75rem;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 750;
+  letter-spacing: -0.055em;
+  line-height: 1;
+}
+
+.home-lede {
+  max-width: 42rem;
+  margin-top: 1.75rem;
+  color: var(--theme-foreground);
+  font-size: clamp(1.125rem, 2vw, 1.35rem);
+  font-weight: 500;
+  line-height: 1.75;
+}
+
+.home-summary {
+  max-width: 42rem;
+  margin-top: 1rem;
+  color: var(--theme-muted);
+  line-height: 1.8;
+}
+
+.home-hero__details {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: clamp(2rem, 5vw, 3.5rem);
+}
+
+.home-detail {
+  min-width: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--theme-border) 80%, transparent);
+}
+
+.home-detail__heading {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.home-detail__list {
+  margin-top: 0.75rem;
+  padding-left: 1.15rem;
+  color: var(--theme-muted);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  list-style: disc;
+}
+
+.home-detail__list li + li {
+  margin-top: 0.35rem;
+}
+
+.home-tech-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.home-tech-token {
+  padding: 0.3rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--theme-border) 90%, transparent);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--theme-surface) 86%, var(--theme-background));
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+
+.home-section {
+  margin-top: clamp(3.5rem, 8vw, 6rem);
+}
+
+.home-section__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.home-section__title {
+  order: -1;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+.home-project-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.home-project-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border: 1px solid var(--theme-border);
+  border-radius: 0.75rem;
+  background: var(--theme-surface);
+}
+
+.home-project-card__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.home-project-card__summary {
+  margin-top: 0.65rem;
+  color: var(--theme-muted);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.home-project-card__stack {
+  margin-top: 1.25rem;
+}
+
+.home-project-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.home-project-card__link,
+.home-text-link {
+  color: var(--theme-foreground);
+  font-size: 0.9375rem;
+  font-weight: 650;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--theme-accent) 55%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+}
+
+.home-project-card__link:hover,
+.home-text-link:hover {
+  color: var(--theme-accent);
+  text-decoration-color: currentcolor;
+}
+
+.home-empty-state {
+  margin-top: 1.25rem;
+  color: var(--theme-muted);
+}
+
+.home-recent-posts > article {
+  border-color: var(--theme-border);
+}
+
+.home-recent-posts > article > div:first-child {
+  color: var(--theme-muted);
+}
+
+.home-section__action {
+  margin-top: 1.75rem;
+}
+
+@media (min-width: 48rem) {
+  .home-hero__details {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 2.5rem;
+  }
+
+  .home-project-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.dark .home-hero,
+.dark .home-project-card {
+  box-shadow: none;
+}
+
+.dark .home-hero__decoration {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--theme-accent) 7%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(color-mix(in srgb, var(--theme-accent) 7%, transparent) 1px, transparent 1px),
+    radial-gradient(
+      circle at 92% 6%,
+      color-mix(in srgb, var(--theme-accent) 10%, transparent),
+      transparent 34%
+    );
+  background-size:
+    2rem 2rem,
+    2rem 2rem,
+    auto;
 }
 
 .skip-link {
