@@ -64,3 +64,31 @@ passed
 - 홈은 그래프를 렌더하지 않고 `/topics`를 유일한 관계 그래프 위치로 유지한다.
 - 프로젝트 링크의 새 탭 보안 속성(`rel="noopener noreferrer"`)과 글 카드의 제목·카테고리·태그 링크 계약을 보존했다.
 - 정적 출력에서 `about-heading`, `stack-heading`, `portfolio-heading`, `recent-posts-heading`과 캔버스 부재를 다시 확인했다.
+
+## 리뷰 수정
+
+- 기존 검증기는 `home-hero` 클래스가 있을 때만 `about-heading`·`stack-heading`을 검사했다. 따라서 히어로 전체가 사라진 경우를 놓칠 수 있었다.
+- hero 없는 fixture를 추가하고, 두 표지가 빠진 현재 동작을 먼저 확인했다.
+
+```text
+pnpm test scripts/verify-home-layout.test.ts
+1 file failed, 2 tests failed
+```
+
+- `REQUIRED_SECTION_MARKERS` 하나에 소개·기술·프로젝트·최근 글 표지를 모두 넣어 HTML 구조와 무관하게 검사하도록 고쳤다.
+
+```text
+pnpm test scripts/verify-home-layout.test.ts
+1 file passed, 3 tests passed
+```
+
+- `src`에서 `three` import/dynamic import/require가 없음을 확인한 뒤 `pnpm remove three`로 직접 의존성과 lockfile 항목을 제거했다.
+
+```text
+pnpm test       # 31 files, 309 tests passed
+pnpm lint       # passed
+pnpm format:check # passed
+pnpm build      # passed, 64 pages
+```
+
+빌드된 `dist/index.html`에 다시 검증기를 실행했고, 소스·manifest·lockfile의 `three` 참조 검색과 `git diff --check`도 통과했다.

@@ -1,11 +1,8 @@
 const REQUIRED_SECTION_MARKERS = [
-  ['portfolio-heading', 'portfolio section is missing'],
-  ['recent-posts-heading', 'recent posts section is missing'],
-];
-
-const HERO_MARKERS = [
   ['about-heading', 'about section is missing'],
   ['stack-heading', 'stack section is missing'],
+  ['portfolio-heading', 'portfolio section is missing'],
+  ['recent-posts-heading', 'recent posts section is missing'],
 ];
 
 /**
@@ -19,12 +16,6 @@ export function verifyHomeLayout(html) {
 
   if (html.includes('<canvas')) {
     missing.push('canvas must not be present');
-  }
-
-  if (html.includes('home-hero')) {
-    for (const [marker, message] of HERO_MARKERS) {
-      if (!html.includes(marker)) missing.push(message);
-    }
   }
 
   for (const [marker, message] of REQUIRED_SECTION_MARKERS) {
