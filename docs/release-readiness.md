@@ -63,10 +63,14 @@ Keystatic은 `github` storage와 Cloudflare Worker UI/API 브리지로 전환됐
 
 - `KEYSTATIC_GITHUB_CLIENT_ID`, `KEYSTATIC_GITHUB_CLIENT_SECRET`, `KEYSTATIC_SECRET`,
   `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG`는 Cloudflare Worker의 암호화된 환경 변수/비밀값으로만 등록한다.
-- GitHub App은 이 저장소에만 write 권한을 주고, callback URL은 실제 공개 `/keystatic` 주소로
-  제한한다.
+- GitHub App은 이 저장소에만 Contents 읽기/쓰기 권한을 주고, callback URL은 Worker의
+  `/keystatic/api/github/oauth/callback` 경로로 제한한다.
 - 공개 경로는 `dist/client` 정적 Assets로 남기고, 비밀값은 `/api/keystatic/*` Worker 실행 경로에만
   제공한다.
+- Cloudflare Access는 `/keystatic*`, `/api/keystatic*`를 소유자의 GitHub 신원으로 보호한다.
+- 실제 작성·preview·발행 절차와 `draft` 기준은
+  [CMS 원격 작성과 안전한 발행](./operations/cms-authoring.md)을 따른다. GitHub App·Access·Worker
+  비밀값·실기기 검증과 공개 증거는 아직 미완료다.
 
 참고: [Keystatic GitHub mode](https://keystatic.com/docs/github-mode),
 [ADR 0012](./decisions/0012-keystatic-integration-strategy.md).
