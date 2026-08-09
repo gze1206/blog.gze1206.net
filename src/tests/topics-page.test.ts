@@ -30,4 +30,12 @@ describe('/topics 정적 탐색과 분류 맵 계약', () => {
     );
     expect(graphSource).toContain('href={href}');
   });
+
+  it('투명 hit area를 보이는 노드 원과 분리한다', () => {
+    const stylesSource = readSource('src/styles/global.css');
+
+    expect(stylesSource).toContain(
+      '.taxonomy-graph-node circle:not(.taxonomy-graph-node-hit-area)',
+    );
+  });
 });

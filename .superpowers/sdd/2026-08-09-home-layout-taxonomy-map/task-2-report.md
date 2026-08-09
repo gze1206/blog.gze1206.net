@@ -44,3 +44,7 @@ pnpm build         # passed, 64 pages
 - `is-filtering`이 있을 때만 `:not(.is-related)`를 흐리게 해, 비활성 상태의 정보 대비를 낮추지 않는다.
 - 그래프가 렌더되지 않는 환경에서도 정적 탐색 목록을 숨기는 CSS나 조건부 렌더링은 추가하지 않았다.
 - 홈·WebGL 파일은 변경하지 않았다.
+
+## 리뷰 수정
+
+리뷰에서 `.taxonomy-graph-node circle`의 specificity가 `.taxonomy-graph-node-hit-area`보다 높아 투명 hit area가 채워진 원으로 보일 수 있음을 확인했다. 회귀 테스트를 먼저 추가해 실패를 확인하고, 일반 circle 선택자를 `.taxonomy-graph-node circle:not(.taxonomy-graph-node-hit-area)`로 좁혔다. 이로써 hit area는 투명 상태를 유지하고 보이는 노드 원에만 `currentColor` 채움이 적용된다.

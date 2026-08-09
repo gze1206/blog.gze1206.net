@@ -908,7 +908,7 @@ pre.astro-code:hover > .code-copy-btn {
   color: var(--theme-accent);
 }
 
-.taxonomy-graph-node circle {
+.taxonomy-graph-node circle:not(.taxonomy-graph-node-hit-area) {
   fill: currentColor;
 }
 
