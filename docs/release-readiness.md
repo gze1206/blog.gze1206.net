@@ -9,17 +9,17 @@
 아직 실행하지 않았다. 현재 운영 중인 `master` 블로그와
 도메인/DNS에는 이 작업으로 변경을 가하지 않았다.
 
-- `pnpm test` — 29 파일, 307 테스트 통과
+- `pnpm test` — 31 파일, 312 테스트 통과
 - `pnpm lint`, `pnpm build`, `pnpm format:check` 통과
 - 생성된 64개 HTML의 내부 링크, `404.html`, RSS, 사이트맵 XML, draft 제외 확인
-- 홈의 정적 About·새 글·OG 이미지·다크 모드·장식 캔버스의 `aria-hidden` 확인
-- `three`(724,461 bytes)는 `InteractiveCanvas`의 동적 import 청크이며, 홈 HTML 초기 아일랜드
-  엔트리에는 포함되지 않는다.
+- 홈의 정적 About·기술 스택·포트폴리오·새 글·OG 이미지·다크 모드와 CSS 장식 레이어 확인
+- NOR-137에서 `InteractiveCanvas`와 Three.js 의존성을 제거했다. 홈 HTML에는 `<canvas>`나 WebGL
+  아일랜드가 없고, 장식은 `aria-hidden` CSS 레이어만 사용한다.
 
 ### 알려진 비차단 항목
 
-- Vite가 500KB 초과 청크 경고를 낸다. Mermaid의 기존 청크와 Three.js 청크가 대상이다. Three.js는
-  `client:visible` 이후 지원되는 데스크톱에서만 로드된다.
+- Vite가 500KB 초과 Mermaid 청크 경고를 낸다. Three.js 청크는 NOR-137에서 제거되어 더 이상
+  경고 대상이나 런타임 의존성이 아니다.
 - `pnpm peers check`는 `eslint-plugin-jsx-a11y@6.10.2`가 ESLint 10을 아직 피어 범위에
   포함하지 않는다고 보고한다. 실제 `pnpm lint`는 통과한다. 의존성을 억지로 내리거나 제거하지 말고,
   플러그인 업데이트 시 재확인한다.
