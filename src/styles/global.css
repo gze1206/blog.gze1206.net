@@ -825,15 +825,15 @@ pre.astro-code:hover > .code-copy-btn {
   .block-github {
     transition: none;
   }
-
-  .taxonomy-graph-section {
-    display: none;
-  }
 }
 
-/* --- 분류 관계 그래프 (NOR-135) --- */
+/* --- 분류 관계 그래프 (NOR-137) ---
+   그래프는 정적 분류 목록 다음에 놓이는 보조 탐색이다. 좁은 화면에서는 잘라내지 않고 가로로
+   이동시켜 링크의 44px 클릭 영역을 보존한다. */
 .taxonomy-graph-scroll {
   overflow-x: auto;
+  background: color-mix(in srgb, var(--theme-surface) 92%, var(--theme-accent));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--theme-foreground) 7%, transparent);
 }
 
 .taxonomy-graph {
@@ -842,17 +842,79 @@ pre.astro-code:hover > .code-copy-btn {
   color: var(--theme-foreground);
 }
 
+.taxonomy-graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  color: var(--theme-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.taxonomy-graph-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.taxonomy-graph-legend-marker {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid var(--theme-accent);
+}
+
+.taxonomy-graph-legend-marker-category {
+  border-radius: 0.125rem;
+  background: var(--theme-accent);
+}
+
+.taxonomy-graph-legend-marker-tag {
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--theme-accent) 20%, transparent);
+}
+
+.taxonomy-graph-column-label {
+  fill: var(--theme-muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 .taxonomy-graph-edge {
   stroke: var(--color-border);
   opacity: 0.72;
+  transition:
+    opacity 0.16s ease,
+    stroke 0.16s ease;
 }
 
 .taxonomy-graph-node {
   color: var(--color-accent);
+  transition: opacity 0.16s ease;
+}
+
+.taxonomy-graph-section.is-filtering .taxonomy-graph-edge:not(.is-related),
+.taxonomy-graph-section.is-filtering .taxonomy-graph-node:not(.is-related) {
+  opacity: 0.2;
+}
+
+.taxonomy-graph-edge.is-related {
+  stroke: var(--theme-accent);
+  opacity: 0.95;
+}
+
+.taxonomy-graph-node.is-related {
+  color: var(--theme-accent);
 }
 
 .taxonomy-graph-node circle {
   fill: currentColor;
+}
+
+.taxonomy-graph-node-hit-area {
+  fill: transparent;
+  pointer-events: all;
 }
 
 .taxonomy-graph-node text {
@@ -865,6 +927,24 @@ pre.astro-code:hover > .code-copy-btn {
 .taxonomy-graph-node:focus text {
   fill: var(--color-accent);
   text-decoration: underline;
+}
+
+.taxonomy-graph-node:focus-visible circle:not(.taxonomy-graph-node-hit-area) {
+  fill: var(--theme-surface);
+  stroke: var(--theme-accent);
+  stroke-width: 3;
+}
+
+.taxonomy-graph-node:focus-visible text {
+  fill: var(--theme-accent);
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taxonomy-graph-edge,
+  .taxonomy-graph-node {
+    transition: none;
+  }
 }
 
 /* --- Custom blocks: 콜아웃 (NOR-15) ---
