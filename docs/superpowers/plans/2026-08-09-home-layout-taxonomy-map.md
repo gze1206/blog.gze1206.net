@@ -106,11 +106,11 @@ git commit -m "✨ feat(taxonomy): 관계 그래프 강조 탐색 추가 (NOR-13
 
 - [ ] **Step 1: Write the failing static markup contract**
 
-Create `src/pages/topics.test.ts` that reads `src/pages/topics.astro` and asserts it contains `분류 맵`; read `src/islands/TaxonomyGraph.tsx` and assert it contains the visible legend labels `카테고리` and `태그`, SVG `title`/`desc`, and anchor `href` construction.
+Create `src/tests/topics-page.test.ts` that reads `src/pages/topics.astro` and asserts it contains `분류 맵`; read `src/islands/TaxonomyGraph.tsx` and assert it contains the visible legend labels `카테고리` and `태그`, SVG `title`/`desc`, and anchor `href` construction. Tests must stay outside `src/pages/` because Astro treats that directory as file-based routes.
 
 - [ ] **Step 2: Verify the contract is red**
 
-Run: `pnpm test src/pages/topics.test.ts`
+Run: `pnpm test src/tests/topics-page.test.ts`
 
 Expected: FAIL because the current page has neither the `분류 맵` framing nor a visible category/tag legend.
 
@@ -131,7 +131,7 @@ Expected: PASS; `dist/client/topics/index.html` contains static category/tag lin
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/pages/topics.astro src/pages/topics.test.ts src/islands/TaxonomyGraph.tsx src/components/TaxonomyExplorer.astro src/styles/global.css
+git add src/pages/topics.astro src/tests/topics-page.test.ts src/islands/TaxonomyGraph.tsx src/components/TaxonomyExplorer.astro src/styles/global.css
 git commit -m "🎨 style(topics): 분류 맵 탐색 계층 정돈 (NOR-137)"
 ```
 
