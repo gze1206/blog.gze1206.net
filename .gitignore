@@ -26,6 +26,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Agent execution scratch space
+.superpowers/
+
 # OS / editor
 .DS_Store
 .vscode/*
