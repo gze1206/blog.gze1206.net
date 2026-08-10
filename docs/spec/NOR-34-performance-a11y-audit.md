@@ -25,7 +25,7 @@ status: in-progress
 
 ## 검증 방법
 
-- [x] `pnpm test` — 293개 테스트 통과
+- [x] `pnpm test` — 36 파일, 322개 테스트 통과 (2026-08-10 병합 후 재검증)
 - [x] `pnpm lint`, `pnpm build`, `pnpm format:check` 통과
 - [x] Playwright + axe로 `/`, `/topics/`, `/posts/` 위반 0건
 - [x] Lighthouse 로컬 감사: 접근성·SEO 100점, 외부 Pretendard CDN 요청 0건
@@ -49,3 +49,15 @@ status: in-progress
 - `pnpm peers check`는 `eslint-plugin-astro@3.0.1`이 요구하는 ESLint 10과,
   `eslint-plugin-jsx-a11y@6.10.2`가 선언한 ESLint 9 이하 peer 범위의 상위 패키지 충돌을 보고한다.
   접근성 린트 규칙을 제거하지 않고, 플러그인 지원 범위가 갱신될 때 재검토한다.
+
+## 병합 후 정합성 확인 (2026-08-10, 로컬)
+
+- NOR-20·NOR-136·NOR-137·NOR-138을 `v4`에 통합한 뒤 전체 테스트 36 파일·322개, lint, format,
+  build와 `git diff --check`를 다시 통과했다.
+- 고정 포트의 Astro preview에서 `/`, `/topics/`, `/blog/`, `/blog/hello-world/`, `/rss.xml`,
+  `/sitemap-index.xml`, `/robots.txt`는 모두 200으로 응답했다.
+- `/api/keystatic/tree`는 GitHub App 환경 변수 세 개가 비어 있는 로컬 상태에서 500을 반환한다. 이는
+  비밀값 없이 원격 CMS를 작동시키지 않는 의도된 보호 상태이며, Cloudflare Worker 비밀값·Access 설정 뒤
+  실기기 검증으로 해소해야 한다.
+- Playwright용 Chromium과 Lighthouse CLI는 이 로컬 환경에 설치되어 있지 않아, 2026-08-09의
+  브라우저 감사 수치를 재측정하거나 갱신하지 않았다. 실제 사용자 CWV 판정은 여전히 배포 후 항목이다.
