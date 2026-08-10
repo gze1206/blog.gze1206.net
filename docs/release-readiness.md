@@ -1,6 +1,6 @@
 # Blog v4 릴리스 전환 체크리스트
 
-> 작성일: 2026-08-09 · 범위: 로컬 구현 완료 후 외부 공개 작업 인수
+> 작성일: 2026-08-09 · 최종 로컬 갱신: 2026-08-10 · 범위: 로컬 구현 완료 후 외부 공개 작업 인수
 
 ## 현재 상태
 
@@ -9,12 +9,15 @@
 아직 실행하지 않았다. 현재 운영 중인 `master` 블로그와
 도메인/DNS에는 이 작업으로 변경을 가하지 않았다.
 
-- `pnpm test` — 31 파일, 312 테스트 통과
+- `pnpm test` — 36 파일, 322 테스트 통과
 - `pnpm lint`, `pnpm build`, `pnpm format:check` 통과
 - 생성된 64개 HTML의 내부 링크, `404.html`, RSS, 사이트맵 XML, draft 제외 확인
 - 홈의 정적 About·기술 스택·포트폴리오·새 글·OG 이미지·다크 모드와 CSS 장식 레이어 확인
 - NOR-137에서 `InteractiveCanvas`와 Three.js 의존성을 제거했다. 홈 HTML에는 `<canvas>`나 WebGL
   아일랜드가 없고, 장식은 `aria-hidden` CSS 레이어만 사용한다.
+- 고정 포트의 로컬 preview에서 `/`, `/topics/`, `/blog/`, `/blog/hello-world/`, `/rss.xml`,
+  `/sitemap-index.xml`, `/robots.txt`는 200으로 응답했다. `/api/keystatic/tree`의 500은 GitHub App
+  환경 변수 미등록 시의 의도된 보호 상태이며, 외부 CMS 설정 완료 뒤에만 성공 응답을 기대한다.
 
 ### 알려진 비차단 항목
 
