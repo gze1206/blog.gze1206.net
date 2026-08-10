@@ -32,8 +32,9 @@ ADR 0012의 로컬 전용 Keystatic은 이 요구의 첫 단계였지만, 배포
 
 **C안을 우선 구현하되, Worker 호환성 검증을 필수 게이트로 둔다.** `nodejs_compat`를 켠 Astro
 Cloudflare Worker에서 Keystatic GitHub 모드를 실행하고, 일반 공개 경로는 prerender로 유지한다.
-로컬·미리보기에서 인증 왕복과 저장을 검증하지 못하면 B안으로 전환하며, 검증 실패 상태의 런타임을
-공개 배포하지 않는다.
+`@keystatic/astro` 기본 API 라우트는 Astro 6에서 제거된 환경 API를 참조하므로, UI 라우트 주입과
+공개 `@keystatic/core/api/generic` 핸들러를 잇는 작은 Worker 브리지를 저장소가 소유한다. 로컬·미리보기에서
+인증 왕복과 저장을 검증하지 못하면 B안으로 전환하며, 검증 실패 상태의 런타임을 공개 배포하지 않는다.
 
 콘텐츠의 진실 원천은 GitHub 저장소다. 편집은 `v4`에서 분기한 `content/<slug>` 브랜치에서 시작하고,
 Cloudflare 미리보기에서 전체 페이지를 검토한 뒤 `v4`로 병합한다. `draft: true`는 병합된 뒤에도
@@ -45,7 +46,8 @@ Cloudflare Worker는 정적 자산을 Assets 바인딩으로 제공하므로, �
 매 요청 SSR로 바꿀 필요가 없다. Astro 공식 Cloudflare 어댑터는 prerender와 온디맨드 라우트를 함께
 지원하며, Cloudflare는 `nodejs_compat`로 다수 Node API를 제공한다. 다만 Keystatic 공식 문서는
 Node API가 가능한 호스트를 요구할 뿐 Worker를 호환 대상으로 명시하지 않으므로, 문서만으로 성공을
-가정하지 않는다.
+가정하지 않는다. 실제로 기본 Astro 통합의 환경 변수 접근은 Worker에서 실패했으며, 이 브리지는 그
+호환 경계를 한 파일에 제한한다.
 
 GitHub 모드는 저장소에 대한 최소 권한 GitHub App과 기존 커밋 이력을 제공한다. 브랜치 미리보기와
 `draft`를 함께 사용하면 오발행을 한 단계가 아니라 두 단계에서 막을 수 있다.

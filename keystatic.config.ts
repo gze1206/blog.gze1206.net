@@ -6,11 +6,11 @@
  * 그래서 필드 이름·타입·필수 여부·기본값은 zod 와 1:1 로 맞춰 두었다. 대응표와 Keystatic
  * 으로 표현할 수 없는 제약(동반 필수 등)은 `docs/spec/NOR-19-keystatic.md` 에 있다.
  *
- * 어드민 UI 는 **개발 서버에서만** 붙는다(ADR 0012). 프로덕션 빌드에는 `/keystatic`,
- * `/api/keystatic` 라우트가 아예 존재하지 않는다 — `src/integrations/keystatic-dev.ts` 참고.
+ * 어드민 UI 는 Cloudflare Worker 의 `/keystatic`과 `/api/keystatic`에서 실행한다(ADR 0015).
+ * GitHub App 비밀값은 배포 환경 변수로만 제공하며 이 파일에는 넣지 않는다.
  */
 
-import { collection, config, fields } from '@keystatic/core';
+import { collection, config, fields, singleton } from '@keystatic/core';
 import { block, wrapper } from '@keystatic/core/content-components';
 import { SLUG_PATTERN, SLUG_PATTERN_MESSAGE } from './src/content/slug-pattern';
 
@@ -88,11 +88,32 @@ function slugField(label: string, description: string) {
 }
 
 export default config({
-  storage: { kind: 'local' },
+  storage: { kind: 'github', repo: 'gze1206/blog.gze1206.net' },
 
   ui: {
     brand: { name: 'gze1206.net' },
-    navigation: { 콘텐츠: ['posts', 'series', 'portfolio'] },
+    navigation: { 콘텐츠: ['posts', 'series', 'portfolio', 'profile', 'experience'] },
+  },
+
+  singletons: {
+    profile: singleton({
+      label: '소개',
+      path: 'src/content/profile',
+      format: { data: 'json' },
+      schema: {
+        name: fields.text({ label: '이름', validation: { isRequired: true } }),
+        headline: fields.text({ label: '한 줄 소개', validation: { isRequired: true } }),
+        introduction: fields.text({
+          label: '소개',
+          multiline: true,
+          validation: { isRequired: true },
+        }),
+        skills: fields.array(fields.text({ label: '기술', validation: { isRequired: true } }), {
+          label: '주요 기술',
+          validation: { length: { min: 1 } },
+        }),
+      },
+    }),
   },
 
   collections: {
@@ -230,6 +251,37 @@ export default config({
         thumbnail: fields.text({
           label: '썸네일 경로',
           description: '선택. 비워 두면 저장되지 않습니다.',
+        }),
+      },
+    }),
+
+    experience: collection({
+      label: '경력',
+      path: 'src/content/experience/*',
+      format: { data: 'json' },
+      slugField: 'id',
+      columns: ['organization', 'role', 'visible'],
+      schema: {
+        id: slugField('ID', '항목을 구분하는 식별자입니다. 파일 이름이 됩니다.'),
+        organization: fields.text({ label: '조직', validation: { isRequired: true } }),
+        role: fields.text({ label: '역할', validation: { isRequired: true } }),
+        period: fields.text({
+          label: '공개 기간',
+          description: '공개해도 되는 기간 표기를 직접 입력합니다.',
+          validation: { isRequired: true },
+        }),
+        endDate: fields.date({
+          label: '종료일',
+          description: '정렬 전용입니다. 현재 재직 중이면 비워 둡니다.',
+        }),
+        highlights: fields.array(fields.text({ label: '성과' }), {
+          label: '주요 성과',
+          validation: { length: { min: 1 } },
+        }),
+        visible: fields.checkbox({
+          label: '공개',
+          description: '켜야 정적 사이트에 표시됩니다.',
+          defaultValue: false,
         }),
       },
     }),

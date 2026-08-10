@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
+import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
 import markdoc from '@astrojs/markdoc';
 import react from '@astrojs/react';
@@ -10,7 +11,7 @@ import rehypeKatex from 'rehype-katex';
 import cilGrammar from './src/shiki/langs/cil.tmLanguage.json';
 import { codeBlockTransformers } from './src/shiki/transformers/index.ts';
 import { rehypeHeadingAnchors } from './src/rehype/heading-anchors.ts';
-import { keystaticDev } from './src/integrations/keystatic-dev.ts';
+import { keystaticWorker } from './src/integrations/keystatic-worker.ts';
 import { ogImageAudit } from './src/integrations/og-image-audit.ts';
 import { isSitemapPage } from './src/lib/sitemap.ts';
 
@@ -22,14 +23,15 @@ export default defineConfig({
   // 내부 링크(`/blog`, `/blog/2`)와 `src/lib/site-meta.ts` 가 만드는 canonical 이 같은 모양이라,
   // 여기까지 맞춰 두면 dev 서버·프로덕션·canonical 이 한 벌로 움직인다.
   trailingSlash: 'never',
-  // `output` 을 지정하지 않는다 = 완전한 정적 출력. Keystatic 어드민은 온디맨드 라우트라
-  // 정적 출력과 공존할 수 없어서 개발 서버에서만 붙인다(ADR 0012).
+  // 공개 라우트는 기본적으로 prerender한다. Keystatic 이 주입하는 두 라우트만 Worker 에서
+  // 온디맨드로 실행한다(ADR 0015).
+  adapter: cloudflare({ imageService: 'compile', prerenderEnvironment: 'node' }),
   // `ogImageAudit` 는 빌드 끝에 dist 의 og:image 참조가 실재하는지 확인만 한다(경고만, NOR-28).
   integrations: [
     sitemap({ filter: isSitemapPage }),
     markdoc(),
     react(),
-    keystaticDev(),
+    keystaticWorker(),
     ogImageAudit(),
   ],
   markdown: {

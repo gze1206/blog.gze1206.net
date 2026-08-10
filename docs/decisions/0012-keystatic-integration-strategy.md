@@ -1,12 +1,15 @@
 ---
 number: '0012'
 title: Keystatic 통합 전략 — 정적 출력 유지와 series/portfolio 매핑
-status: accepted
+status: partially superseded by 0015
 date: 2026-07-22
 related: [NOR-19]
 ---
 
 # 0012. Keystatic 통합 전략 — 정적 출력 유지와 series/portfolio 매핑
+
+> 2026-08-09: 정적 출력·series/portfolio 매핑 결정은 유지한다. 원격 Keystatic 런타임의 dev 전용
+> 제한은 [ADR 0015](./0015-cms-publishing-runtime-and-workflow.md)로 대체됐다.
 
 ## 맥락 (Context)
 
@@ -105,8 +108,8 @@ id와 같아서 `posts.series`가 가리키던 값도, `getSeriesById()`도, 시
   - `astro.config.mjs`가 dev 전용 통합을 **정적으로** import 하므로(훅 안에서 `await import`를 하면
     Vite 모듈 러너가 이미 닫혀 있어 터진다) **빌드에도 전체 설치가 필요하다** —
     `pnpm install --prod` 후의 `pnpm build`는 실패한다. 배포(NOR-6)는 전체 설치를 전제로 한다.
-  - 기존 `.md` 글 20편은 어드민 목록에 뜨지 않는다(대부분 픽스처다). 필요해지면 `.md` 전용 컬렉션을
-    하나 더 두거나 `.mdoc`으로 옮기면 된다.
+  - Markdown/Markdoc 렌더 차이를 검증하는 `.md` 스모크·픽스처는 어드민 목록에 뜨지 않는다. 공개
+    글은 NOR-20에서 `.mdoc`으로 이관해 CMS가 관리한다.
   - `@keystatic/core`가 `@keystar/ui`·`react-aria`·`react-stately`를 dependencies와
     peerDependencies에 **동시에** 선언해 pnpm이 설치를 건너뛴다. 세 패키지를 이 저장소가 직접
     명시해야 어드민이 뜬다(빠지면 `Could not resolve "@keystar/ui/layout"`).

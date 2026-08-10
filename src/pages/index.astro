@@ -1,14 +1,19 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
-import { getVisiblePosts } from '../lib/content';
+import { getProfile, getVisiblePosts } from '../lib/content';
+import { getVisibleExperiences } from '../lib/experience';
 import { buildPersonJsonLd } from '../lib/json-ld';
 import { getCollection } from 'astro:content';
-import InteractiveCanvas from '../islands/InteractiveCanvas';
 
 // 루트 페이지의 서사·포트폴리오는 NOR-21~23 범위다. 여기서는 최신 글로 가는 길만 낸다.
-const recentPosts = (await getVisiblePosts()).slice(0, 3);
-const portfolio = await getCollection('portfolio');
+const [allPosts, portfolio, profile, experiences] = await Promise.all([
+  getVisiblePosts(),
+  getCollection('portfolio'),
+  getProfile(),
+  getVisibleExperiences(),
+]);
+const recentPosts = allPosts.slice(0, 3);
 ---
 
 <BaseLayout
@@ -16,58 +21,69 @@ const portfolio = await getCollection('portfolio');
   description="게임 개발과 웹·서버 개발을 기록하는 gze1206의 개인 블로그입니다."
   jsonLd={buildPersonJsonLd('https://gze1206.net/')}
 >
-  <main id="main-content" class="mx-auto max-w-3xl px-4 py-16">
-    <section class="interactive-canvas-shell" aria-labelledby="about-heading">
-      <InteractiveCanvas client:visible />
-      <div class="relative z-10">
-        <p class="text-accent text-sm font-semibold tracking-wide">GAME · WEB · SERVER</p>
-        <h1 id="about-heading" class="mt-3 text-4xl font-bold tracking-tight">gze1206</h1>
-        <p class="mt-4 text-lg leading-8 text-gray-700 dark:text-gray-300">
-          4년 이상 게임 클라이언트·서버와 웹 서비스를 개발해 온 소프트웨어 개발자입니다. 플레이
-          경험과 운영 환경 모두에서 오래 유지되는 구조를 고민합니다.
-        </p>
-        <p class="mt-4 leading-7 text-gray-700 dark:text-gray-300">
-          C#을 주력으로 Unity와 ASP.NET Core를 다루며, 필요에 따라 TypeScript·Node.js·React와
-          데이터베이스·배포 환경까지 이어서 만듭니다. 게임의 기능을 구현하는 일과 운영 중인 서비스를
-          안정적으로 고치는 일 사이를 오가며 쌓은 경험을 이곳에 기록합니다.
-        </p>
+  <main id="main-content" class="home-page mx-auto max-w-5xl px-4 py-12 sm:py-16">
+    <section class="home-hero" aria-labelledby="about-heading">
+      <div class="home-hero__decoration" aria-hidden="true"></div>
+      <div class="home-hero__content">
+        <p class="home-eyebrow">{profile.data.headline}</p>
+        <h1 id="about-heading" class="home-title">{profile.data.name}</h1>
+        <p class="home-lede">{profile.data.introduction}</p>
 
-        <div class="mt-8 grid gap-6 sm:grid-cols-2">
-          <section aria-labelledby="experience-heading">
-            <h2 id="experience-heading" class="text-xl font-bold">경험</h2>
-            <ul class="mt-3 list-disc space-y-2 pl-5 text-gray-700 dark:text-gray-300">
-              <li>MMORPG 클라이언트·서버 개발과 일본 라이브 서비스 운영</li>
-              <li>플레이어블 광고, 개발 도구, 성능 최적화</li>
-              <li>개인 프로젝트·외주에서의 서버와 웹 개발</li>
+        <div class="home-hero__details">
+          {
+            experiences.length > 0 && (
+              <section class="home-detail" aria-labelledby="experience-heading">
+                <h2 id="experience-heading" class="home-detail__heading">
+                  경력
+                </h2>
+                <ul class="home-detail__list">
+                  {experiences.map((experience) => (
+                    <li>
+                      <p>
+                        {experience.data.organization} · {experience.data.role}
+                      </p>
+                      <p>{experience.data.period}</p>
+                      <ul>
+                        {experience.data.highlights.map((highlight) => (
+                          <li>{highlight}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
+          <section class="home-detail" aria-labelledby="stack-heading">
+            <h2 id="stack-heading" class="home-detail__heading">주요 기술</h2>
+            <ul class="home-tech-list" aria-label="주요 기술 목록">
+              {profile.data.skills.map((skill) => <li class="home-tech-token">{skill}</li>)}
             </ul>
-          </section>
-          <section aria-labelledby="stack-heading">
-            <h2 id="stack-heading" class="text-xl font-bold">주요 기술</h2>
-            <p class="mt-3 text-gray-700 dark:text-gray-300">
-              C#, Unity, ASP.NET Core, TypeScript, Node.js, React, Astro, PostgreSQL, Redis, Docker,
-              Cloudflare
-            </p>
           </section>
         </div>
       </div>
     </section>
 
-    <section class="mt-14" aria-labelledby="portfolio-heading">
-      <h2 id="portfolio-heading" class="text-2xl font-bold">프로젝트</h2>
-      <div class="mt-5 grid gap-4">
+    <section class="home-section" aria-labelledby="portfolio-heading">
+      <div class="home-section__heading">
+        <p class="home-section__eyebrow">SELECTED WORK</p>
+        <h2 id="portfolio-heading" class="home-section__title">프로젝트</h2>
+      </div>
+      <div class="home-project-grid">
         {
           portfolio.map((entry) => (
-            <article class="border-border bg-surface rounded-lg border p-5">
-              <h3 class="text-xl font-bold">{entry.data.title}</h3>
-              <p class="mt-2 text-gray-700 dark:text-gray-300">{entry.data.summary}</p>
-              <ul class="mt-3 flex flex-wrap gap-2" aria-label={`${entry.data.title} 기술 스택`}>
+            <article class="home-project-card">
+              <h3 class="home-project-card__title">{entry.data.title}</h3>
+              <p class="home-project-card__summary">{entry.data.summary}</p>
+              <ul
+                class="home-tech-list home-project-card__stack"
+                aria-label={`${entry.data.title} 기술 스택`}
+              >
                 {entry.data.stack.map((technology) => (
-                  <li class="rounded bg-gray-100 px-2 py-1 text-sm dark:bg-gray-800">
-                    {technology}
-                  </li>
+                  <li class="home-tech-token">{technology}</li>
                 ))}
               </ul>
-              <div class="mt-4 flex flex-wrap gap-3">
+              <div class="home-project-card__links">
                 {entry.data.links
                   .flatMap((link) => Object.entries(link))
                   .map(([kind, url]) => (
@@ -75,7 +91,7 @@ const portfolio = await getCollection('portfolio');
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="rounded font-semibold underline"
+                      class="home-project-card__link"
                     >
                       {kind}
                     </a>
@@ -87,21 +103,24 @@ const portfolio = await getCollection('portfolio');
       </div>
     </section>
 
-    <section class="mt-14" aria-labelledby="recent-posts-heading">
-      <h2 id="recent-posts-heading" class="text-2xl font-bold">최근 글</h2>
+    <section class="home-section home-section--posts" aria-labelledby="recent-posts-heading">
+      <div class="home-section__heading">
+        <p class="home-section__eyebrow">WRITING</p>
+        <h2 id="recent-posts-heading" class="home-section__title">최근 글</h2>
+      </div>
       {
         recentPosts.length === 0 ? (
-          <p class="mt-4 text-gray-600 dark:text-gray-400">아직 발행된 글이 없습니다.</p>
+          <p class="home-empty-state">아직 발행된 글이 없습니다.</p>
         ) : (
-          <div>
+          <div class="home-recent-posts">
             {recentPosts.map((post) => (
               <PostCard post={post} headingLevel={3} />
             ))}
           </div>
         )
       }
-      <p class="mt-8">
-        <a href="/blog" class="rounded font-semibold underline">블로그 글 전체 보기</a>
+      <p class="home-section__action">
+        <a href="/blog" class="home-text-link">블로그 글 전체 보기</a>
       </p>
     </section>
   </main>

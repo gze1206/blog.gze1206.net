@@ -4,7 +4,7 @@
 
 **Goal:** Allow the owner to safely author, preview, and publish every public blog content type from a browser, including Markdoc component blocks and images.
 
-**Architecture:** Deploy Astro in hybrid mode to one Cloudflare Worker: all existing public routes remain prerendered static assets, while Keystatic owns only `/keystatic` and `/api/keystatic`. Keystatic GitHub storage writes to a `content/<slug>` branch; a Cloudflare preview is reviewed before merge to `v4`, and the existing `draft` flag is a second publication guard. A Worker compatibility spike is an explicit gate; it falls back to a dedicated Node administrator only if the documented checks fail.
+**Architecture:** Deploy Astro’s static-default hybrid behavior to one Cloudflare Worker: all existing public routes remain prerendered static assets, while Keystatic owns only `/keystatic` and `/api/keystatic`. Keystatic GitHub storage writes to a `content/<slug>` branch; a Cloudflare preview is reviewed before merge to `v4`, and the existing `draft` flag is a second publication guard. A Worker compatibility spike is an explicit gate; it falls back to a dedicated Node administrator only if the documented checks fail.
 
 **Tech Stack:** Astro 7, `@astrojs/cloudflare`, Cloudflare Workers `nodejs_compat`, Keystatic GitHub mode, GitHub App, Content Collections/zod, Markdoc, Vitest.
 
@@ -24,42 +24,39 @@
 **Files:**
 
 - Modify: `package.json`, `pnpm-lock.yaml`, `astro.config.mjs`, `keystatic.config.ts`
-- Create: `wrangler.jsonc`, `src/integrations/keystatic-runtime.test.ts`
+- Create: `wrangler.jsonc`, `scripts/verify-cms-worker-build.mjs`, `src/integrations/keystatic-worker.ts`, `src/pages/api/keystatic/[...params].ts`
 
 **Interfaces:**
 
 - Consumes: `keystatic.config.ts` and Astro’s injected Keystatic routes.
 - Produces: a hybrid Worker build where `GET /` is prerendered and `GET /keystatic` plus `GET /api/keystatic/tree` are on-demand.
 
-- [ ] **Step 1: Write failing runtime assertions**
+- [x] **Step 1: Write the failing build-artifact assertion**
 
-```ts
-import { describe, expect, it } from 'vitest';
-import config from '../../../keystatic.config';
+```js
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-describe('remote Keystatic runtime contract', () => {
-  it('uses GitHub storage for the canonical repository', () => {
-    expect(config.storage).toMatchObject({
-      kind: 'github',
-      repo: 'gze1206/blog.gze1206.net',
-    });
-  });
-});
+if (!existsSync(resolve('dist/server/entry.mjs'))) {
+  throw new Error('Cloudflare Worker entrypoint was not generated');
+}
+if (!existsSync(resolve('dist/client/index.html'))) {
+  throw new Error('Prerendered public home page was not generated');
+}
 ```
 
-- [ ] **Step 2: Run the focused test to confirm the local-only configuration fails**
+- [x] **Step 2: Run the assertion against the current static build**
 
-Run: `pnpm test src/integrations/keystatic-runtime.test.ts`
+Run: `pnpm build && node scripts/verify-cms-worker-build.mjs`
 
-Expected: FAIL because `storage.kind` is `local`.
+Expected: FAIL with `Cloudflare Worker entrypoint was not generated`.
 
-- [ ] **Step 3: Install the Cloudflare adapter and add the hybrid configuration**
+- [x] **Step 3: Install the Cloudflare adapter and add the hybrid configuration**
 
 ```ts
 import cloudflare from '@astrojs/cloudflare';
 
 export default defineConfig({
-  output: 'hybrid',
   adapter: cloudflare({ imageService: 'compile', prerenderEnvironment: 'node' }),
 });
 ```
@@ -67,20 +64,23 @@ export default defineConfig({
 ```jsonc
 {
   "name": "blog-gze1206-net",
-  "compatibility_date": "2026-08-09",
+  "compatibility_date": "2026-08-08",
   "compatibility_flags": ["nodejs_compat"],
 }
 ```
 
-- [ ] **Step 4: Enable Keystatic for the Worker and build it**
+- [x] **Step 4: Enable Keystatic for the Worker and build it**
 
-Replace the dev-only integration with an always-registered Keystatic integration, set
-`storage` to `{ kind: 'github', repo: 'gze1206/blog.gze1206.net' }`, and keep all secret
-variables undefined locally until the authentication test. Run: `pnpm build`.
+Replace the dev-only integration with `keystaticWorker()`, which injects Keystatic's UI route and
+resolves `virtual:keystatic-config`. Implement `/api/keystatic/[...params]` with
+`makeGenericAPIRouteHandler({ config, clientId, clientSecret, secret })` and Cloudflare `env`;
+this avoids the upstream route's removed `Astro.locals.runtime.env` access. Set `storage` to
+`{ kind: 'github', repo: 'gze1206/blog.gze1206.net' }`, and keep all secret variables undefined
+locally until the authentication test. Run: `pnpm build`.
 
 Expected: PASS and emits the Worker entrypoint plus prerendered public HTML.
 
-- [ ] **Step 5: Run the Worker locally and verify route separation**
+- [x] **Step 5: Run the Worker locally and verify route separation**
 
 Run: `pnpm preview`, then:
 
@@ -92,10 +92,10 @@ curl -I http://localhost:4321/api/keystatic/tree
 
 Expected: `/` returns 200; the two Keystatic routes return a non-404 response. Authentication may return 401/redirect before GitHub App secrets are configured.
 
-- [ ] **Step 6: Commit the proven runtime**
+- [x] **Step 6: Commit the proven runtime**
 
 ```bash
-git add package.json pnpm-lock.yaml astro.config.mjs keystatic.config.ts wrangler.jsonc src/integrations/keystatic-runtime.test.ts
+git add .gitignore package.json pnpm-lock.yaml pnpm-workspace.yaml astro.config.mjs keystatic.config.ts wrangler.jsonc scripts/verify-cms-worker-build.mjs src/integrations/keystatic-worker.ts src/pages/api/keystatic/[...params].ts docs/decisions/0012-keystatic-integration-strategy.md docs/decisions/0015-cms-publishing-runtime-and-workflow.md docs/spec/NOR-20-keystatic-web-editor.md docs/release-readiness.md docs/superpowers/plans/2026-08-09-cms-publishing-platform.md
 git commit -m "✨ feat(cms): Cloudflare Worker 기반 원격 편집기 구성 (NOR-20)"
 ```
 
@@ -112,7 +112,7 @@ git commit -m "✨ feat(cms): Cloudflare Worker 기반 원격 편집기 구성 (
 - Consumes: `postSchema`, `fields.markdoc`, and `RAW_POST_SOURCES`.
 - Produces: one `posts` Keystatic collection containing every author-editable article as `.mdoc`.
 
-- [ ] **Step 1: Write a migration inventory test**
+- [x] **Step 1: Write a migration inventory test**
 
 ```ts
 it('has no author-editable Markdown article outside the mdoc collection', async () => {
@@ -121,23 +121,23 @@ it('has no author-editable Markdown article outside the mdoc collection', async 
 });
 ```
 
-- [ ] **Step 2: Run the focused test before moving content**
+- [x] **Step 2: Run the focused test before moving content**
 
 Run: `pnpm test scripts/verify-mdoc-migration.test.ts`
 
 Expected: FAIL with the exact list of `.md` source files selected for migration.
 
-- [ ] **Step 3: Move and validate content conservatively**
+- [x] **Step 3: Move and validate content conservatively**
 
 For every selected post, retain YAML frontmatter, body bytes, slug, dates, draft flag, and URL; change only the extension to `.mdoc`. Exclude test fixtures by an explicit basename allowlist in `verify-mdoc-migration.mjs`, never by a broad date or filename heuristic.
 
-- [ ] **Step 4: Verify rendered URL stability**
+- [x] **Step 4: Verify rendered URL stability**
 
 Run: `pnpm test scripts/verify-mdoc-migration.test.ts && pnpm build`.
 
 Expected: PASS; every prior non-draft `/blog/<slug>` is still generated and no duplicate source slug error occurs.
 
-- [ ] **Step 5: Commit the migration**
+- [x] **Step 5: Commit the migration**
 
 ```bash
 git add src/content/posts src/content.config.ts src/lib/content.ts scripts/verify-mdoc-migration.mjs scripts/verify-mdoc-migration.test.ts
@@ -234,7 +234,7 @@ PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=
 
 - [ ] **Step 2: Configure the GitHub App and Cloudflare Worker manually**
 
-Set the OAuth callback to `https://<worker-host>/keystatic/api/github/oauth/callback`, grant only this repository’s Contents read/write permission, and save the four values only in Cloudflare encrypted Worker secrets/variables. Add Cloudflare Access in front of `/keystatic*` and `/api/keystatic*` with the owner’s GitHub identity.
+Set the OAuth callback to `https://<worker-host>/api/keystatic/github/oauth/callback`, grant only this repository’s Contents read/write permission, and save the four values only in Cloudflare encrypted Worker secrets/variables. Add Cloudflare Access in front of `/keystatic*` and `/api/keystatic*` with the owner’s GitHub identity.
 
 - [ ] **Step 3: Perform the real-device acceptance path**
 

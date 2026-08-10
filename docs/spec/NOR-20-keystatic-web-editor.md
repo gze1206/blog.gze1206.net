@@ -15,9 +15,10 @@ status: in-progress
 
 ## 범위와 외부 보류 항목
 
-ADR 0015에 따라 공개 콘텐츠는 prerender를 유지하고, Keystatic API만 Cloudflare Worker에서 실행한다.
-GitHub App 비밀값과 Cloudflare Access 정책은 저장소에 기록하지 않는다. Worker 호환성 검증을 통과하지
-못하면 별도 Node 관리자 런타임으로 전환하며, 검증되지 않은 공개 어드민은 배포하지 않는다.
+ADR 0015에 따라 공개 콘텐츠는 prerender를 유지하고, Keystatic UI/API만 Cloudflare Worker에서 실행한다.
+`@keystatic/astro`의 Astro 6 환경 API 의존은 저장소의 Worker 브리지로 격리한다. GitHub App 비밀값과
+Cloudflare Access 정책은 저장소에 기록하지 않는다. 인증·저장 검증을 통과하지 못하면 별도 Node 관리자
+런타임으로 전환하며, 검증되지 않은 공개 어드민은 배포하지 않는다.
 
 ## 입력 / 출력
 
@@ -28,13 +29,30 @@ GitHub App 비밀값과 Cloudflare Access 정책은 저장소에 기록하지 �
 
 ## 검증 방법
 
-- [ ] Keystatic 설정 테스트가 GitHub 저장소·블럭 스키마·이미지 디렉터리·publicPath를 확인한다.
-- [ ] Worker 빌드와 로컬 preview에서 `/keystatic`·`/api/keystatic`이 동적 라우트로 응답한다.
+- [x] Worker 빌드 검사와 Keystatic 설정 테스트가 GitHub 저장소·블럭 스키마·이미지 경로를 확인한다.
+- [x] Worker 빌드와 로컬 preview에서 `/keystatic`·`/api/keystatic`이 동적 라우트로 응답한다.
 - [ ] 휴대기기에서 GitHub 인증, 블럭 3종 삽입, 이미지 업로드, branch preview 렌더를 확인한다.
 - [ ] `draft: true` 콘텐츠가 공개 빌드·RSS·사이트맵·검색에 나오지 않음을 확인한다.
 
 ## 구현 계획
 
-1. Astro Cloudflare Worker 호환성 스파이크를 테스트·로컬 preview로 증명한다.
+1. Astro Cloudflare Worker 호환성 스파이크와 Keystatic API 브리지를 테스트·로컬 preview로 증명한다.
 2. Keystatic을 GitHub 모드로 전환하고 기존 작성 대상 글을 `.mdoc`으로 이관한다.
 3. GitHub App·Cloudflare Access·브랜치 미리보기 발행 절차를 비밀값 없이 문서화하고 실기기에서 검증한다.
+
+## 운영 절차와 미완료 승인
+
+[CMS 원격 작성과 안전한 발행](../operations/cms-authoring.md)은 인증, 콘텐츠 브랜치, preview 검토,
+`draft` 제외, `v4` 병합까지의 소유자 절차를 정의한다. `.env.example`에는 필요한 변수 이름만 두며,
+실제 값은 Cloudflare Worker의 암호화된 비밀값/환경 변수로만 관리한다.
+
+다음은 아직 외부에서 수행하거나 증거를 남기지 않았다.
+
+- GitHub App을 `gze1206/blog.gze1206.net` 단일 저장소로 제한하고(All repositories 금지), Contents
+  읽기/쓰기 권한과 Worker callback을 실제로 설정
+- Cloudflare Access 보호와 Worker 비밀값/환경 변수 등록
+- 휴대기기 GitHub 인증, 이미지 업로드와 세 커스텀 블럭의 branch preview 확인
+- `draft` 제외, 발행 뒤 공개 페이지·RSS·사이트맵·검색 색인의 실제 확인
+
+각 단계의 실제 결과는 비밀값 없이 [릴리스 전환 체크리스트](../release-readiness.md)와 NOR-20 Linear
+댓글에 남긴 뒤에만 이 일감을 완료 처리한다.

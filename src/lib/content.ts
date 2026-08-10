@@ -11,7 +11,7 @@
  * 무결성 검사는 draft 를 포함한 **전수**를 대상으로 한다. dev 에서만 터지는 오류를 만들지 않기 위해서다.
  */
 
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import {
   assertPaginationSafeSlugs,
   assertSeriesIntegrity,
@@ -27,6 +27,7 @@ import {
 
 export type Post = CollectionEntry<'posts'>;
 export type Series = CollectionEntry<'series'>;
+export type Profile = CollectionEntry<'profile'>;
 
 /** 목록 한 페이지에 담는 글 수. 근거는 ADR 0009. */
 export const POSTS_PER_PAGE = 10;
@@ -74,6 +75,15 @@ async function loadVisiblePosts(): Promise<Post[]> {
 export async function getVisiblePosts(): Promise<Post[]> {
   visiblePostsCache ??= await loadVisiblePosts();
   return visiblePostsCache;
+}
+
+/** 홈페이지에 표시할 단일 공개 소개. 파일이 없으면 빌드를 중단한다. */
+export async function getProfile(): Promise<Profile> {
+  const profile = await getEntry('profile', 'profile');
+  if (profile === undefined) {
+    throw new Error('src/content/profile.json 소개 콘텐츠를 찾을 수 없습니다. (NOR-136)');
+  }
+  return profile;
 }
 
 /** 시리즈 id → 시리즈 정의. `posts.series` 가 담고 있는 값이 곧 이 id 다. */

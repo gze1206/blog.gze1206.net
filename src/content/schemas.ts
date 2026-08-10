@@ -49,3 +49,24 @@ export const portfolioSchema = z.object({
   links: z.array(portfolioLinkSchema).min(1),
   thumbnail: z.string().optional(),
 });
+
+export const profileSchema = z.object({
+  name: z.string().min(1),
+  headline: z.string().min(1),
+  introduction: z.string().min(1),
+  skills: z.array(z.string().min(1)).min(1),
+});
+
+export const experienceSchema = z.object({
+  organization: z.string().min(1),
+  role: z.string().min(1),
+  period: z.string().min(1),
+  // Keystatic의 선택 날짜는 JSON에서 생략되므로, 현재 재직은 null로 정규화한다.
+  endDate: z.coerce
+    .date()
+    .nullable()
+    .optional()
+    .transform((value) => value ?? null),
+  highlights: z.array(z.string().min(1)).min(1),
+  visible: z.boolean(),
+});
