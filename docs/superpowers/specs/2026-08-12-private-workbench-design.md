@@ -89,6 +89,10 @@ blog.gze1206.net (public Git)
 
 첫 버전은 public 저장소의 커밋 생성까지만 다룬다. 자동 push와 자동 배포는 하지 않는다.
 
+### 기존 블로그 CMS 전환
+
+공개 블로그에 이미 들어간 Keystatic UI, API, Cloudflare Worker 브리지, GitHub App 환경 변수는 별도 정리 일감 [NOR-140](https://linear.app/noru-kim/issue/NOR-140)에서 제거한다. 이 결정으로 public 블로그는 동적 작성 경로 없이 정적 렌더링만 담당하고, 이 워크벤치가 유일한 작성·발행 진입점이 된다. 기존 `.mdoc` 글과 profile·experience 콘텐츠 파일은 계속 공개 블로그가 렌더링한다.
+
 ## 제외 범위
 
 M1에서는 다음을 만들지 않는다.
