@@ -61,7 +61,6 @@ export const experienceSchema = z.object({
   organization: z.string().min(1),
   role: z.string().min(1),
   period: z.string().min(1),
-  // Keystatic의 선택 날짜는 JSON에서 생략되므로, 현재 재직은 null로 정규화한다.
   endDate: z.coerce
     .date()
     .nullable()

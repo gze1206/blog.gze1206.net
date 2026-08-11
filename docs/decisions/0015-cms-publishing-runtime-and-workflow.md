@@ -1,12 +1,15 @@
 ---
 number: '0015'
 title: CMS 발행 런타임과 안전한 콘텐츠 워크플로
-status: accepted
+status: superseded by 0016
 date: 2026-08-09
 related: [NOR-20, NOR-136]
 ---
 
 # 0015. CMS 발행 런타임과 안전한 콘텐츠 워크플로
+
+> 2026-08-12: 이 결정은 [ADR 0016](./0016-private-workbench-authoring.md)로 대체됐다. 아래 내용은
+> 당시 CMS 발행 런타임의 역사적 기록으로 보존한다.
 
 ## 맥락 (Context)
 

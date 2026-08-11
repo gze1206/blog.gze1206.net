@@ -6,7 +6,7 @@
 
 `gze1206.net` 개인 블로그의 **4번째 재구축(v4)** 브랜치입니다. 이전 버전(Nuxt.js 기반)은 이 브랜치에서 제거되었고, 새 스택으로 처음부터 다시 만듭니다.
 
-- **스택**: Astro (TypeScript strict) + Tailwind, Content Collections + Markdoc, Keystatic(CMS), Cloudflare Pages 배포
+- **스택**: Astro (TypeScript strict) + Tailwind, Content Collections + Markdoc, Cloudflare 정적 배포
 - **차별점**: Shiki 기반 **.NET CIL/MSIL 커스텀 하이라이팅**, KaTeX/Mermaid, 커스텀 블럭(북마크·GitHub 카드·콜아웃)
 - 스택·기능 전체는 [`docs/roadmap.md`](./docs/roadmap.md) 참고.
 

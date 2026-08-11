@@ -4,17 +4,17 @@ const REQUIRED_FRAGMENTS = [
   ['profile.data.name', 'home must render the profile name'],
   ['profile.data.headline', 'home must render the profile headline'],
   ['profile.data.introduction', 'home must render the profile introduction'],
-  ['profile.data.skills.map', 'home must render CMS skills'],
+  ['profile.data.skills.map', 'home must render profile skills'],
   ['experiences.length > 0', 'home must hide an empty experience section'],
 ];
 
 /**
- * Check that the home page receives personal data through its public CMS boundaries.
+ * Check that the home page receives personal data through its public content boundaries.
  *
  * @param {string} source home page source
- * @returns {string[]} CMS integration contract violations
+ * @returns {string[]} content integration contract violations
  */
-export function verifyHomeCmsIntegration(source) {
+export function verifyHomeContentIntegration(source) {
   const missing = REQUIRED_FRAGMENTS.filter(([fragment]) => !source.includes(fragment)).map(
     ([, message]) => message,
   );

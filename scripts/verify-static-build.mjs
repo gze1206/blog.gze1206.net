@@ -6,4 +6,4 @@ const forbidden = ['keystatic', 'api/keystatic'];
 for (const path of required)
   if (!existsSync(resolve('dist', path))) throw new Error(`missing ${path}`);
 for (const path of forbidden)
-  if (existsSync(resolve('dist', path))) throw new Error(`unexpected CMS output: ${path}`);
+  if (existsSync(resolve('dist', path))) throw new Error(`unexpected dynamic output: ${path}`);
