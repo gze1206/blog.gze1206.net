@@ -1,5 +1,5 @@
 {
   "name": "blog-gze1206-net",
-  "compatibility_date": "2026-08-08",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_date": "2026-08-12",
+  "assets": { "directory": "./dist" },
 }
