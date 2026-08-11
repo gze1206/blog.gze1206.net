@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-/** CMS에서 편집해야 하는 실제 글의 파일명. 스모크·라우팅 픽스처는 의도적으로 제외한다. */
+/** Markdoc로 유지하는 실제 글의 파일명. 스모크·라우팅 픽스처는 의도적으로 제외한다. */
 export const AUTHOR_EDITABLE_POSTS = [
   '2025-retrospective',
   'astro-content-collections',

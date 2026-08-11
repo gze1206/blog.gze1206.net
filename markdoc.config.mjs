@@ -152,7 +152,7 @@ export default defineMarkdocConfig({
     },
   },
   tags: {
-    // 커스텀 블럭(NOR-15). 속성 스키마는 NOR-20(Keystatic 삽입 UI)이 그대로 매핑한다.
+    // 커스텀 블럭(NOR-15). 속성 스키마는 작성 도구가 그대로 매핑한다.
     // 의미·동작은 docs/spec/NOR-15-custom-blocks.md, 데이터 취득 전략은 ADR 0008 참고.
     bookmark: {
       render: component('./src/components/markdoc/Bookmark.astro'),

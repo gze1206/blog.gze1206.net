@@ -7,7 +7,7 @@
 ## 기술 스택 개요
 
 - **프레임워크**: Astro (TypeScript strict) + Tailwind CSS
-- **콘텐츠**: Content Collections + Markdoc, CMS는 Keystatic (로컬/GitHub 웹 에디터)
+- **콘텐츠**: Content Collections + Markdoc, 작성은 private Tailnet 워크벤치
 - **렌더링 차별점**: Shiki 기반 코드 하이라이팅(**.NET CIL/MSIL 커스텀 문법 포함**), KaTeX 수식, Mermaid 다이어그램, 커스텀 블럭(북마크·GitHub 카드·콜아웃)
 - **UI**: 베이스 블로그 테마 + shadcn/ui React 아일랜드, 다크모드
 - **배포**: GitHub → Cloudflare Pages 자동 배포, 커스텀 도메인 `gze1206.net`
@@ -15,7 +15,7 @@
 
 ## 처리 원칙
 
-1. **아래 → 위로 쌓는다.** 인프라·콘텐츠 모델을 먼저 세우고 그 위에 렌더링·페이지·CMS·브랜딩을 얹는다.
+1. **아래 → 위로 쌓는다.** 인프라·콘텐츠 모델을 먼저 세우고 그 위에 렌더링·페이지·브랜딩을 얹는다.
 2. **각 페이즈는 이전 페이즈의 산출물에 의존**한다. 같은 페이즈 안의 일감은 대체로 병렬 진행 가능하다.
 3. **정적 우선 / 점진적 향상**: 크롤러가 읽는 정적 HTML을 먼저 만들고, 인터랙션(캔버스·아일랜드)은 나중에 얹는다.
 4. Linear 우선순위(High/Medium/Low/Urgent)는 각 항목 옆에 표기했다. 순서가 상충하면 **의존성 > 우선순위**로 판단한다.
@@ -37,7 +37,7 @@
 
 ## Phase 1 — 콘텐츠 모델 (데이터 계약)
 
-글/시리즈/포트폴리오의 스키마와 렌더 파이프라인. 이후 페이지·CMS가 모두 여기에 묶인다.
+글/시리즈/포트폴리오의 스키마와 렌더 파이프라인. 이후 페이지와 작성 워크벤치가 모두 여기에 묶인다.
 
 | 순서 | 일감                                                                                                   | 우선순위 | 요약                                                                                                    |
 | ---- | ------------------------------------------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------- |
@@ -48,13 +48,13 @@
 
 Phase 1의 파이프라인 위에서 실제 렌더링 기능을 채운다. 서로 독립적이라 병렬 가능.
 
-| 순서 | 일감                                                                                         | 우선순위 | 요약                                                                            |
-| ---- | -------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------- |
-| 7    | [NOR-11](https://linear.app/noru-kim/issue/NOR-11) — **Shiki + CIL(.NET) 커스텀 하이라이팅** | High     | Shiki 통합 + CIL `.tmLanguage.json` 로드, 라이트/다크 대응 — **핵심 차별점**    |
-| 8    | [NOR-12](https://linear.app/noru-kim/issue/NOR-12) — 코드블럭 강화: 복사·파일명·라인·diff    | Medium   | 복사 버튼, `title=` 파일명, 라인 하이라이트 + diff, 접근성                      |
-| 9    | [NOR-13](https://linear.app/noru-kim/issue/NOR-13) — KaTeX 수식 + Mermaid                    | Medium   | remark-math/rehype-katex, 빌드타임 Mermaid(다크·CLS 안정)                       |
-| 10   | [NOR-14](https://linear.app/noru-kim/issue/NOR-14) — 미디어: 이미지 최적화 + 영상/YouTube    | Medium   | Astro `<Image>`(AVIF/WebP·lazy), 로컬 영상/YouTube 임베드, 캡션                 |
-| 11   | [NOR-15](https://linear.app/noru-kim/issue/NOR-15) — 커스텀 블럭: 북마크·GitHub 카드·콜아웃  | Medium   | `{% bookmark %}`/`{% github %}`/`{% callout %}` — Keystatic 삽입 대비 태그 정의 |
+| 순서 | 일감                                                                                         | 우선순위 | 요약                                                                         |
+| ---- | -------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------- |
+| 7    | [NOR-11](https://linear.app/noru-kim/issue/NOR-11) — **Shiki + CIL(.NET) 커스텀 하이라이팅** | High     | Shiki 통합 + CIL `.tmLanguage.json` 로드, 라이트/다크 대응 — **핵심 차별점** |
+| 8    | [NOR-12](https://linear.app/noru-kim/issue/NOR-12) — 코드블럭 강화: 복사·파일명·라인·diff    | Medium   | 복사 버튼, `title=` 파일명, 라인 하이라이트 + diff, 접근성                   |
+| 9    | [NOR-13](https://linear.app/noru-kim/issue/NOR-13) — KaTeX 수식 + Mermaid                    | Medium   | remark-math/rehype-katex, 빌드타임 Mermaid(다크·CLS 안정)                    |
+| 10   | [NOR-14](https://linear.app/noru-kim/issue/NOR-14) — 미디어: 이미지 최적화 + 영상/YouTube    | Medium   | Astro `<Image>`(AVIF/WebP·lazy), 로컬 영상/YouTube 임베드, 캡션              |
+| 11   | [NOR-15](https://linear.app/noru-kim/issue/NOR-15) — 커스텀 블럭: 북마크·GitHub 카드·콜아웃  | Medium   | `{% bookmark %}`/`{% github %}`/`{% callout %}` 태그 정의                    |
 
 ## Phase 3 — 블로그 페이지 & 내비게이션
 
@@ -66,14 +66,16 @@ Phase 1의 파이프라인 위에서 실제 렌더링 기능을 채운다. 서�
 | 13   | [NOR-17](https://linear.app/noru-kim/issue/NOR-17) — 글 상세: TOC+앵커, 읽기시간, 작성/수정일 | Medium   | 헤딩 앵커·목차, 읽기시간, 날짜(JSON-LD 대비)                                     |
 | 14   | [NOR-18](https://linear.app/noru-kim/issue/NOR-18) — 시리즈 내비게이션 (이전/다음 편)         | Medium   | 시리즈 목록·순서, 이전/다음 이동, 진행도(N/총)                                   |
 
-## Phase 4 — CMS (Keystatic)
+## Phase 4 — 과거 CMS 전환 기록
 
-작성 워크플로. Phase 1 스키마 + Phase 2 커스텀 블럭 태그에 의존.
+NOR-19·NOR-20은 공개 블로그 CMS 도입을 위해 완료했던 **역사적 기록**이다. 현재 작성 진입점은
+[ADR 0016](./decisions/0016-private-workbench-authoring.md)의 private Tailnet 워크벤치이며, 이 페이즈는
+새 작업 대상으로 사용하지 않는다.
 
-| 순서 | 일감                                                                                           | 우선순위 | 요약                                                                            |
-| ---- | ---------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------- |
-| 15   | [NOR-19](https://linear.app/noru-kim/issue/NOR-19) — Keystatic 설치·구성 (컬렉션 매핑)         | High     | Keystatic + Astro 통합, posts/series/portfolio 매핑, 로컬 모드 CRUD             |
-| 16   | [NOR-20](https://linear.app/noru-kim/issue/NOR-20) — Keystatic 웹 에디터 + 커스텀 블럭 삽입 UI | Medium   | GitHub 모드 웹 에디터(폰/태블릿), 북마크·GitHub·콜아웃 삽입, 이미지 업로드 경로 |
+| 순서 | 일감                                                                                     | 우선순위   | 요약                                          |
+| ---- | ---------------------------------------------------------------------------------------- | ---------- | --------------------------------------------- |
+| 15   | [NOR-19](https://linear.app/noru-kim/issue/NOR-19) — CMS 설치·구성 (컬렉션 매핑)         | historical | ADR 0016으로 대체된 공개 블로그 CMS 도입 기록 |
+| 16   | [NOR-20](https://linear.app/noru-kim/issue/NOR-20) — CMS 웹 에디터 + 커스텀 블럭 삽입 UI | historical | ADR 0016으로 대체된 공개 블로그 CMS 발행 기록 |
 
 ## Phase 5 — 테마 · 브랜딩 · About/포트폴리오
 
@@ -127,7 +129,7 @@ graph TD
     P1["Phase 1<br/>콘텐츠 모델<br/>NOR-9,10"]
     P2["Phase 2<br/>렌더링 풍부화<br/>NOR-11~15"]
     P3["Phase 3<br/>블로그 페이지<br/>NOR-16,17,18"]
-    P4["Phase 4<br/>Keystatic CMS<br/>NOR-19,20"]
+    P4["Phase 4<br/>과거 CMS 기록<br/>NOR-19,20"]
     P5["Phase 5<br/>테마·About·포트폴리오<br/>NOR-24,25,21,23,22,26"]
     P6["Phase 6<br/>SEO·피드<br/>NOR-27,28,29,30"]
     P7["Phase 7<br/>검색·댓글·분석<br/>NOR-31,32,33"]
