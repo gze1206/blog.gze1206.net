@@ -46,6 +46,8 @@ Cloudflare·DNS·Google·Waline 조작은 아직 실행하지 않았다. 현재 
    - `blog.gze1206.net/*` → `https://gze1206.net/:splat`
 4. 두 이전 호스트는 Cloudflare 프록시 DNS 레코드가 있어야 Redirect Rule이 적용된다. `/blog/<slug>`
    경로는 이관되어 있으므로 path를 보존한다.
+5. 정적 Assets 규칙 또는 Zone Redirect Rule은 동일 호스트의 경로 리다이렉트에만 쓰고, 호스트 간
+   정규화에는 Zone Redirect Rule을 쓴다.
 
 참고: [Worker custom domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/),
 [Cloudflare Redirect Rules](https://developers.cloudflare.com/rules/url-forwarding/).
@@ -56,6 +58,10 @@ Waline 서버와 데이터베이스는 블로그 정적 사이트와 분리한�
 Netlify, Railway 또는 자가 호스팅 중 하나를 선택한 뒤, 별도 도메인·스팸 방지·백업·알림 정책을
 확정한다. 서버 URL과 공개 클라이언트 설정이 준비되기 전에는 댓글 아일랜드를 배포하지 않는다.
 
+- DB 비밀값과 Waline 관리자 비밀값은 서비스의 암호화된 환경 변수로만 보관한다.
+- 한국어 UI, 다크 테마 동기화, 익명 댓글의 스팸 방지와 신고/삭제 운영 절차를 실제 서버에서 검증한다.
+- 댓글 서버가 안정화된 후에만 글 상세 페이지에 지연 로드 임베드를 추가한다.
+
 참고: [Waline 배포 안내](https://waline.js.org/en/guide/deploy/).
 
 ### 4. NOR-33·NOR-34 — 분석과 실사용자 성능
@@ -63,14 +69,28 @@ Netlify, Railway 또는 자가 호스팅 중 하나를 선택한 뒤, 별도 도
 Cloudflare Web Analytics를 정적 배포에 연결한다. 별도 토큰을 저장소에 넣지 않는 방식을 우선하고,
 데이터가 쌓인 뒤 LCP·CLS·INP를 다시 판정한다.
 
+- 프로덕션 페이지에서 beacon 1개만 로드되는지 확인한다.
+- 최소 28일의 실제 사용자 데이터를 본 뒤 Core Web Vitals를 확정한다.
+- 현재의 로컬 Lighthouse/axe 결과는 실사용자 지표를 대체하지 않는다.
+
 참고: [Cloudflare Web Analytics 시작](https://developers.cloudflare.com/web-analytics/get-started/),
 [성능·접근성 감사 기록](./spec/NOR-34-performance-a11y-audit.md).
 
 ### 5. NOR-36 — 프로덕션 QA와 GSC
 
-정식 도메인 배포 후 `/`, `/blog`, `/blog/hello-world`, `/topics`, 존재하지 않는 경로(404),
-`/rss.xml`, `/sitemap-index.xml`, `/robots.txt`, `/og/blog/hello-world.png`의 실제 HTTPS 응답을
-확인한다. 그 다음 Google Search Console에 Domain property `gze1206.net`을 추가하고 사이트맵을 제출한다.
+정식 도메인 배포 후 아래 주소를 실제 HTTPS 응답으로 확인한다.
+
+- `/`, `/blog`, `/blog/hello-world`, `/topics`, 존재하지 않는 경로(404)
+- `/rss.xml`, `/sitemap-index.xml`, `/robots.txt`, `/og/blog/hello-world.png`
+- `www`와 `blog` 이전 호스트의 301 상태·path/query 보존·정본 canonical
+- 데스크톱/모바일, 라이트/다크, 키보드 탐색, 페이지 내 검색
+
+그 다음 Google Search Console에 Domain property `gze1206.net`을 추가해 DNS로 소유권을 확인하고,
+`https://gze1206.net/sitemap-index.xml`을 제출한다. 첫 글은 URL Inspection으로 수집 가능 여부를
+확인한다.
+
+참고: [Search Console Domain property](https://support.google.com/webmasters/answer/34592),
+[sitemap 제출](https://support.google.com/webmasters/answer/7451001).
 
 ## 소유자 외부 조치
 
