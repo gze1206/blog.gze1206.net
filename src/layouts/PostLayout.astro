@@ -62,20 +62,18 @@ const jsonLd = [
 >
   <main id="main-content" class="mx-auto max-w-3xl px-4 py-10 sm:py-14">
     <article data-pagefind-body>
-      <header class="mb-8 border-b border-gray-200 pb-6 dark:border-gray-800">
+      <header class="border-border mb-8 border-b pb-6">
         {
           draft && (
-            <p class="mb-3 inline-block rounded bg-amber-100 px-2 py-1 text-sm font-semibold text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+            <p class="bg-notice text-notice-foreground mb-3 inline-block rounded px-2 py-1 text-sm font-semibold">
               초안 — 개발 서버에서만 보입니다
             </p>
           )
         }
-        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
-        <p class="mt-3 text-gray-600 dark:text-gray-400">{description}</p>
+        <h1 class="display-serif text-3xl sm:text-4xl">{title}</h1>
+        <p class="text-muted mt-3">{description}</p>
 
-        <div
-          class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 dark:text-gray-400"
-        >
+        <div class="text-muted mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
           <time datetime={publishedISO}>{formatKoreanDate(publishedAt)}</time>
           {
             isUpdated && (
@@ -90,7 +88,7 @@ const jsonLd = [
 
         {
           series && (
-            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+            <p class="text-muted mt-3 text-sm">
               시리즈{' '}
               <a href={seriesPath(series.data.slug)} class="rounded font-medium hover:underline">
                 {series.data.name}
@@ -108,15 +106,15 @@ const jsonLd = [
 
       <slot name="after-content" />
 
-      <footer class="mt-12 border-t border-gray-200 pt-6 dark:border-gray-800">
-        <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400">태그</h2>
+      <footer class="border-border mt-12 border-t pt-6">
+        <h2 class="text-muted text-sm font-semibold">태그</h2>
         <ul class="mt-3 flex flex-wrap gap-2">
           {
             tags.map((tag) => (
               <li>
                 <a
                   href={tagPath(toSlug(tag))}
-                  class="inline-block rounded-full bg-gray-100 px-2.5 py-0.5 text-sm text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                  class="bg-surface-sunken text-body hover:bg-accent-soft inline-block rounded-full px-2.5 py-0.5 text-sm"
                 >
                   #{tag}
                 </a>

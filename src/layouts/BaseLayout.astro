@@ -12,6 +12,10 @@
 import '../styles/global.css';
 import 'katex/dist/katex.min.css';
 import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+// 제목 전용 세리프(NOR-149). `600.css` 는 한글을 `unicode-range` 로 120 조각 낸 정의라
+// 제목에 실제로 쓰인 음절이 든 조각만 내려온다 — `korean-600.css`(통짜 957KB)를 쓰면
+// 제목 한 줄 때문에 1MB 를 받는다. 굵기는 600 하나만 싣는다.
+import '@fontsource/noto-serif-kr/600.css';
 import CodeBlockEnhancer from '../components/CodeBlockEnhancer.astro';
 import SeoMeta from '../components/SeoMeta.astro';
 import SiteFooter from '../components/SiteFooter.astro';

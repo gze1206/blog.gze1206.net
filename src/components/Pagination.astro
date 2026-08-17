@@ -15,7 +15,7 @@ interface Props {
 const { currentPage, lastPage } = Astro.props;
 const pages = Array.from({ length: lastPage }, (_, index) => index + 1);
 const linkClass =
-  'inline-flex min-w-9 items-center justify-center rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800';
+  'inline-flex min-w-9 items-center justify-center rounded border border-border-strong px-3 py-1.5 text-sm hover:bg-surface-sunken';
 ---
 
 {
@@ -34,7 +34,7 @@ const linkClass =
             <li>
               <span
                 aria-current="page"
-                class="inline-flex min-w-9 items-center justify-center rounded border border-gray-900 bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900"
+                class="border-accent bg-accent text-accent-foreground inline-flex min-w-9 items-center justify-center rounded border px-3 py-1.5 text-sm font-semibold"
               >
                 <span class="sr-only">현재 페이지, </span>
                 {pageNumber}

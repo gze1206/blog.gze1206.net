@@ -10,7 +10,7 @@ const { Content } = await render(entry);
 <BaseLayout title="미디어 스모크 테스트">
   <main class="mx-auto max-w-3xl px-4 py-16">
     <h1 class="text-2xl font-bold">{entry.data.title}</h1>
-    <p class="mt-2 text-sm text-gray-500">{entry.data.description}</p>
+    <p class="text-muted mt-2 text-sm">{entry.data.description}</p>
     <hr class="my-8" />
     <Content />
   </main>

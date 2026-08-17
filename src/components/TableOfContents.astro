@@ -22,26 +22,20 @@ const { entries } = Astro.props;
   entries.length > 0 && (
     <nav
       aria-label="목차"
-      class="post-toc my-8 rounded-lg border border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-900"
+      class="post-toc border-border bg-surface-sunken my-8 rounded-lg border px-5 py-4"
     >
-      <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400">목차</h2>
+      <h2 class="text-muted text-sm font-semibold">목차</h2>
       <ol class="post-toc-list mt-3 space-y-1.5 text-sm">
         {entries.map((entry) => (
           <li>
-            <a
-              href={`#${entry.id}`}
-              class="rounded text-gray-700 hover:underline dark:text-gray-300"
-            >
+            <a href={`#${entry.id}`} class="text-body rounded hover:underline">
               {entry.text}
             </a>
             {entry.children.length > 0 && (
-              <ol class="mt-1.5 space-y-1.5 border-l border-gray-200 pl-3 dark:border-gray-700">
+              <ol class="border-border mt-1.5 space-y-1.5 border-l pl-3">
                 {entry.children.map((child) => (
                   <li>
-                    <a
-                      href={`#${child.id}`}
-                      class="rounded text-gray-600 hover:underline dark:text-gray-400"
-                    >
+                    <a href={`#${child.id}`} class="text-muted rounded hover:underline">
                       {child.text}
                     </a>
                   </li>

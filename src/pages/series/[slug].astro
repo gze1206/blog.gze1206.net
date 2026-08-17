@@ -32,12 +32,12 @@ const { series, posts } = Astro.props;
   description={series.data.description}
   lead={series.data.description}
 >
-  <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">전체 {posts.length}편 · 연재 순서</p>
+  <p class="text-muted mb-4 text-sm">전체 {posts.length}편 · 연재 순서</p>
   <ol class="list-none">
     {
       posts.map((post, index) => (
         <li>
-          <p class="mt-6 text-sm font-semibold text-gray-500 dark:text-gray-400">{index + 1}편</p>
+          <p class="text-muted mt-6 text-sm font-semibold">{index + 1}편</p>
           <PostCard post={post} />
         </li>
       ))

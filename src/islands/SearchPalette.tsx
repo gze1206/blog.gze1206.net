@@ -72,7 +72,7 @@ export default function SearchPalette() {
       <a
         ref={triggerRef}
         href="/blog"
-        className="rounded text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+        className="text-muted hover:text-foreground rounded text-sm"
         onClick={(event) => {
           event.preventDefault();
           setOpen(true);
@@ -84,7 +84,7 @@ export default function SearchPalette() {
         open={open}
         onOpenChange={close}
         label="블로그 검색"
-        className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/45 p-4 pt-[15vh]"
+        className="bg-scrim fixed inset-0 z-50 flex items-start justify-center p-4 pt-[15vh]"
       >
         <div className="border-border bg-surface w-full max-w-xl overflow-hidden rounded-lg border shadow-xl">
           <Command.Input
@@ -112,7 +112,7 @@ export default function SearchPalette() {
               <Command.Item key={result.url} value={result.meta.title} asChild>
                 <a
                   href={result.url}
-                  className="block rounded px-3 py-2 data-[selected=true]:bg-gray-100 dark:data-[selected=true]:bg-gray-800"
+                  className="data-[selected=true]:bg-surface-sunken dark:data-[selected=true]:bg-surface-sunken block rounded px-3 py-2"
                 >
                   <strong>{result.meta.title}</strong>
                   <span

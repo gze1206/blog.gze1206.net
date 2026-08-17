@@ -19,14 +19,14 @@ const entries = await getSeriesWithPosts();
     ) : (
       <ul class="space-y-6">
         {entries.map(({ series, posts }) => (
-          <li class="border-b border-gray-200 pb-6 last:border-b-0 dark:border-gray-800">
+          <li class="border-border border-b pb-6 last:border-b-0">
             <h2 class="text-xl font-bold">
               <a href={seriesPath(series.data.slug)} class="rounded hover:underline">
                 {series.data.name}
               </a>
             </h2>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">{series.data.description}</p>
-            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">전체 {posts.length}편</p>
+            <p class="text-muted mt-2">{series.data.description}</p>
+            <p class="text-muted mt-2 text-sm">전체 {posts.length}편</p>
           </li>
         ))}
       </ul>

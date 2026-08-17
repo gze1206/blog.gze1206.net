@@ -5,6 +5,12 @@
 Variable 이고, 이 파일들은
 `src/lib/og-render.ts` 가 Node 에서 읽어 Satori 에 넘길 뿐이다.
 
+사이트에는 제목 전용 세리프가 하나 더 있다(NOR-149): `@fontsource/noto-serif-kr` 의 **600**
+한 굵기다. 저장소에 파일을 두지 않고 npm 패키지의 `unicode-range` 서브셋(120 조각)을 그대로
+쓰므로, 제목에 실제로 쓰인 음절이 든 조각만 내려온다 — 같은 패키지의 `korean-600.css` 는
+통짜 957 KB 라 쓰지 않는다. Noto Serif KR 도 SIL Open Font License 1.1 이며 전문은 패키지
+안(`node_modules/@fontsource/noto-serif-kr/LICENSE`)에 함께 배포된다.
+
 | 파일                     | 용도              | 크기   |
 | ------------------------ | ----------------- | ------ |
 | `Pretendard-Regular.otf` | 설명·브랜드 (400) | 1.5 MB |
