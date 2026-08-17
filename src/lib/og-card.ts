@@ -31,14 +31,15 @@ export const OG_IMAGE_TYPE = 'image/png';
 /**
  * 카드 디자인 토큰. **색·간격을 바꾸려면 여기만 고친다.**
  *
- * 지금 값은 사이트 다크 배경(`bg-gray-950` = `#030712` 계열)과 어울리는 임시 팔레트다.
- * NOR-24 에서 베이스 테마가 확정되면 그 토큰 값으로 교체한다.
+ * 값은 사이트 팔레트 02C Mineral / Warm Paper 의 다크 면과 같다(NOR-149).
+ * `src/styles/global.css` 의 `.dark` 토큰이 원본이며, 여기 값은 그 사본이다 —
+ * Satori 는 CSS 변수를 읽지 못해 리터럴이 필요하다. 한쪽만 고치지 말 것.
  */
 export const OG_THEME = {
-  background: '#0b1120',
-  foreground: '#f8fafc',
-  muted: '#94a3b8',
-  accent: '#38bdf8',
+  background: '#211f1d',
+  foreground: '#efece7',
+  muted: '#a49c93',
+  accent: '#9fd0bb',
   /** 상단 강조 바 — 브랜드 색을 한 줄로만 쓴다(과한 장식 금지). */
   accentBarHeight: 10,
   padding: 72,

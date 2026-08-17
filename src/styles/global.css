@@ -8,32 +8,76 @@
     'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto,
     'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic',
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+  /* 제목 전용. 본문까지 세리프로 두면 한글 서브셋 청크를 글 전체 분량만큼 받게 된다(NOR-149). */
+  --font-serif: 'Noto Serif KR', ui-serif, Georgia, 'Apple SD Gothic Neo', 'Nanum Myeongjo', serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --color-background: var(--theme-background);
   --color-foreground: var(--theme-foreground);
+  --color-body: var(--theme-body);
   --color-surface: var(--theme-surface);
+  --color-surface-sunken: var(--theme-surface-sunken);
   --color-muted: var(--theme-muted);
+  --color-muted-strong: var(--theme-muted-strong);
   --color-border: var(--theme-border);
+  --color-border-strong: var(--theme-border-strong);
   --color-accent: var(--theme-accent);
-  --color-accent-foreground: #ffffff;
+  --color-accent-strong: var(--theme-accent-strong);
+  --color-accent-soft: var(--theme-accent-soft);
+  --color-accent-foreground: var(--theme-accent-foreground);
+  --color-notice: var(--theme-notice);
+  --color-notice-foreground: var(--theme-notice-foreground);
+  --color-scrim: var(--theme-scrim);
   --spacing-page: clamp(1rem, 2vw, 1.5rem);
+  /* 읽기 열 · 목차/코드 열. 목업에서 확정한 폭 위계(NOR-149·NOR-150). */
+  --spacing-reading: 56.25rem;
+  --spacing-reading-wide: 61.25rem;
 }
 
+/* 팔레트 02C Mineral / Warm Paper.
+   따뜻한 무채색 표면 위에 광물 초록을 신호로만 쓴다 — 표면까지 물들이면 독서 공간이
+   테마성 UI 처럼 보인다. 본문·보조 텍스트는 각 배경 위에서 WCAG AA(4.5:1) 를 넘긴다. */
 :root {
-  --theme-background: #fcfcfd;
-  --theme-foreground: #172033;
-  --theme-surface: #ffffff;
-  --theme-muted: #526077;
-  --theme-border: #d7dce5;
-  --theme-accent: #1d4ed8;
+  --theme-background: #fcf9f4;
+  --theme-surface: #fffdf9;
+  --theme-surface-sunken: #f4f0e9;
+  --theme-foreground: #292623;
+  --theme-body: #37322f;
+  --theme-muted: #6b645c;
+  --theme-muted-strong: #554e47;
+  --theme-border: #e4ded5;
+  --theme-border-strong: #d8d1c7;
+  --theme-accent: #3d7364;
+  --theme-accent-strong: #2e6252;
+  --theme-accent-soft: #eaf1e8;
+  --theme-accent-foreground: #fcf9f4;
+  --theme-focus: #3d7364;
+  --theme-shadow: 56 47 38;
+  /* 초안 배지처럼 "아직 공개 상태가 아님"을 알리는 자리. warning 콜아웃과 같은 색을 쓴다. */
+  --theme-notice: #f9efdd;
+  --theme-notice-foreground: #8a5a12;
+  /* 모달 뒤 어둠. 회색이 아니라 잉크색이어야 종이 위에서 자연스럽다. */
+  --theme-scrim: rgb(41 38 35 / 0.5);
 }
 
 .dark {
-  --theme-background: #0d111a;
-  --theme-foreground: #f1f5f9;
-  --theme-surface: #151b27;
-  --theme-muted: #a7b0c0;
-  --theme-border: #303a4b;
-  --theme-accent: #93c5fd;
+  --theme-background: #211f1d;
+  --theme-surface: #272522;
+  --theme-surface-sunken: #1b1917;
+  --theme-foreground: #efece7;
+  --theme-body: #ddd8d1;
+  --theme-muted: #a49c93;
+  --theme-muted-strong: #c0b9b0;
+  --theme-border: #38342f;
+  --theme-border-strong: #4a453f;
+  --theme-accent: #9fd0bb;
+  --theme-accent-strong: #b6e5cb;
+  --theme-accent-soft: #2a3430;
+  --theme-accent-foreground: #1a1917;
+  --theme-focus: #9fd0bb;
+  --theme-shadow: 0 0 0;
+  --theme-notice: #2a2113;
+  --theme-notice-foreground: #dcb679;
+  --theme-scrim: rgb(12 11 10 / 0.62);
 }
 
 html {
@@ -43,6 +87,52 @@ html {
 body {
   background: var(--theme-background);
   color: var(--theme-foreground);
+}
+
+/* --- 제목 타이포그래피 (NOR-149) ---
+   세리프는 **제목에만** 쓴다. 한글 세리프는 서브셋 청크로 나뉘어 내려오므로, 본문까지
+   세리프로 두면 글 한 편에 쓰인 음절 수만큼 청크를 받게 된다. h3 이하는 산세리프 굵기로
+   위계를 만든다 — 작은 크기의 세리프는 화면에서 오히려 읽기 어렵다. */
+.display-serif {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+}
+
+/* --- 브랜드 (NOR-149) ---
+   주소(`gze1206.net`)와 정체성(`NORU`)을 분리한다. 헤더에는 정체성을 둔다. */
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  color: var(--theme-foreground);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.site-brand__mark {
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 0.55rem;
+  background: var(--theme-accent);
+  color: var(--theme-accent-foreground);
+}
+
+.site-nav__link {
+  border-radius: 0.25rem;
+  color: var(--theme-muted);
+}
+
+.site-nav__link:hover {
+  color: var(--theme-foreground);
+}
+
+.site-nav__link[aria-current] {
+  color: var(--theme-foreground);
+  font-weight: 650;
 }
 
 /* NOR-137: 홈은 읽기와 작업물을 앞세운 정적인 포트폴리오 표면이다. */
@@ -58,7 +148,7 @@ body {
   border: 1px solid var(--theme-border);
   border-radius: 1rem;
   background: var(--theme-surface);
-  box-shadow: 0 1px 2px rgb(23 32 51 / 0.04);
+  box-shadow: 0 1px 2px rgb(var(--theme-shadow) / 0.05);
 }
 
 .home-hero__decoration {
@@ -311,7 +401,7 @@ body {
   padding: 0.5rem 0.75rem;
   border-radius: 0.375rem;
   background: var(--theme-accent);
-  color: #fff;
+  color: var(--theme-accent-foreground);
   font-weight: 700;
   transform: translateY(-200%);
 }
@@ -349,7 +439,7 @@ body {
 a:focus-visible,
 button:focus-visible,
 summary:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--theme-focus);
   outline-offset: 2px;
 }
 
@@ -374,16 +464,10 @@ summary:focus-visible {
   margin-left: 0.35em;
   font-weight: 400;
   /* 흐린 회색은 대비가 모자란다. 보이는 동안에는 본문 대비 AA(4.5:1) 를 넘겨야 한다. */
-  color: #6b7280;
+  color: var(--theme-muted);
   text-decoration: none;
   opacity: 0;
   transition: opacity 0.15s;
-}
-
-.dark {
-  .heading-anchor {
-    color: #9ca3af;
-  }
 }
 
 .heading-anchor::before {
@@ -432,8 +516,10 @@ summary:focus-visible {
 
 .post-body h2 {
   margin-top: 2.5rem;
+  font-family: var(--font-serif);
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: -0.04em;
   line-height: 1.35;
 }
 
@@ -473,20 +559,20 @@ summary:focus-visible {
 
 .post-body blockquote {
   padding-left: 1rem;
-  border-left: 4px solid #d1d5db;
-  color: #4b5563;
+  border-left: 4px solid var(--theme-border-strong);
+  color: var(--theme-muted-strong);
 }
 
 .post-body :not(pre) > code {
   padding: 0.15em 0.35em;
   border-radius: 0.25rem;
-  background: #f3f4f6;
+  background: var(--theme-surface-sunken);
   font-size: 0.9em;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .post-body hr {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--theme-border);
 }
 
 .post-body table {
@@ -499,25 +585,8 @@ summary:focus-visible {
 .post-body th,
 .post-body td {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--theme-border);
   text-align: left;
-}
-
-.dark {
-  .post-body blockquote {
-    border-left-color: #4b5563;
-    color: #9ca3af;
-  }
-
-  .post-body :not(pre) > code {
-    background: #1f2937;
-  }
-
-  .post-body hr,
-  .post-body th,
-  .post-body td {
-    border-color: #374151;
-  }
 }
 
 .dark {
@@ -543,9 +612,9 @@ summary:focus-visible {
   font-size: 0.8rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   border-radius: 0.375rem 0.375rem 0 0;
-  background: #e5e7eb;
-  color: #374151;
-  border-bottom: 1px solid #d1d5db;
+  background: var(--theme-surface-sunken);
+  color: var(--theme-body);
+  border-bottom: 1px solid var(--theme-border-strong);
 }
 
 .code-block .astro-code {
@@ -555,9 +624,9 @@ summary:focus-visible {
 
 .dark {
   .code-block-title {
-    background: #1e293b;
-    color: #cbd5e1;
-    border-bottom-color: #334155;
+    background: var(--theme-surface-sunken);
+    color: var(--theme-body);
+    border-bottom-color: var(--theme-border);
   }
 }
 
@@ -635,10 +704,10 @@ summary:focus-visible {
   width: 2rem;
   height: 2rem;
   padding: 0;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--theme-border-strong);
   border-radius: 0.25rem;
-  background: rgba(255, 255, 255, 0.8);
-  color: #6b7280;
+  background: color-mix(in srgb, var(--theme-surface) 80%, transparent);
+  color: var(--theme-muted);
   cursor: pointer;
   opacity: 0;
   transition:
@@ -648,13 +717,13 @@ summary:focus-visible {
 }
 
 .code-copy-btn:hover {
-  background: rgba(255, 255, 255, 0.95);
-  color: #374151;
+  background: color-mix(in srgb, var(--theme-surface) 95%, transparent);
+  color: var(--theme-body);
 }
 
 .code-copy-btn:focus-visible {
   opacity: 1;
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--theme-focus);
   outline-offset: 2px;
 }
 
@@ -663,29 +732,14 @@ pre.astro-code:hover > .code-copy-btn {
   opacity: 1;
 }
 
-.dark {
-  .code-copy-btn {
-    border-color: #4b5563;
-    background: rgba(30, 41, 59, 0.8);
-    color: #9ca3af;
-  }
-
-  .code-copy-btn:hover {
-    background: rgba(30, 41, 59, 0.95);
-    color: #e5e7eb;
-  }
-}
-
 /* Position the copy button inside the title header area when present */
 .code-block .code-copy-btn {
   top: 0.25rem;
 }
 
-/* --- KaTeX: dark mode --- */
-.dark {
-  .katex {
-    color: #e5e7eb;
-  }
+/* --- KaTeX --- */
+.katex {
+  color: var(--theme-foreground);
 }
 
 /* --- Mermaid: CLS prevention & dark mode --- */
@@ -696,8 +750,8 @@ pre.astro-code:hover > .code-copy-btn {
   justify-content: center;
   margin: 1rem 0;
   border-radius: 0.375rem;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--theme-surface-sunken);
+  border: 1px solid var(--theme-border);
   overflow-x: auto;
 }
 
@@ -708,19 +762,8 @@ pre.astro-code:hover > .code-copy-btn {
 }
 
 .mermaid-container .mermaid-loading {
-  color: #9ca3af;
+  color: var(--theme-muted);
   font-size: 0.875rem;
-}
-
-.dark {
-  .mermaid-container {
-    background: #111827;
-    border-color: #374151;
-  }
-
-  .mermaid-container .mermaid-loading {
-    color: #6b7280;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -746,13 +789,7 @@ pre.astro-code:hover > .code-copy-btn {
 .media-figure > figcaption {
   margin-top: 0.5rem;
   font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.dark {
-  .media-figure > figcaption {
-    color: #9ca3af;
-  }
+  color: var(--theme-muted);
 }
 
 /* --- Media: YouTube embed --- */
@@ -795,7 +832,7 @@ pre.astro-code:hover > .code-copy-btn {
 }
 
 .media-youtube-link:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--theme-focus);
   outline-offset: 2px;
 }
 
@@ -833,9 +870,9 @@ pre.astro-code:hover > .code-copy-btn {
   gap: 1rem;
   margin: 1.5rem 0;
   padding: 0;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--theme-border);
   border-radius: 0.5rem;
-  background: #ffffff;
+  background: var(--theme-surface);
   color: inherit;
   text-decoration: none;
   overflow: hidden;
@@ -845,12 +882,12 @@ pre.astro-code:hover > .code-copy-btn {
 }
 
 .block-bookmark:hover {
-  border-color: #9ca3af;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+  border-color: var(--theme-muted);
+  box-shadow: 0 1px 3px rgb(var(--theme-shadow) / 0.09);
 }
 
 .block-bookmark:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--theme-focus);
   outline-offset: 2px;
 }
 
@@ -866,7 +903,7 @@ pre.astro-code:hover > .code-copy-btn {
 .block-bookmark-title {
   font-weight: 600;
   line-height: 1.4;
-  color: #111827;
+  color: var(--theme-foreground);
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -877,7 +914,7 @@ pre.astro-code:hover > .code-copy-btn {
 .block-bookmark-desc {
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #4b5563;
+  color: var(--theme-muted-strong);
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -889,7 +926,7 @@ pre.astro-code:hover > .code-copy-btn {
   margin-top: auto;
   padding-top: 0.25rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--theme-muted);
   overflow-wrap: anywhere;
 }
 
@@ -897,7 +934,7 @@ pre.astro-code:hover > .code-copy-btn {
 .block-bookmark-thumb {
   flex: 0 0 clamp(7rem, 30%, 12rem);
   aspect-ratio: 1.91 / 1;
-  background: #f3f4f6;
+  background: var(--theme-surface-sunken);
 }
 
 .block-bookmark-thumb img {
@@ -918,33 +955,6 @@ pre.astro-code:hover > .code-copy-btn {
   }
 }
 
-.dark {
-  .block-bookmark {
-    border-color: #374151;
-    background: #111827;
-  }
-
-  .block-bookmark:hover {
-    border-color: #6b7280;
-  }
-
-  .block-bookmark-title {
-    color: #f3f4f6;
-  }
-
-  .block-bookmark-desc {
-    color: #d1d5db;
-  }
-
-  .block-bookmark-site {
-    color: #9ca3af;
-  }
-
-  .block-bookmark-thumb {
-    background: #1f2937;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .block-bookmark {
     transition: none;
@@ -958,9 +968,9 @@ pre.astro-code:hover > .code-copy-btn {
   gap: 0.5rem;
   margin: 1.5rem 0;
   padding: 1rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--theme-border);
   border-radius: 0.5rem;
-  background: #ffffff;
+  background: var(--theme-surface);
   color: inherit;
   text-decoration: none;
   transition:
@@ -969,12 +979,12 @@ pre.astro-code:hover > .code-copy-btn {
 }
 
 .block-github:hover {
-  border-color: #9ca3af;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+  border-color: var(--theme-muted);
+  box-shadow: 0 1px 3px rgb(var(--theme-shadow) / 0.09);
 }
 
 .block-github:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--theme-focus);
   outline-offset: 2px;
 }
 
@@ -987,19 +997,19 @@ pre.astro-code:hover > .code-copy-btn {
 
 .block-github-mark {
   flex: none;
-  color: #111827;
+  color: var(--theme-foreground);
 }
 
 .block-github-name {
   font-weight: 600;
-  color: #111827;
+  color: var(--theme-foreground);
   overflow-wrap: anywhere;
 }
 
 .block-github-desc {
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #4b5563;
+  color: var(--theme-muted-strong);
 }
 
 .block-github-meta {
@@ -1007,37 +1017,13 @@ pre.astro-code:hover > .code-copy-btn {
   flex-wrap: wrap;
   gap: 0.25rem 1rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--theme-muted);
 }
 
 .block-github-stat {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-}
-
-.dark {
-  .block-github {
-    border-color: #374151;
-    background: #111827;
-  }
-
-  .block-github:hover {
-    border-color: #6b7280;
-  }
-
-  .block-github-mark,
-  .block-github-name {
-    color: #f3f4f6;
-  }
-
-  .block-github-desc {
-    color: #d1d5db;
-  }
-
-  .block-github-meta {
-    color: #9ca3af;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1170,9 +1156,9 @@ pre.astro-code:hover > .code-copy-btn {
    의미는 아이콘(형태) + 텍스트 라벨로 전달한다. 색은 보조 신호일 뿐이다(WCAG 1.4.1).
    accent/본문 대비비는 라이트·다크 모두 AA(4.5:1) 이상. */
 .block-callout {
-  --callout-bg: #f3f4f6;
-  --callout-accent: #374151;
-  --callout-fg: #1f2937;
+  --callout-bg: var(--theme-surface-sunken);
+  --callout-accent: var(--theme-muted-strong);
+  --callout-fg: var(--theme-body);
 
   margin: 1.5rem 0;
   padding: 0.875rem 1rem;
@@ -1182,29 +1168,31 @@ pre.astro-code:hover > .code-copy-btn {
   color: var(--callout-fg);
 }
 
+/* 다섯 색은 종이 위에서 서로 구분되면서도 mineral 브랜드색과 겹치지 않게 고른다.
+   브랜드 초록은 링크·강조에만 쓰므로 콜아웃에는 쓰지 않는다. */
 .block-callout[data-callout='info'] {
-  --callout-bg: #eff6ff;
-  --callout-accent: #1d4ed8;
+  --callout-bg: #e9eff4;
+  --callout-accent: #2f5e86;
 }
 
 .block-callout[data-callout='tip'] {
-  --callout-bg: #f5f3ff;
-  --callout-accent: #6d28d9;
+  --callout-bg: #f2eef6;
+  --callout-accent: #6b4f8f;
 }
 
 .block-callout[data-callout='success'] {
-  --callout-bg: #ecfdf5;
-  --callout-accent: #047857;
+  --callout-bg: #eef2e7;
+  --callout-accent: #3f6b30;
 }
 
 .block-callout[data-callout='warning'] {
-  --callout-bg: #fffbeb;
-  --callout-accent: #b45309;
+  --callout-bg: #f9efdd;
+  --callout-accent: #8a5a12;
 }
 
 .block-callout[data-callout='danger'] {
-  --callout-bg: #fef2f2;
-  --callout-accent: #b91c1c;
+  --callout-bg: #f9eae6;
+  --callout-accent: #a33a2c;
 }
 
 .block-callout-head {
@@ -1229,34 +1217,28 @@ pre.astro-code:hover > .code-copy-btn {
 }
 
 .dark {
-  .block-callout {
-    --callout-bg: #111827;
-    --callout-accent: #d1d5db;
-    --callout-fg: #e5e7eb;
-  }
-
   .block-callout[data-callout='info'] {
-    --callout-bg: #0f1d38;
-    --callout-accent: #93c5fd;
+    --callout-bg: #17242e;
+    --callout-accent: #8fbede;
   }
 
   .block-callout[data-callout='tip'] {
-    --callout-bg: #1c1836;
-    --callout-accent: #c4b5fd;
+    --callout-bg: #221c2c;
+    --callout-accent: #c3aade;
   }
 
   .block-callout[data-callout='success'] {
-    --callout-bg: #042f26;
-    --callout-accent: #6ee7b7;
+    --callout-bg: #1a2417;
+    --callout-accent: #a6c894;
   }
 
   .block-callout[data-callout='warning'] {
-    --callout-bg: #2e2205;
-    --callout-accent: #fcd34d;
+    --callout-bg: #2a2113;
+    --callout-accent: #dcb679;
   }
 
   .block-callout[data-callout='danger'] {
-    --callout-bg: #300f11;
-    --callout-accent: #fca5a5;
+    --callout-bg: #2c1a17;
+    --callout-accent: #e5a598;
   }
 }

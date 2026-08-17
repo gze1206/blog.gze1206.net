@@ -26,13 +26,13 @@ const { nav } = Astro.props;
   nav !== null && (
     <section
       aria-labelledby="series-nav-heading"
-      class="mt-12 rounded-lg border border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-900"
+      class="border-border bg-surface-sunken mt-12 rounded-lg border px-5 py-4"
     >
       <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <h2 id="series-nav-heading" class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+        <h2 id="series-nav-heading" class="text-body text-sm font-semibold">
           이 시리즈의 글
         </h2>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <p class="text-muted text-sm">
           {/* 보이는 것은 짧게, 읽히는 것은 완전하게. 같은 정보를 두 번 읽지 않도록 한쪽만 노출한다. */}
           <span aria-hidden="true">
             {nav.position} / {nav.total}
@@ -44,31 +44,26 @@ const { nav } = Astro.props;
       </div>
 
       <details class="mt-3" open={shouldExpandSeriesList(nav.total)}>
-        <summary class="cursor-pointer rounded text-sm text-gray-600 hover:underline dark:text-gray-400">
+        <summary class="text-muted cursor-pointer rounded text-sm hover:underline">
           전체 {nav.total}편 · 연재 순서
         </summary>
         <ol class="mt-3 space-y-1.5 text-sm">
           {nav.items.map((item) => (
             <li class="flex gap-2">
-              <span class="w-10 shrink-0 text-gray-500 tabular-nums dark:text-gray-400">
-                {item.position}편
-              </span>
+              <span class="text-muted w-10 shrink-0 tabular-nums">{item.position}편</span>
               {item.isCurrent ? (
                 /* 자기 자신으로 가는 링크는 혼란스럽다. 링크 대신 현재 위치임을 표시한다. */
-                <span aria-current="true" class="font-semibold text-gray-900 dark:text-gray-100">
+                <span aria-current="true" class="text-foreground font-semibold">
                   {item.post.data.title}
                   <span
                     aria-hidden="true"
-                    class="ml-2 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200"
+                    class="bg-surface-sunken text-body ml-2 rounded px-1.5 py-0.5 text-xs font-medium"
                   >
                     현재
                   </span>
                 </span>
               ) : (
-                <a
-                  href={postPath(item.post.data.slug)}
-                  class="rounded text-gray-700 hover:underline dark:text-gray-300"
-                >
+                <a href={postPath(item.post.data.slug)} class="text-body rounded hover:underline">
                   {item.post.data.title}
                 </a>
               )}
@@ -83,29 +78,25 @@ const { nav } = Astro.props;
           <a
             href={postPath(nav.previous.data.slug)}
             rel="prev"
-            class="rounded-md border border-gray-200 bg-white px-4 py-3 hover:border-gray-400 dark:border-gray-700 dark:bg-gray-950 dark:hover:border-gray-500"
+            class="border-border bg-surface hover:border-border-strong rounded-md border px-4 py-3"
           >
-            <span class="block text-xs text-gray-600 dark:text-gray-400">
+            <span class="text-muted block text-xs">
               <span aria-hidden="true">←</span> 이전 편
             </span>
             {/* 접근 가능한 이름에 제목이 들어간다 — "이전"만으로는 어디로 가는지 알 수 없다. */}
-            <span class="mt-0.5 block font-medium text-gray-900 dark:text-gray-100">
-              {nav.previous.data.title}
-            </span>
+            <span class="text-foreground mt-0.5 block font-medium">{nav.previous.data.title}</span>
           </a>
         )}
         {nav.next !== undefined && (
           <a
             href={postPath(nav.next.data.slug)}
             rel="next"
-            class="rounded-md border border-gray-200 bg-white px-4 py-3 hover:border-gray-400 sm:col-start-2 sm:text-right dark:border-gray-700 dark:bg-gray-950 dark:hover:border-gray-500"
+            class="border-border bg-surface hover:border-border-strong rounded-md border px-4 py-3 sm:col-start-2 sm:text-right"
           >
-            <span class="block text-xs text-gray-600 dark:text-gray-400">
+            <span class="text-muted block text-xs">
               다음 편 <span aria-hidden="true">→</span>
             </span>
-            <span class="mt-0.5 block font-medium text-gray-900 dark:text-gray-100">
-              {nav.next.data.title}
-            </span>
+            <span class="text-foreground mt-0.5 block font-medium">{nav.next.data.title}</span>
           </a>
         )}
       </nav>
