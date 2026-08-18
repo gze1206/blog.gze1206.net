@@ -37,11 +37,6 @@ export function aboutPath(): string {
   return '/about';
 }
 
-/** 경력 — 역할·기간·맥락을 시간순으로 읽는 곳 (NOR-151). */
-export function careerPath(): string {
-  return '/career';
-}
-
 /** 포트폴리오 — 공개 가능한 작업을 문제·역할·기술·결과로 보는 곳 (NOR-151). */
 export function portfolioPath(): string {
   return '/portfolio';

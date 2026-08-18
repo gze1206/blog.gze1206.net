@@ -6,7 +6,7 @@ const VALID = `
     <section aria-labelledby="about-heading"><h1 id="about-heading">만들고, 고치고, 기록합니다</h1></section>
     <section aria-labelledby="recent-posts-heading"><h2 id="recent-posts-heading">최근 기록</h2></section>
     <section aria-labelledby="doors-heading">
-      <a href="/career">경력</a>
+      <a href="/about">소개</a>
       <a href="/portfolio">포트폴리오</a>
     </section>
   </main>
@@ -24,7 +24,7 @@ it('캔버스와 빠진 섹션을 함께 잡아낸다', () => {
     'about section is missing',
     'recent posts section is missing',
     'career/portfolio doors are missing',
-    'career door link is missing',
+    'about door link is missing',
     'portfolio door link is missing',
   ]);
 });

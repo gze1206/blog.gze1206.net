@@ -5,7 +5,7 @@ const REQUIRED_SECTION_MARKERS = [
 ];
 
 const REQUIRED_DOORS = [
-  ['href="/career"', 'career door link is missing'],
+  ['href="/about"', 'about door link is missing'],
   ['href="/portfolio"', 'portfolio door link is missing'],
 ];
 
@@ -13,7 +13,7 @@ const REQUIRED_DOORS = [
  * Check the static home output for the entry-point hierarchy (NOR-151).
  *
  * The home page introduces the person, shows recent writing, and then handsreaders off to
- * the career and portfolio pages. Listing projects on the home page itself is what this
+ * the about and portfolio pages. Listing projects on the home page itself is what this
  * structure replaced, so a project grid here is a regression.
  *
  * @param {string} html prerendered home page HTML

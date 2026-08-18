@@ -2,17 +2,21 @@
 /**
  * About (NOR-156).
  *
- * 홈은 입구라 소개를 한 줄로 끝낸다. 그보다 긴 이야기 — 어떤 일을 어떻게 하는 사람인지와
- * 연락할 방법 — 은 여기에 모은다.
+ * 홈은 입구라 소개를 한 줄로 끝낸다. 그보다 긴 이야기 — 어떤 일을 어떻게 하는 사람인지,
+ * 어디에서 무엇을 만들었는지, 연락할 방법 — 은 여기에 모은다.
+ *
+ * 경력을 별도 페이지로 두었더니 같은 이야기가 두 곳에 나뉘었다(NOR-160). 소개를 읽은
+ * 사람이 바로 이어서 볼 것이므로 한 화면에 둔다. 목록은 접혀 있어 길이를 늘리지 않는다.
  *
  * 외부 프로필은 **링크로만** 건다. 배지 이미지를 렌더 시점에 불러오면 남의 서버 사정이
  * 이 페이지의 속도와 안정성이 된다(master 블로그가 그랬다).
  */
 import ListLayout from '../layouts/ListLayout.astro';
 import { getProfile } from '../lib/content';
-import { careerPath, portfolioPath } from '../lib/routes';
+import { getVisibleExperiences } from '../lib/experience';
+import { portfolioPath } from '../lib/routes';
 
-const profile = await getProfile();
+const [profile, experiences] = await Promise.all([getProfile(), getVisibleExperiences()]);
 const paragraphs = profile.data.about.length > 0 ? profile.data.about : [profile.data.introduction];
 ---
 
@@ -29,7 +33,6 @@ const paragraphs = profile.data.about.length > 0 ? profile.data.about : [profile
       {paragraphs.map((paragraph) => <p>{paragraph}</p>)}
 
       <p class="about__more">
-        <a href={careerPath()} class="home-text-link">경력 보기 →</a>
         <a href={portfolioPath()} class="home-text-link">포트폴리오 보기 →</a>
       </p>
     </section>
@@ -62,5 +65,33 @@ const paragraphs = profile.data.about.length > 0 ? profile.data.about : [profile
         )
       }
     </aside>
+
+    {
+      experiences.length > 0 && (
+        <section class="about__career" aria-labelledby="about-career-heading">
+          <h2 id="about-career-heading" class="taxonomy-section__title">
+            경력
+          </h2>
+          <ol class="career-timeline">
+            {experiences.map((experience) => (
+              <li>
+                <details class="career-entry">
+                  <summary class="career-entry__summary">
+                    <span class="career-entry__period">{experience.data.period}</span>
+                    <span class="career-entry__organization">{experience.data.organization}</span>
+                    <span class="career-entry__role">{experience.data.role}</span>
+                  </summary>
+                  <ul class="career-entry__highlights">
+                    {experience.data.highlights.map((highlight) => (
+                      <li>{highlight}</li>
+                    ))}
+                  </ul>
+                </details>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
   </div>
 </ListLayout>
