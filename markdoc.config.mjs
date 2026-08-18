@@ -7,8 +7,10 @@ import { codeBlockTransformers } from './src/shiki/transformers/index.ts';
 import { createHeadingIdFactory } from './src/lib/heading-id.ts';
 import { HEADING_ANCHOR_CLASS, headingAnchorLabel } from './src/lib/heading-anchor.ts';
 import { collectMdocFenceLanguages } from './src/shiki/fence-languages.ts';
+import { SHIKI_THEMES } from './src/shiki/themes.ts';
 
-const themes = { light: 'github-light', dark: 'github-dark' };
+// 테마는 `.md` 경로와 같은 것을 쓴다. 여기서 따로 적으면 글 형식에 따라 코드 색이 달라진다.
+const themes = SHIKI_THEMES;
 
 /**
  * `.mdoc` 본문이 실제로 쓰는 코드블럭 언어를 **미리** 로드한다 (NOR-17).
