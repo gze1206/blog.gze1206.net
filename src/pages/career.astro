@@ -1,0 +1,44 @@
+---
+/**
+ * 경력 (NOR-151).
+ *
+ * 홈에서 두 줄로 끝내면 정체성만 남고 검증 가능한 경험은 사라진다. 그래서 별도 공간에서
+ * 역할·기간·맥락을 시간순으로 읽게 한다. 정렬과 공개 여부 판단은 `getVisibleExperiences`
+ * 가 이미 한 것을 그대로 쓴다 — 화면이 다시 거르지 않는다.
+ */
+import ListLayout from '../layouts/ListLayout.astro';
+import EmptyState from '../components/EmptyState.astro';
+import { getProfile } from '../lib/content';
+import { getVisibleExperiences } from '../lib/experience';
+
+const [profile, experiences] = await Promise.all([getProfile(), getVisibleExperiences()]);
+---
+
+<ListLayout
+  title="경력"
+  description={`${profile.data.name}의 역할과 기간, 프로젝트 맥락을 시간순으로 정리한 경력 기록입니다.`}
+  eyebrow="경력"
+  heading="어디에서, 무엇을 만들었는지"
+  lead="회사와 역할, 그 안에서 실제로 담당한 일을 시간순으로 정리했습니다."
+>
+  {
+    experiences.length === 0 ? (
+      <EmptyState message="공개된 경력 항목이 아직 없습니다." />
+    ) : (
+      <ol class="career-timeline">
+        {experiences.map((experience) => (
+          <li class="career-entry">
+            <p class="career-entry__period">{experience.data.period}</p>
+            <h2 class="career-entry__organization">{experience.data.organization}</h2>
+            <p class="career-entry__role">{experience.data.role}</p>
+            <ul class="career-entry__highlights">
+              {experience.data.highlights.map((highlight) => (
+                <li>{highlight}</li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</ListLayout>

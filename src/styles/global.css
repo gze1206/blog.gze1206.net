@@ -144,133 +144,92 @@ body {
   font-weight: 650;
 }
 
-/* NOR-137: 홈은 읽기와 작업물을 앞세운 정적인 포트폴리오 표면이다. */
-.home-page {
-  width: 100%;
+/* 목록 성격 페이지의 골격 (NOR-151). 글 상세와 같은 폭 위에 서서 페이지를 오갈 때
+   본문 열이 흔들리지 않는다. */
+.list-page {
+  width: min(100%, var(--spacing-reading-wide));
+  margin-inline: auto;
+  padding-inline: 1rem;
+  padding-block: clamp(2.5rem, 6vw, 4rem) clamp(3rem, 8vw, 5rem);
+}
+
+.list-page__head {
+  margin-bottom: clamp(2rem, 4vw, 2.75rem);
+}
+
+.list-page__eyebrow {
+  color: var(--theme-accent);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+
+/* --- 홈 (NOR-151) ---
+   홈은 입구다. 소개 → 최근 기록 → 두 개의 문(경력·포트폴리오) 순서로 좁혀 간다. */
+.home {
+  padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(4rem, 10vw, 7rem);
 }
 
 .home-hero {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  padding: clamp(2rem, 6vw, 4.5rem);
-  border: 1px solid var(--theme-border);
-  border-radius: 1rem;
-  background: var(--theme-surface);
-  box-shadow: 0 1px 2px rgb(var(--theme-shadow) / 0.05);
-}
-
-.home-hero__decoration {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background:
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--theme-accent) 5%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(color-mix(in srgb, var(--theme-accent) 5%, transparent) 1px, transparent 1px),
-    radial-gradient(
-      circle at 92% 6%,
-      color-mix(in srgb, var(--theme-accent) 12%, transparent),
-      transparent 34%
-    ),
-    radial-gradient(
-      circle at 8% 100%,
-      color-mix(in srgb, var(--theme-accent) 6%, transparent),
-      transparent 36%
-    );
-  background-size:
-    2rem 2rem,
-    2rem 2rem,
-    auto,
-    auto;
-  pointer-events: none;
-}
-
-.home-hero__content {
-  max-width: 48rem;
-}
-
-.home-eyebrow,
-.home-section__eyebrow {
-  color: var(--theme-accent);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-}
-
-.home-title {
-  margin-top: 0.75rem;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 750;
-  letter-spacing: -0.055em;
-  line-height: 1;
-}
-
-.home-lede {
-  max-width: 42rem;
-  margin-top: 1.75rem;
-  color: var(--theme-foreground);
-  font-size: clamp(1.125rem, 2vw, 1.35rem);
-  font-weight: 500;
-  line-height: 1.75;
-}
-
-.home-summary {
-  max-width: 42rem;
-  margin-top: 1rem;
-  color: var(--theme-muted);
-  line-height: 1.8;
-}
-
-.home-hero__details {
   display: grid;
-  gap: 1.5rem;
-  margin-top: clamp(2rem, 5vw, 3.5rem);
+  gap: clamp(2rem, 5vw, 4rem);
 }
 
-.home-detail {
-  min-width: 0;
-  padding-top: 1.25rem;
-  border-top: 1px solid color-mix(in srgb, var(--theme-border) 80%, transparent);
-}
-
-.home-detail__heading {
-  font-size: 0.875rem;
+.home-kicker {
+  color: var(--theme-accent);
+  font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 
-.home-detail__list {
-  margin-top: 0.75rem;
-  padding-left: 1.15rem;
-  color: var(--theme-muted);
+.home-title {
+  max-width: 40rem;
+  margin-top: 1rem;
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 5.6vw, 4.2rem);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 1.14;
+  word-break: keep-all;
+}
+
+.home-intro {
+  max-width: 34rem;
+  margin-top: 1.6rem;
+  color: var(--theme-muted-strong);
+  font-size: 1.0625rem;
+  line-height: 1.85;
+  word-break: keep-all;
+}
+
+/* 사실 목록은 자랑이 아니라 좌표다. 이름표(dt)와 값(dd)이 한 줄씩 쌓인다. */
+.home-facts {
+  align-self: end;
+  display: grid;
+  gap: 0;
+}
+
+.home-fact {
+  padding-block: 1.1rem;
+  border-top: 1px solid var(--theme-border);
+}
+
+.home-fact:last-child {
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.home-fact dt {
   font-size: 0.9375rem;
-  line-height: 1.7;
-  list-style: disc;
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 
-.home-detail__list li + li {
+.home-fact dd {
   margin-top: 0.35rem;
-}
-
-.home-tech-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-top: 0.75rem;
-}
-
-.home-tech-token {
-  padding: 0.3rem 0.55rem;
-  border: 1px solid color-mix(in srgb, var(--theme-border) 90%, transparent);
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--theme-surface) 86%, var(--theme-background));
   color: var(--theme-muted);
   font-size: 0.8125rem;
-  line-height: 1.2;
+  line-height: 1.6;
 }
 
 .home-section {
@@ -278,76 +237,28 @@ body {
 }
 
 .home-section__heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 1rem;
+  padding-bottom: 1.25rem;
   border-bottom: 1px solid var(--theme-border);
 }
 
-.home-section__title {
-  order: -1;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 750;
-  letter-spacing: -0.035em;
-}
-
-.home-project-grid {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1.25rem;
-}
-
-.home-project-card {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: clamp(1.25rem, 3vw, 1.75rem);
-  border: 1px solid var(--theme-border);
-  border-radius: 0.75rem;
-  background: var(--theme-surface);
-}
-
-.home-project-card__title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.home-project-card__summary {
-  margin-top: 0.65rem;
-  color: var(--theme-muted);
-  font-size: 0.9375rem;
-  line-height: 1.7;
-}
-
-.home-project-card__stack {
-  margin-top: 1.25rem;
-}
-
-.home-project-card__links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.home-project-card__link,
-.home-text-link {
-  color: var(--theme-foreground);
-  font-size: 0.9375rem;
-  font-weight: 650;
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--theme-accent) 55%, transparent);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.25em;
-}
-
-.home-project-card__link:hover,
-.home-text-link:hover {
+.home-section__eyebrow {
   color: var(--theme-accent);
-  text-decoration-color: currentcolor;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.home-section__title {
+  margin-top: 0.6rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.25;
+  word-break: keep-all;
+}
+
+.home-recent-posts {
+  margin-top: 1.5rem;
 }
 
 .home-empty-state {
@@ -355,51 +266,174 @@ body {
   color: var(--theme-muted);
 }
 
-.home-recent-posts > article {
-  border-color: var(--theme-border);
-}
-
-.home-recent-posts > article > div:first-child {
-  color: var(--theme-muted);
-}
-
 .home-section__action {
   margin-top: 1.75rem;
 }
 
+.home-text-link {
+  color: var(--theme-accent);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.home-text-link:hover {
+  color: var(--theme-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+/* 두 개의 문. 홈에서 깊이 있는 두 공간으로 나가는 유일한 출구다. */
+.home-doors {
+  display: grid;
+  gap: 1px;
+  margin-top: clamp(3.5rem, 8vw, 6rem);
+  overflow: hidden;
+  border: 1px solid var(--theme-border);
+  border-radius: 1rem;
+  background: var(--theme-border);
+}
+
+.home-door {
+  display: flex;
+  min-height: 14rem;
+  flex-direction: column;
+  padding: clamp(1.75rem, 4vw, 2.75rem);
+  background: var(--theme-surface);
+}
+
+.home-door__ordinal {
+  margin-bottom: auto;
+  color: var(--theme-accent);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+}
+
+.home-door__title {
+  margin: 1.75rem 0 0.7rem;
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.3;
+  word-break: keep-all;
+}
+
+.home-door__summary {
+  max-width: 22rem;
+  color: var(--theme-muted-strong);
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.home-door__action {
+  margin-top: 1.3rem;
+}
+
 @media (min-width: 48rem) {
-  .home-hero__details {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-    gap: 2.5rem;
+  .home-hero {
+    grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 0.75fr);
   }
 
-  .home-project-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .home-doors {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
-.dark .home-hero,
-.dark .home-project-card {
-  box-shadow: none;
+/* --- 경력 (NOR-151) --- */
+.career-timeline {
+  display: grid;
+  gap: 2.5rem;
 }
 
-.dark .home-hero__decoration {
-  background:
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--theme-accent) 7%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(color-mix(in srgb, var(--theme-accent) 7%, transparent) 1px, transparent 1px),
-    radial-gradient(
-      circle at 92% 6%,
-      color-mix(in srgb, var(--theme-accent) 10%, transparent),
-      transparent 34%
-    );
-  background-size:
-    2rem 2rem,
-    2rem 2rem,
-    auto;
+.career-entry {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--theme-border);
+}
+
+.career-entry__period {
+  color: var(--theme-accent);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.career-entry__organization {
+  margin-top: 0.6rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.career-entry__role {
+  margin-top: 0.3rem;
+  color: var(--theme-muted);
+  font-size: 0.9375rem;
+}
+
+.career-entry__highlights {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+  padding-left: 1.15rem;
+  color: var(--theme-body);
+  line-height: 1.8;
+  list-style: disc;
+  word-break: keep-all;
+}
+
+/* --- 포트폴리오 (NOR-151) --- */
+.portfolio-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.portfolio-card {
+  padding: clamp(1.25rem, 3vw, 1.9rem);
+  border: 1px solid var(--theme-border);
+  border-radius: 0.9rem;
+  background: var(--theme-surface);
+}
+
+.portfolio-card__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.portfolio-card__summary {
+  margin-top: 0.7rem;
+  color: var(--theme-muted-strong);
+  line-height: 1.8;
+  word-break: keep-all;
+}
+
+.portfolio-card__stack,
+.home-tech-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1.25rem;
+}
+
+.stack-token {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 9999px;
+  background: var(--theme-background);
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+
+.portfolio-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
 .skip-link {

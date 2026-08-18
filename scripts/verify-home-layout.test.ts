@@ -1,39 +1,44 @@
 import { expect, it } from 'vitest';
 import { verifyHomeLayout } from './verify-home-layout.mjs';
 
-it('홈은 캔버스 없이 포트폴리오 정보 위계를 렌더한다', () => {
+const VALID = `
+  <main class="home">
+    <section aria-labelledby="about-heading"><h1 id="about-heading">만들고, 고치고, 기록합니다</h1></section>
+    <section aria-labelledby="recent-posts-heading"><h2 id="recent-posts-heading">최근 기록</h2></section>
+    <section aria-labelledby="doors-heading">
+      <a href="/career">경력</a>
+      <a href="/portfolio">포트폴리오</a>
+    </section>
+  </main>
+`;
+
+it('입구 구조를 갖춘 홈에는 지적할 것이 없다', () => {
+  expect(verifyHomeLayout(VALID)).toEqual([]);
+});
+
+it('캔버스와 빠진 섹션을 함께 잡아낸다', () => {
   const html = '<main><canvas></canvas><h1>gze1206</h1></main>';
 
   expect(verifyHomeLayout(html)).toEqual([
     'canvas must not be present',
     'about section is missing',
-    'stack section is missing',
-    'portfolio section is missing',
     'recent posts section is missing',
+    'career/portfolio doors are missing',
+    'career door link is missing',
+    'portfolio door link is missing',
   ]);
 });
 
-it('홈 히어로에서는 소개와 기술 섹션 표지도 요구한다', () => {
-  const html = `
-    <main>
-      <section class="home-hero">
-        <h1 id="about-heading">gze1206</h1>
-      </section>
-      <section id="portfolio-heading"></section>
-      <section id="recent-posts-heading"></section>
-    </main>
-  `;
+it('두 입구 중 하나만 있어도 잡아낸다', () => {
+  const html = VALID.replace('<a href="/portfolio">포트폴리오</a>', '');
 
-  expect(verifyHomeLayout(html)).toEqual(['stack section is missing']);
+  expect(verifyHomeLayout(html)).toEqual(['portfolio door link is missing']);
 });
 
-it('히어로 표면이 없어져도 소개와 기술 섹션 표지를 요구한다', () => {
-  const html = `
-    <main>
-      <section id="portfolio-heading"></section>
-      <section id="recent-posts-heading"></section>
-    </main>
-  `;
+it('홈에 프로젝트 목록이 돌아오면 잡아낸다', () => {
+  const html = VALID.replace('</main>', '<div class="home-project-grid"></div></main>');
 
-  expect(verifyHomeLayout(html)).toEqual(['about section is missing', 'stack section is missing']);
+  expect(verifyHomeLayout(html)).toEqual([
+    'projects must live on the portfolio page, not the home page',
+  ]);
 });

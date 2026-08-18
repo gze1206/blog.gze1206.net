@@ -5,10 +5,9 @@ import { verifyHomeContentIntegration } from './verify-home-content-integration.
 it('visible experience loader가 없는 홈을 거부한다', () => {
   const source = `
     getProfile
-    profile.data.name
     profile.data.headline
     profile.data.introduction
-    experiences.length > 0
+    latestExperience &&
   `;
 
   expect(verifyHomeContentIntegration(source)).toEqual([
@@ -27,11 +26,10 @@ it('홈이 experience 컬렉션을 직접 읽으면 거부한다', () => {
   const source = `
     getProfile
     getVisibleExperiences
-    profile.data.name
     profile.data.headline
     profile.data.introduction
-    profile.data.skills.map
-    experiences.length > 0
+    profile.data.skills
+    latestExperience &&
     getCollection('experience')
   `;
 
