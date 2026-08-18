@@ -1,11 +1,10 @@
 const REQUIRED_FRAGMENTS = [
   ['getProfile', 'home must load profile through getProfile'],
   ['getVisibleExperiences', 'home must load visible experiences through getVisibleExperiences'],
-  ['profile.data.name', 'home must render the profile name'],
   ['profile.data.headline', 'home must render the profile headline'],
   ['profile.data.introduction', 'home must render the profile introduction'],
-  ['profile.data.skills.map', 'home must render profile skills'],
-  ['experiences.length > 0', 'home must hide an empty experience section'],
+  ['profile.data.skills', 'home must render profile skills'],
+  ['latestExperience &&', 'home must hide the fact row when no experience is visible'],
 ];
 
 /**

@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   blogPagePath,
+  careerPath,
   categoryPath,
   normalizePath,
   ogImageParam,
   ogImagePath,
+  portfolioPath,
   postPath,
   seriesPath,
   tagPath,
@@ -84,4 +86,9 @@ describe('ogImageParam', () => {
   it('잘못된 퍼센트 시퀀스에도 던지지 않는다', () => {
     expect(() => ogImageParam('/tags/%')).not.toThrow();
   });
+});
+
+it('경력·포트폴리오는 고정 경로다', () => {
+  expect(careerPath()).toBe('/career');
+  expect(portfolioPath()).toBe('/portfolio');
 });

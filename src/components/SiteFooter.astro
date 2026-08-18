@@ -1,10 +1,33 @@
 ---
-/** 사이트 공통 푸터 (NOR-16). `contentinfo` 랜드마크 확보용 최소 구현. */
+/**
+ * 사이트 공통 푸터 (NOR-16, NOR-151).
+ *
+ * `contentinfo` 랜드마크와 함께, 상단 내비게이션에서 뺀 경로(시리즈·피드)로 가는 길을 둔다.
+ * 상단에 다 넣으면 네 개짜리 메뉴가 여덟 개가 되고, 그러면 아무것도 눈에 띄지 않는다.
+ */
 const year = new Date().getFullYear();
+
+const FOOTER_LINKS = [
+  { href: '/series', label: '시리즈' },
+  { href: '/rss.xml', label: 'RSS' },
+] as const;
 ---
 
 <footer class="border-border mt-16 border-t">
-  <div class="text-muted site-shell py-8 text-sm">
+  <div class="text-muted site-shell flex flex-wrap items-center justify-between gap-4 py-8 text-sm">
     <p>© {year} gze1206</p>
+    <nav aria-label="보조">
+      <ul class="flex flex-wrap gap-x-4 gap-y-1">
+        {
+          FOOTER_LINKS.map((link) => (
+            <li>
+              <a href={link.href} class="site-nav__link">
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
   </div>
 </footer>

@@ -1,0 +1,64 @@
+---
+/**
+ * 포트폴리오 (NOR-151).
+ *
+ * 공개 가능한 작업만 담는다. 카드 하나가 "무엇을 만들었고, 무엇으로 만들었고, 어디서 볼 수
+ * 있는가"에 답해야 한다 — 셋 중 하나가 빠지면 그건 목록이지 포트폴리오가 아니다.
+ */
+import { getCollection } from 'astro:content';
+import ListLayout from '../layouts/ListLayout.astro';
+import EmptyState from '../components/EmptyState.astro';
+
+const entries = await getCollection('portfolio');
+
+/** 링크 종류를 화면 문구로 바꾼다. 키 이름(`repo`)을 그대로 내보내면 방문자에게는 은어다. */
+const LINK_LABELS: Record<string, string> = {
+  repo: '저장소',
+  demo: '데모',
+  video: '영상',
+  article: '관련 글',
+};
+---
+
+<ListLayout
+  title="포트폴리오"
+  description="개인 프로젝트와 업무 경험 중 공개 가능한 작업을 문제·역할·기술·결과 중심으로 소개합니다."
+  eyebrow="포트폴리오"
+  heading="문제를 풀며 남긴 결과물"
+  lead="공개할 수 있는 작업만 담았습니다. 각 항목은 무엇을 만들었고 무엇으로 만들었는지를 함께 보여 줍니다."
+>
+  {
+    entries.length === 0 ? (
+      <EmptyState message="공개된 작업이 아직 없습니다." />
+    ) : (
+      <div class="portfolio-grid">
+        {entries.map((entry) => (
+          <article class="portfolio-card">
+            <h2 class="portfolio-card__title">{entry.data.title}</h2>
+            <p class="portfolio-card__summary">{entry.data.summary}</p>
+            <ul class="portfolio-card__stack" aria-label={`${entry.data.title} 기술 스택`}>
+              {entry.data.stack.map((technology) => (
+                <li class="stack-token">{technology}</li>
+              ))}
+            </ul>
+            <div class="portfolio-card__links">
+              {entry.data.links
+                .flatMap((link) => Object.entries(link))
+                .map(([kind, url]) => (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="home-text-link"
+                    aria-label={`${entry.data.title} ${LINK_LABELS[kind] ?? kind}`}
+                  >
+                    {LINK_LABELS[kind] ?? kind}
+                  </a>
+                ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    )
+  }
+</ListLayout>

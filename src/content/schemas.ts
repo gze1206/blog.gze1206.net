@@ -64,6 +64,11 @@ export const portfolioSchema = z.object({
 export const profileSchema = z.object({
   name: z.string().min(1),
   headline: z.string().min(1),
+  /**
+   * 홈의 큰 한 줄 (NOR-151). 직함이 아니라 태도를 말하는 자리다.
+   * 없으면 `introduction` 을 그대로 쓴다 — 빈 화면을 만드는 것보다 낫다.
+   */
+  tagline: z.string().min(1).optional(),
   introduction: z.string().min(1),
   skills: z.array(z.string().min(1)).min(1),
 });
