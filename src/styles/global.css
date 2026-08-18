@@ -342,47 +342,104 @@ body {
   }
 }
 
-/* --- 경력 (NOR-151) --- */
+/* --- 경력 (NOR-151, NOR-155) ---
+   목록은 이력을 훑는 곳이다. 그래서 접힌 상태에서 보이는 것은 기간·조직·소속뿐이고,
+   담당 업무는 펼쳤을 때만 나온다. */
 .career-timeline {
   display: grid;
-  gap: 2.5rem;
+  gap: 0;
 }
 
 .career-entry {
-  padding-top: 1.5rem;
   border-top: 1px solid var(--theme-border);
 }
 
-.career-entry__period {
+.career-timeline > li:last-child .career-entry {
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.career-entry__summary {
+  display: grid;
+  align-items: baseline;
+  gap: 0.15rem 1.25rem;
+  padding: 1.35rem 1.75rem 1.35rem 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.career-entry__summary::-webkit-details-marker {
+  display: none;
+}
+
+/* 펼침 표시는 오른쪽 끝에 둔다. 요약 텍스트의 정렬을 흐트러뜨리지 않는다. */
+.career-entry__summary::after {
+  position: absolute;
+  top: 50%;
+  right: 0;
   color: var(--theme-accent);
+  transform: translateY(-50%);
+  content: '+';
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.career-entry[open] .career-entry__summary::after {
+  content: '−';
+}
+
+.career-entry__summary:hover .career-entry__organization {
+  color: var(--theme-accent);
+}
+
+.career-entry__period {
+  color: var(--theme-muted);
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 
 .career-entry__organization {
-  margin-top: 0.6rem;
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.03em;
 }
 
 .career-entry__role {
-  margin-top: 0.3rem;
   color: var(--theme-muted);
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
 }
 
 .career-entry__highlights {
   display: grid;
   gap: 0.5rem;
-  margin-top: 1.1rem;
+  margin: 0 0 1.5rem;
   padding-left: 1.15rem;
   color: var(--theme-body);
+  font-size: 0.9375rem;
   line-height: 1.8;
   list-style: disc;
   word-break: keep-all;
+}
+
+@media (min-width: 40rem) {
+  .career-entry__summary {
+    position: relative;
+    grid-template-columns: 9rem minmax(0, 1fr);
+  }
+
+  .career-entry__period {
+    grid-row: span 2;
+  }
+
+  .career-entry__highlights {
+    margin-left: 9rem;
+  }
+}
+
+@media (max-width: 39.99rem) {
+  .career-entry__summary {
+    position: relative;
+  }
 }
 
 /* --- 포트폴리오 (NOR-151) --- */
