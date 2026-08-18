@@ -648,6 +648,115 @@ summary:focus-visible {
   }
 }
 
+/* --- 읽은 책 (NOR-153) ---
+   목록은 "무엇을 읽었는가"만 말한다. 밑줄과 메모는 워크벤치에 비공개로 남는다. */
+.book-year + .book-year {
+  margin-top: clamp(2.5rem, 6vw, 3.5rem);
+}
+
+.book-year__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--theme-border);
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.book-year__count {
+  color: var(--theme-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.book-list {
+  display: grid;
+  gap: 0;
+}
+
+.book {
+  display: flex;
+  gap: 1.25rem;
+  padding-block: 1.5rem;
+}
+
+.book + .book {
+  border-top: 1px solid var(--theme-border);
+}
+
+.book__cover {
+  flex: none;
+  width: 4.5rem;
+  height: auto;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.35rem;
+}
+
+.book__body {
+  min-width: 0;
+}
+
+.book__title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.book__authors {
+  margin-top: 0.3rem;
+  color: var(--theme-muted);
+  font-size: 0.875rem;
+}
+
+.book__one-liner {
+  margin-top: 0.7rem;
+  color: var(--theme-body);
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.book__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  margin-top: 0.8rem;
+  color: var(--theme-muted);
+  font-size: 0.75rem;
+}
+
+.book__status {
+  padding: 0.2rem 0.45rem;
+  border-radius: 0.25rem;
+  background: var(--theme-surface-sunken);
+  color: var(--theme-muted-strong);
+  font-weight: 700;
+}
+
+/* 읽는 중인 책만 브랜드색으로 표시한다 — 지금 손에 든 것이 목록에서 먼저 보여야 한다. */
+.book__status--reading {
+  background: var(--theme-accent);
+  color: var(--theme-accent-foreground);
+}
+
+.book__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.8rem;
+}
+
+.book__related {
+  margin-top: 0.85rem;
+  font-size: 0.875rem;
+}
+
 /* --- 포트폴리오 (NOR-151, NOR-157) ---
    링크가 없는 작업도 실린다. 그 자리를 이미지와 담당 업무가 채운다. */
 .portfolio-list {
@@ -836,6 +945,12 @@ summary:focus-visible {
 .tag-chip:hover {
   border-color: var(--theme-accent);
   color: var(--theme-accent);
+}
+
+/* 갈 곳이 없는 태그는 링크처럼 보이지 않아야 한다. */
+.tag-chip--plain {
+  border-style: dashed;
+  color: var(--theme-muted);
 }
 
 .tag-chip::before {

@@ -1,0 +1,113 @@
+---
+/**
+ * 읽은 책 (NOR-153).
+ *
+ * 무엇을 읽었는지는 공개하고, 밑줄과 메모는 워크벤치에 비공개로 남는다. 그래서 이 화면에는
+ * 감상이 있으면 한 줄, 길게 쓴 것이 있으면 그 글로 가는 링크만 있다 — 책마다 상세 페이지를
+ * 만들지 않는다. 한 줄짜리 책이 수백 개인 사이트에 페이지 수백 개를 만들 이유가 없다.
+ */
+import ListLayout from '../layouts/ListLayout.astro';
+import EmptyState from '../components/EmptyState.astro';
+import { getVisibleBooks, groupBooksByYear } from '../lib/books';
+import { getTagGroups } from '../lib/content';
+import { postPath, tagPath } from '../lib/routes';
+import { toSlug } from '../lib/slug';
+
+const [books, tagGroups] = await Promise.all([getVisibleBooks(), getTagGroups()]);
+const groups = groupBooksByYear(books);
+/**
+ * 태그 페이지는 **글**에서 파생된다. 책에만 붙은 태그는 갈 곳이 없으므로 링크하지 않는다 —
+ * 존재하지 않는 주소로 보내는 칩은 장식보다 나쁘다. 책과 글의 태그 체계를 합치는 일은
+ * 별도 일감으로 둔다.
+ */
+const linkableTagSlugs = new Set(tagGroups.map((group) => group.slug));
+
+const STATUS_LABELS = {
+  reading: '읽는 중',
+  finished: '완독',
+  abandoned: '중단',
+  want: '읽고 싶은',
+} as const;
+
+const FORMAT_LABELS = { ebook: '전자책', paper: '종이책', audio: '오디오북' } as const;
+---
+
+<ListLayout
+  title="읽은 책"
+  description="읽은 책과 읽는 중인 책의 기록입니다."
+  eyebrow="독서"
+  heading="읽은 것들"
+>
+  {
+    groups.length === 0 ? (
+      <EmptyState message="아직 공개된 독서 기록이 없습니다." />
+    ) : (
+      groups.map((group) => (
+        <section class="book-year" aria-labelledby={`books-${group.year ?? 'unknown'}`}>
+          <h2 id={`books-${group.year ?? 'unknown'}`} class="book-year__heading">
+            {group.year === null ? '연도 미상' : `${group.year}년`}
+            <span class="book-year__count">{group.books.length}권</span>
+          </h2>
+
+          <ol class="book-list">
+            {group.books.map((book) => (
+              <li class="book">
+                {book.data.cover && (
+                  <img
+                    class="book__cover"
+                    src={book.data.cover.src}
+                    alt={`${book.data.title} 표지`}
+                    width={book.data.cover.width}
+                    height={book.data.cover.height}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+                <div class="book__body">
+                  <h3 class="book__title">{book.data.title}</h3>
+                  <p class="book__authors">
+                    {book.data.authors.join(', ')}
+                    {book.data.translators.length > 0 &&
+                      ` · ${book.data.translators.join(', ')} 옮김`}
+                  </p>
+                  {book.data.oneLiner && <p class="book__one-liner">{book.data.oneLiner}</p>}
+                  <p class="book__meta">
+                    <span class={`book__status book__status--${book.data.status}`}>
+                      {STATUS_LABELS[book.data.status]}
+                    </span>
+                    <span>{FORMAT_LABELS[book.data.format]}</span>
+                    {book.data.rating && <span>★ {book.data.rating}/5</span>}
+                  </p>
+                  {book.data.tags.length > 0 && (
+                    <ul class="book__tags">
+                      {book.data.tags.map((tag) =>
+                        linkableTagSlugs.has(toSlug(tag)) ? (
+                          <li>
+                            <a href={tagPath(toSlug(tag))} class="tag-chip">
+                              {tag}
+                            </a>
+                          </li>
+                        ) : (
+                          <li>
+                            <span class="tag-chip tag-chip--plain">{tag}</span>
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  )}
+                  {book.data.relatedPost && (
+                    <p class="book__related">
+                      <a href={postPath(book.data.relatedPost)} class="home-text-link">
+                        이 책에 대해 쓴 글 →
+                      </a>
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))
+    )
+  }
+</ListLayout>

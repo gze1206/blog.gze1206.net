@@ -127,3 +127,47 @@ export const experienceSchema = z.object({
   highlights: z.array(z.string().min(1)).min(1),
   visible: z.boolean(),
 });
+
+/**
+ * 읽은 책 (NOR-153).
+ *
+ * 읽은 목록은 **공개가 기본**이고, 상세 독서 메모는 워크벤치에 비공개로 남는다. 그래서 이
+ * 스키마에는 메모가 없다 — 여기 담기는 것은 이미 공개하기로 정한 것뿐이다.
+ *
+ * 표지 이미지는 등록 시점에 받아 저장한 로컬 경로를 쓴다. 링크로 걸면 남의 서버가 죽을 때
+ * 목록이 깨지고, 크기를 모르면 도착할 때 레이아웃이 밀린다.
+ */
+export const bookSchema = z.object({
+  title: z.string().min(1),
+  authors: z.array(z.string().min(1)).min(1),
+  translators: z.array(z.string().min(1)).default([]),
+  publisher: z.string().min(1).optional(),
+  publishedYear: z.number().int().optional(),
+  isbn13: z
+    .string()
+    .regex(/^\d{13}$/, 'ISBN13 은 숫자 13자리다')
+    .optional(),
+  cover: z
+    .object({
+      src: z.string().min(1),
+      width: z.number().int().positive(),
+      height: z.number().int().positive(),
+      /** 표지 출처. 서지정보 표시 목적임을 남긴다. */
+      source: z.string().min(1).optional(),
+    })
+    .optional(),
+  status: z.enum(['reading', 'finished', 'abandoned', 'want']),
+  startedAt: z.coerce.date().optional(),
+  finishedAt: z.coerce.date().optional(),
+  format: z.enum(['ebook', 'paper', 'audio']),
+  /** 어떻게 읽었나. 도서관 전자책 대출이 가장 흔하다. */
+  source: z.enum(['library', 'purchase', 'subscription', 'borrowed']),
+  rating: z.number().int().min(1).max(5).optional(),
+  tags: z.array(z.string().min(1)).default([]),
+  /** 공개하는 한 줄 감상. 없으면 목록에 제목·저자만 남는다. */
+  oneLiner: z.string().min(1).optional(),
+  /** 감상을 글로 썼다면 그 글의 slug. */
+  relatedPost: z.string().min(1).optional(),
+  /** 기본은 공개다. 특정 책만 감출 때 false 로 둔다. */
+  visible: z.boolean().default(true),
+});

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  bookSchema,
   experienceSchema,
   portfolioSchema,
   postSchema,
@@ -283,4 +284,55 @@ it('posts 의 toc 는 기본값이 auto 이고 false 를 받는다', () => {
   expect(postSchema.parse({ ...base, toc: false }).toc).toBe(false);
   expect(postSchema.parse({ ...base, toc: 'floating' }).toc).toBe('floating');
   expect(() => postSchema.parse({ ...base, toc: 'sidebar' })).toThrow();
+});
+
+describe('bookSchema', () => {
+  const validBook = {
+    title: '니체의 초월자',
+    authors: ['프리드리히 니체'],
+    status: 'reading',
+    format: 'ebook',
+    source: 'library',
+  };
+
+  it('제목·저자·상태·형태·경로만 있으면 성립한다', () => {
+    const parsed = bookSchema.parse(validBook);
+
+    // 읽은 목록은 공개가 기본이다. 감추는 것이 예외다.
+    expect(parsed.visible).toBe(true);
+    expect(parsed.tags).toEqual([]);
+    expect(parsed.translators).toEqual([]);
+  });
+
+  it('저자가 없으면 실패한다', () => {
+    expect(bookSchema.safeParse({ ...validBook, authors: [] }).success).toBe(false);
+  });
+
+  it('모르는 상태·형태는 받지 않는다', () => {
+    expect(bookSchema.safeParse({ ...validBook, status: 'skimmed' }).success).toBe(false);
+    expect(bookSchema.safeParse({ ...validBook, format: 'pdf' }).success).toBe(false);
+  });
+
+  it('ISBN13 은 숫자 13자리만 받는다', () => {
+    expect(bookSchema.safeParse({ ...validBook, isbn13: '9788901234567' }).success).toBe(true);
+    expect(bookSchema.safeParse({ ...validBook, isbn13: '978-89-0123-456-7' }).success).toBe(false);
+  });
+
+  it('표지는 크기를 함께 요구한다', () => {
+    expect(
+      bookSchema.safeParse({
+        ...validBook,
+        cover: { src: '/img/books/a.webp', width: 400, height: 600 },
+      }).success,
+    ).toBe(true);
+    expect(
+      bookSchema.safeParse({ ...validBook, cover: { src: '/img/books/a.webp' } }).success,
+    ).toBe(false);
+  });
+
+  it('별점은 1~5 정수만 받는다', () => {
+    expect(bookSchema.safeParse({ ...validBook, rating: 5 }).success).toBe(true);
+    expect(bookSchema.safeParse({ ...validBook, rating: 6 }).success).toBe(false);
+    expect(bookSchema.safeParse({ ...validBook, rating: 3.5 }).success).toBe(false);
+  });
 });
