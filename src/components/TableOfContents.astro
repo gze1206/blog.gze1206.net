@@ -1,14 +1,13 @@
 ---
 /**
- * 글 목차 (NOR-17, ADR 0010).
+ * 글 머리의 접이식 목차 (NOR-17, NOR-150, ADR 0010).
  *
- * - **JS 없는 정적 마크업**이다. 링크는 브라우저 기본 프래그먼트 이동으로 동작한다.
- * - `entries` 가 비면 아무것도 렌더하지 않는다. 빈 목차 상자는 정보가 아니라 소음이다.
- *   판단은 호출부가 아니라 `buildToc` 하나가 한다.
- * - 깊이는 최대 두 단계다(`TOC_MAX_DEPTH`). 그래서 재귀 없이 두 겹으로 그린다.
- * - 긴 목차가 본문을 밀어내지 않도록 좁은 화면에서 높이를 제한한다(`.post-toc-list`).
- *   높이는 CSS 로 고정돼 있어 렌더 전후 레이아웃이 움직이지 않는다(CLS 0).
+ * - **JS 없는 정적 마크업**이다. 접기는 `<details>`, 이동은 브라우저 기본 프래그먼트다.
+ * - 기본은 열린 상태다. 목차는 글을 읽기 전에 지형을 보는 장치라, 접혀 있으면 그 일을 못 한다.
+ * - `entries` 가 비면 아무것도 렌더하지 않는다 — 판단은 `buildToc`/`resolveTocPlacement` 가 한다.
+ * - 검색 색인에서는 뺀다. 본문 헤딩이 이미 색인되므로, 목차까지 넣으면 같은 문장이 두 번 잡힌다.
  */
+import TocList from './TocList.astro';
 import type { TocEntry } from '../lib/toc';
 
 interface Props {
@@ -20,31 +19,11 @@ const { entries } = Astro.props;
 
 {
   entries.length > 0 && (
-    <nav
-      aria-label="목차"
-      class="post-toc border-border bg-surface-sunken my-8 rounded-lg border px-5 py-4"
-    >
-      <h2 class="text-muted text-sm font-semibold">목차</h2>
-      <ol class="post-toc-list mt-3 space-y-1.5 text-sm">
-        {entries.map((entry) => (
-          <li>
-            <a href={`#${entry.id}`} class="text-body rounded hover:underline">
-              {entry.text}
-            </a>
-            {entry.children.length > 0 && (
-              <ol class="border-border mt-1.5 space-y-1.5 border-l pl-3">
-                {entry.children.map((child) => (
-                  <li>
-                    <a href={`#${child.id}`} class="text-muted rounded hover:underline">
-                      {child.text}
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </li>
-        ))}
-      </ol>
-    </nav>
+    <details class="post-toc" open data-post-toc data-pagefind-ignore>
+      <summary class="post-toc__summary">이 글의 목차</summary>
+      <nav aria-label="목차" class="post-toc__body">
+        <TocList entries={entries} />
+      </nav>
+    </details>
   )
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildToc, type HeadingRef } from './toc';
+import { buildToc, resolveTocPlacement, type HeadingRef } from './toc';
 
 function h(depth: number, text: string, slug = text): HeadingRef {
   return { depth, slug, text };
@@ -57,5 +57,57 @@ describe('buildToc', () => {
     const toc = buildToc(headings);
     const ids = [toc[0]?.id, toc[0]?.children[0]?.id];
     expect(ids).toEqual(headings.map((heading) => heading.slug));
+  });
+});
+
+describe('resolveTocPlacement', () => {
+  it('auto 는 상단 목차와 스크롤을 따르는 플로팅 목차를 함께 쓴다', () => {
+    expect(resolveTocPlacement('auto', 3)).toEqual({
+      inline: true,
+      floating: true,
+      floatingFollowsScroll: true,
+    });
+  });
+
+  it('inline 은 상단 목차만 둔다', () => {
+    expect(resolveTocPlacement('inline', 3)).toEqual({
+      inline: true,
+      floating: false,
+      floatingFollowsScroll: false,
+    });
+  });
+
+  it('floating 은 스크립트 없이도 열리도록 처음부터 보인다', () => {
+    expect(resolveTocPlacement('floating', 3)).toEqual({
+      inline: false,
+      floating: true,
+      floatingFollowsScroll: false,
+    });
+  });
+
+  it('false 는 어떤 목차도 그리지 않는다', () => {
+    expect(resolveTocPlacement(false, 9)).toEqual({
+      inline: false,
+      floating: false,
+      floatingFollowsScroll: false,
+    });
+  });
+
+  it('담을 항목이 없으면 설정과 무관하게 그리지 않는다', () => {
+    for (const mode of ['auto', 'inline', 'floating'] as const) {
+      expect(resolveTocPlacement(mode, 0)).toEqual({
+        inline: false,
+        floating: false,
+        floatingFollowsScroll: false,
+      });
+    }
+  });
+});
+
+it('스키마 기본값이 아직 닿지 않은 글은 auto 로 읽는다', () => {
+  expect(resolveTocPlacement(undefined, 3)).toEqual({
+    inline: true,
+    floating: true,
+    floatingFollowsScroll: true,
   });
 });

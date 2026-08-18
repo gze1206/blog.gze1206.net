@@ -1,0 +1,34 @@
+---
+/**
+ * 목차 링크 목록 (NOR-17, NOR-150).
+ *
+ * 상단 목차와 플로팅 목차가 **같은 목록**을 쓴다. 두 곳에 따로 그리면 한쪽만 고치는 날이 온다.
+ * 깊이는 최대 두 단계다(`TOC_MAX_DEPTH`). 그래서 재귀 없이 두 겹으로 그린다.
+ */
+import type { TocEntry } from '../lib/toc';
+
+interface Props {
+  entries: readonly TocEntry[];
+}
+
+const { entries } = Astro.props;
+---
+
+<ol class="toc-list">
+  {
+    entries.map((entry) => (
+      <li>
+        <a href={`#${entry.id}`}>{entry.text}</a>
+        {entry.children.length > 0 && (
+          <ul class="toc-list__children">
+            {entry.children.map((child) => (
+              <li>
+                <a href={`#${child.id}`}>{child.text}</a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </li>
+    ))
+  }
+</ol>
