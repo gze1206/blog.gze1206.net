@@ -21,6 +21,10 @@ export default defineConfig({
   // 내부 링크(`/blog`, `/blog/2`)와 `src/lib/site-meta.ts` 가 만드는 canonical 이 같은 모양이라,
   // 여기까지 맞춰 두면 dev 서버·프로덕션·canonical 이 한 벌로 움직인다.
   trailingSlash: 'never',
+  // `/career` 는 소개 페이지로 합쳐졌다(NOR-160). 이미 배포된 주소이므로 끊지 않고 넘긴다.
+  redirects: {
+    '/career': '/about',
+  },
   // `ogImageAudit` 는 빌드 끝에 dist 의 og:image 참조가 실재하는지 확인만 한다(경고만, NOR-28).
   integrations: [sitemap({ filter: isSitemapPage }), markdoc(), react(), ogImageAudit()],
   markdown: {

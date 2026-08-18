@@ -442,6 +442,17 @@ summary:focus-visible {
   }
 }
 
+/* 소개 안의 경력 블록 (NOR-160). 소개 문단과 사이드바 아래에 한 단 전체로 놓인다. */
+.about__career {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+@media (min-width: 48rem) {
+  .about__career {
+    grid-column: 1 / -1;
+  }
+}
+
 /* --- 경력 (NOR-151, NOR-155) ---
    목록은 이력을 훑는 곳이다. 그래서 접힌 상태에서 보이는 것은 기간·조직·소속뿐이고,
    담당 업무는 펼쳤을 때만 나온다. */

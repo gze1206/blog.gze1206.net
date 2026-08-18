@@ -11,7 +11,7 @@ import PostCard from '../components/PostCard.astro';
 import { getProfile, getVisiblePosts } from '../lib/content';
 import { getVisibleExperiences } from '../lib/experience';
 import { buildPersonJsonLd } from '../lib/json-ld';
-import { careerPath, portfolioPath } from '../lib/routes';
+import { aboutPath, portfolioPath } from '../lib/routes';
 
 const [allPosts, profile, experiences] = await Promise.all([
   getVisiblePosts(),
@@ -82,13 +82,13 @@ const hasSeparateIntroduction = profile.data.tagline !== undefined;
       <h2 id="doors-heading" class="sr-only">더 자세히 보기</h2>
 
       <article class="home-door">
-        <p class="home-door__ordinal">01 · 경력</p>
+        <p class="home-door__ordinal">01 · 소개</p>
         <h3 class="home-door__title">어디에서,<br />무엇을 만들었는지</h3>
         <p class="home-door__summary">
-          역할과 기간, 프로젝트의 맥락과 담당한 일을 시간순으로 정리합니다.
+          하는 일과 지나온 회사, 그곳에서 담당한 작업을 정리했습니다.
         </p>
         <p class="home-door__action">
-          <a href={careerPath()} class="home-text-link">경력 자세히 보기 →</a>
+          <a href={aboutPath()} class="home-text-link">소개와 경력 보기 →</a>
         </p>
       </article>
 

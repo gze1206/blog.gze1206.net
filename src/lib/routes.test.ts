@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  aboutPath,
   blogPagePath,
-  careerPath,
   categoryPath,
   normalizePath,
   ogImageParam,
@@ -88,7 +88,7 @@ describe('ogImageParam', () => {
   });
 });
 
-it('경력·포트폴리오는 고정 경로다', () => {
-  expect(careerPath()).toBe('/career');
+it('소개·포트폴리오는 고정 경로다', () => {
+  expect(aboutPath()).toBe('/about');
   expect(portfolioPath()).toBe('/portfolio');
 });
