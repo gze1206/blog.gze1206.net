@@ -1345,123 +1345,300 @@ pre.astro-code:hover > .code-copy-btn {
   }
 }
 
-/* --- 분류 관계 그래프 (NOR-137) ---
-   그래프는 정적 분류 목록 다음에 놓이는 보조 탐색이다. 좁은 화면에서는 잘라내지 않고 가로로
-   이동시켜 링크의 44px 클릭 영역을 보존한다. */
-.taxonomy-graph-scroll {
-  overflow-x: auto;
-  background: color-mix(in srgb, var(--theme-surface) 92%, var(--theme-accent));
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--theme-foreground) 7%, transparent);
+/* --- 분류 관계 지도 (NOR-152) ---
+   지도는 장식이 아니라 탐색 도구다. 그래서 눈에 띄는 것은 효과가 아니라 **관계의 굵기**여야
+   한다. 선의 굵기·농도는 그 조합의 글 수, 노드 크기는 그 분류의 글 수를 뜻한다. */
+.taxonomy-map {
+  margin-block: clamp(2.5rem, 6vw, 4rem);
+  overflow: hidden;
+  border: 1px solid var(--theme-border);
+  border-radius: 1rem;
+  background: var(--theme-surface);
 }
 
-.taxonomy-graph {
-  display: block;
-  min-width: 55rem;
-  color: var(--theme-foreground);
-}
-
-.taxonomy-graph-legend {
+.taxonomy-map__bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1rem;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  padding: 1rem 1.35rem;
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.taxonomy-map__title {
+  color: var(--theme-accent);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+
+.taxonomy-map__hint {
   color: var(--theme-muted);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.8125rem;
 }
 
-.taxonomy-graph-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.taxonomy-graph-legend-marker {
-  display: inline-block;
-  width: 0.75rem;
-  height: 0.75rem;
-  border: 2px solid var(--theme-accent);
-}
-
-.taxonomy-graph-legend-marker-category {
-  border-radius: 0.125rem;
-  background: var(--theme-accent);
-}
-
-.taxonomy-graph-legend-marker-tag {
+.taxonomy-map__clear {
+  margin-left: auto;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--theme-border-strong);
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--theme-accent) 20%, transparent);
+  background: var(--theme-background);
+  color: var(--theme-muted-strong);
+  cursor: pointer;
+  font-size: 0.75rem;
 }
 
-.taxonomy-graph-column-label {
-  fill: var(--theme-muted);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.taxonomy-graph-edge {
-  stroke: var(--color-border);
-  opacity: 0.72;
-  transition:
-    opacity 0.16s ease,
-    stroke 0.16s ease;
-}
-
-.taxonomy-graph-node {
-  color: var(--color-accent);
-  transition: opacity 0.16s ease;
-}
-
-.taxonomy-graph-section.is-filtering .taxonomy-graph-edge:not(.is-related),
-.taxonomy-graph-section.is-filtering .taxonomy-graph-node:not(.is-related) {
-  opacity: 0.2;
-}
-
-.taxonomy-graph-edge.is-related {
-  stroke: var(--theme-accent);
-  opacity: 0.95;
-}
-
-.taxonomy-graph-node.is-related {
+.taxonomy-map__clear:hover {
+  border-color: var(--theme-accent);
   color: var(--theme-accent);
 }
 
-.taxonomy-graph-node circle:not(.taxonomy-graph-node-hit-area) {
-  fill: currentColor;
+.taxonomy-map__canvas {
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      color-mix(in srgb, var(--theme-accent) 4%, transparent),
+      transparent 62%
+    ),
+    var(--theme-background);
 }
 
-.taxonomy-graph-node-hit-area {
-  fill: transparent;
-  pointer-events: all;
+.taxonomy-map__canvas svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
-.taxonomy-graph-node text {
-  fill: var(--theme-foreground);
-  font-size: 14px;
-  font-weight: 600;
+.taxonomy-map__edge {
+  fill: none;
+  stroke: var(--theme-muted);
+  stroke-linecap: round;
+  transition: opacity 0.18s ease;
 }
 
-.taxonomy-graph-node:hover text,
-.taxonomy-graph-node:focus text {
-  fill: var(--color-accent);
-  text-decoration: underline;
+/* 태그끼리의 보조선은 카테고리–태그 관계와 성격이 다르므로 점선으로 구분한다. */
+.taxonomy-map__edge--co {
+  stroke: var(--theme-accent);
+  stroke-dasharray: 3 5;
 }
 
-.taxonomy-graph-node:focus-visible circle:not(.taxonomy-graph-node-hit-area) {
+.taxonomy-map__node circle {
+  stroke: var(--theme-border-strong);
+  stroke-width: 1;
   fill: var(--theme-surface);
+  transition:
+    fill 0.18s ease,
+    stroke 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.taxonomy-map__node text {
+  fill: var(--theme-muted-strong);
+  font-size: 11px;
+  paint-order: stroke;
+  /* 배경색으로 글자 테두리를 그려 선 위에 겹쳐도 읽히게 한다. */
+  stroke: var(--theme-background);
+  stroke-width: 3px;
+}
+
+.taxonomy-map__node--category circle {
+  stroke: var(--theme-accent);
+  fill: var(--theme-accent);
+}
+
+.taxonomy-map__node--category text {
+  fill: var(--theme-foreground);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.taxonomy-map__node:hover circle,
+.taxonomy-map__node:focus-visible circle {
+  stroke: var(--theme-accent);
+  stroke-width: 2;
+}
+
+.taxonomy-map__node.is-selected circle {
   stroke: var(--theme-accent);
   stroke-width: 3;
 }
 
-.taxonomy-graph-node:focus-visible text {
-  fill: var(--theme-accent);
+.taxonomy-map__node.is-dimmed {
+  opacity: 0.16;
+}
+
+.taxonomy-map__context {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1.35rem;
+  border-top: 1px solid var(--theme-border);
+  background: var(--theme-surface-sunken);
+}
+
+.taxonomy-map__empty {
+  color: var(--theme-muted);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.taxonomy-map__label {
+  color: var(--theme-accent);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+
+.taxonomy-map__selected {
+  margin-top: 0.4rem;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.taxonomy-map__signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.taxonomy-map__signals span {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 9999px;
+  background: var(--theme-surface);
+  color: var(--theme-muted-strong);
+  font-size: 0.6875rem;
+}
+
+.taxonomy-map__signals b {
+  color: var(--theme-accent);
+  font-weight: 700;
+}
+
+.taxonomy-map__action {
+  margin-top: 1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.taxonomy-map__action a {
+  color: var(--theme-accent);
+}
+
+.taxonomy-map__articles {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+}
+
+.taxonomy-map__articles li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.taxonomy-map__articles a {
+  color: var(--theme-body);
+  font-size: 0.875rem;
+}
+
+.taxonomy-map__articles a:hover {
+  color: var(--theme-accent);
   text-decoration: underline;
 }
 
+.taxonomy-map__articles span {
+  color: var(--theme-muted);
+  font-size: 0.6875rem;
+  white-space: nowrap;
+}
+
+@media (min-width: 48rem) {
+  .taxonomy-map__context {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .taxonomy-graph-edge,
-  .taxonomy-graph-node {
+  .taxonomy-map__edge,
+  .taxonomy-map__node circle {
     transition: none;
+  }
+}
+
+/* --- 분류 목록 (NOR-152) --- */
+.taxonomy-section + .taxonomy-section,
+.taxonomy-map + .taxonomy-section {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+.taxonomy-section__title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.taxonomy-section__lead {
+  margin-top: 0.5rem;
+  color: var(--theme-muted);
+  font-size: 0.9375rem;
+}
+
+.taxonomy-category-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.taxonomy-category-card {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.75rem;
+  background: var(--theme-surface);
+}
+
+.taxonomy-category-card:hover {
+  border-color: var(--theme-accent);
+}
+
+.taxonomy-category-card__label {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.taxonomy-category-card__count {
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+}
+
+.taxonomy-tag-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.tag-chip__count {
+  margin-left: 0.4rem;
+  color: var(--theme-muted);
+  font-size: 0.6875rem;
+}
+
+@media (min-width: 40rem) {
+  .taxonomy-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

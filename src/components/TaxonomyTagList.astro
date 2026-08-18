@@ -1,0 +1,30 @@
+---
+/**
+ * 태그 색인 (NOR-135, NOR-152). 세부 주제로 바로 들어가는 정적 경로다.
+ */
+import type { PostLike, TaxonomyGroup } from '../lib/posts';
+import { tagPath } from '../lib/routes';
+
+interface Props {
+  tags: readonly TaxonomyGroup<PostLike>[];
+}
+
+const { tags } = Astro.props;
+---
+
+<section class="taxonomy-section" aria-labelledby="topics-tags-heading">
+  <h2 id="topics-tags-heading" class="taxonomy-section__title">전체 태그</h2>
+  <p class="taxonomy-section__lead">글에서 다룬 세부 주제입니다. 한 글에 여러 개가 붙습니다.</p>
+  <ul class="taxonomy-tag-index">
+    {
+      tags.map((tag) => (
+        <li>
+          <a href={tagPath(tag.slug)} class="tag-chip">
+            {tag.label}
+            <span class="tag-chip__count">{tag.posts.length}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>
