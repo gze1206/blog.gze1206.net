@@ -8,6 +8,7 @@ series: 'series-nav-fixture'
 seriesOrder: 3
 publishedAt: 2026-07-23
 updatedAt: 2026-07-23
+draft: true
 ---
 
 이 시리즈의 마지막 편입니다. 아래 시리즈 내비게이션에 **"다음 편"이 없어야** 하고,

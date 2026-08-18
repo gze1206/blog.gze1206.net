@@ -8,6 +8,7 @@ series: 'series-nav-fixture'
 seriesOrder: 1
 publishedAt: 2026-07-22
 updatedAt: 2026-07-22
+draft: true
 ---
 
 시리즈 내비게이션(NOR-18)의 draft 처리를 **빌드 산출물에서 직접 확인**하기 위한 픽스처입니다.

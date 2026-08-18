@@ -6,6 +6,7 @@ category: 'dev'
 tags: ['astro', 'test']
 publishedAt: 2026-07-22
 updatedAt: 2026-07-23
+draft: true
 ---
 
 이 글은 `.md` 렌더 경로(remark/rehype)의 헤딩 처리를 확인하기 위한 픽스처입니다.

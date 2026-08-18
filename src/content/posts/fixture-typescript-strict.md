@@ -6,6 +6,7 @@ category: 'dev'
 tags: ['typescript']
 publishedAt: 2026-05-02
 updatedAt: 2026-05-02
+draft: true
 ---
 
 ## exactOptionalPropertyTypes
