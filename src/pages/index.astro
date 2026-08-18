@@ -43,7 +43,7 @@ const hasSeparateIntroduction = profile.data.tagline !== undefined;
         {
           latestExperience && (
             <div class="home-fact">
-              <dt>지금 하는 일</dt>
+              <dt>{latestExperience.data.endDate === null ? '지금 하는 일' : '가장 최근 경력'}</dt>
               <dd>
                 {latestExperience.data.organization} · {latestExperience.data.role}
               </dd>
