@@ -53,11 +53,34 @@ export const seriesSchema = z.object({
   description: z.string(),
 });
 
+/**
+ * 포트폴리오 이미지 (NOR-157).
+ *
+ * 크기를 함께 보관한다. 렌더 시점에 알 수 없으면 이미지가 도착할 때 레이아웃이 밀린다.
+ * `alt` 는 필수다 — 작업을 설명하는 이미지가 스크린리더에게 침묵하면 그 항목은 반쪽이 된다.
+ */
+const portfolioMediaSchema = z.object({
+  src: z.string().min(1),
+  alt: z.string().min(1),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  caption: z.string().min(1).optional(),
+});
+
 export const portfolioSchema = z.object({
   title: z.string(),
   summary: z.string(),
+  /** 그 작업에서 맡은 일. 회사 프로젝트는 이것이 링크보다 중요한 정보다. */
+  role: z.string().min(1).optional(),
+  period: z.string().min(1).optional(),
   stack: z.array(z.string()).min(1),
-  links: z.array(portfolioLinkSchema).min(1),
+  /**
+   * 공개 링크가 없는 작업도 포트폴리오에 실린다. 회사 프로젝트가 대표적이다 —
+   * 링크를 필수로 두면 실제로 한 일 중 큰 덩어리가 빠진다(NOR-157).
+   */
+  links: z.array(portfolioLinkSchema).default([]),
+  media: z.array(portfolioMediaSchema).default([]),
+  highlights: z.array(z.string().min(1)).default([]),
   thumbnail: z.string().optional(),
 });
 

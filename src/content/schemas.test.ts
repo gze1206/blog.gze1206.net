@@ -189,8 +189,35 @@ describe('portfolioSchema', () => {
     expect(portfolioSchema.safeParse({ ...validPortfolio, stack: [] }).success).toBe(false);
   });
 
-  it('links가 빈 배열이면 실패', () => {
-    expect(portfolioSchema.safeParse({ ...validPortfolio, links: [] }).success).toBe(false);
+  it('공개 링크가 없는 작업도 실을 수 있다', () => {
+    // 회사 프로젝트는 볼 수 있는 주소가 없다. 링크를 필수로 두면 실제로 한 일 중 큰
+    // 덩어리가 포트폴리오에서 빠진다 (NOR-157).
+    const parsed = portfolioSchema.parse({ ...validPortfolio, links: [] });
+
+    expect(parsed.links).toEqual([]);
+    expect(parsed.media).toEqual([]);
+    expect(parsed.highlights).toEqual([]);
+  });
+
+  it('이미지는 크기와 대체 텍스트를 함께 요구한다', () => {
+    const withImage = {
+      ...validPortfolio,
+      media: [{ src: '/img/portfolio/a.webp', alt: '스크린샷', width: 1280, height: 720 }],
+    };
+
+    expect(portfolioSchema.safeParse(withImage).success).toBe(true);
+    expect(
+      portfolioSchema.safeParse({
+        ...validPortfolio,
+        media: [{ src: '/img/portfolio/a.webp', alt: '스크린샷' }],
+      }).success,
+    ).toBe(false);
+    expect(
+      portfolioSchema.safeParse({
+        ...validPortfolio,
+        media: [{ src: '/img/portfolio/a.webp', width: 1280, height: 720 }],
+      }).success,
+    ).toBe(false);
   });
 
   it('links 항목에 유효한 URL만 허용', () => {

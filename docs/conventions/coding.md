@@ -57,3 +57,16 @@ docs/           # 계획·규약·산출물 (이 문서 포함)
 
 - 접근성·SEO·콘텐츠: [content-a11y-seo.md](./content-a11y-seo.md)
 - 커밋/브랜치: [commits.md](./commits.md) · [branch-pr.md](./branch-pr.md)
+
+## 콘텐츠 스키마를 고친 뒤
+
+Astro 의 콘텐츠 저장소(`node_modules/.astro/data-store.json`)는 **파일이 바뀔 때만** 다시
+파싱한다. 스키마(`src/content/schemas.ts`)에 필드를 추가해도 기존 항목은 그 값이 비어 있는
+채로 남고, 빌드가 그 자리에서 죽는다. 스키마를 고쳤다면 한 번 지우고 빌드한다.
+
+```
+rm -f node_modules/.astro/data-store.json && pnpm build
+```
+
+스키마 파일이 `content.config.ts` 와 분리돼 있어(ADR 0002) 설정 파일의 해시가 바뀌지 않기
+때문이다.
