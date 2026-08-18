@@ -7,12 +7,13 @@
  */
 import ThemeToggle from '../islands/ThemeToggle';
 import SearchPalette from '../islands/SearchPalette';
-import { careerPath, portfolioPath, topicsPath } from '../lib/routes';
+import { aboutPath, careerPath, portfolioPath, topicsPath } from '../lib/routes';
 import BrandMark from './BrandMark.astro';
 
 // 시리즈는 글에서 자연스럽게 이어지므로 상단에서 뺐다. 푸터에서 접근할 수 있다.
 const NAV_ITEMS = [
   { href: '/blog', label: '글' },
+  { href: aboutPath(), label: '소개' },
   { href: careerPath(), label: '경력' },
   { href: portfolioPath(), label: '포트폴리오' },
   { href: topicsPath(), label: '탐색' },

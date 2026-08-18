@@ -3,5 +3,32 @@
   "headline": "게임 클라이언트·서버 개발자",
   "tagline": "게임을 만들고, 만드는 도구도 만듭니다.",
   "introduction": "게임 클라이언트와 서버를 오가며 오래 쓰이는 시스템을 만듭니다. 만드는 과정을 편하게 하는 도구와 웹도 함께 만들고, 그 과정에서 배운 것을 기록합니다.",
-  "skills": ["C#", "Unity", "TypeScript", "Vue", "React", "Astro"]
+  "skills": ["C#", "Unity", "TypeScript", "Vue", "React", "Astro"],
+  "about": [
+    "게임 클라이언트와 서버를 오가며 일했습니다. 마비노기 모바일에서는 게임 로직과 최적화, UX 작업을 맡았고, 테라 오리진에서는 서버와 DB, 전투 로직을 다뤘습니다.",
+    "만드는 일만큼 만드는 과정에도 관심이 많습니다. 개발 환경을 개선하는 툴과 자동화 테스트 도구를 만들어 왔고, 그 습관이 지금은 개인 도구와 이 블로그로 이어지고 있습니다.",
+    "선호하는 언어는 C# 입니다. 게임 밖에서는 웹과 서버, 개발 편의를 위한 유틸리티를 만들며 필요한 것을 그때그때 배웁니다."
+  ],
+  "links": [
+    {
+      "label": "GitHub",
+      "url": "https://github.com/gze1206",
+      "handle": "gze1206"
+    },
+    {
+      "label": "이메일",
+      "url": "mailto:gze1206@kakao.com",
+      "handle": "gze1206@kakao.com"
+    },
+    {
+      "label": "solved.ac",
+      "url": "https://solved.ac/gze1206",
+      "handle": "gze1206"
+    },
+    {
+      "label": "Steam",
+      "url": "https://steamcommunity.com/id/gze1206/",
+      "handle": "gze1206"
+    }
+  ]
 }

@@ -1,0 +1,66 @@
+---
+/**
+ * About (NOR-156).
+ *
+ * 홈은 입구라 소개를 한 줄로 끝낸다. 그보다 긴 이야기 — 어떤 일을 어떻게 하는 사람인지와
+ * 연락할 방법 — 은 여기에 모은다.
+ *
+ * 외부 프로필은 **링크로만** 건다. 배지 이미지를 렌더 시점에 불러오면 남의 서버 사정이
+ * 이 페이지의 속도와 안정성이 된다(master 블로그가 그랬다).
+ */
+import ListLayout from '../layouts/ListLayout.astro';
+import { getProfile } from '../lib/content';
+import { careerPath, portfolioPath } from '../lib/routes';
+
+const profile = await getProfile();
+const paragraphs = profile.data.about.length > 0 ? profile.data.about : [profile.data.introduction];
+---
+
+<ListLayout
+  title="소개"
+  description={`${profile.data.name}(gze1206)의 소개와 연락처입니다.`}
+  eyebrow="소개"
+  heading={profile.data.name}
+  lead={profile.data.headline}
+>
+  <div class="about">
+    <section class="about__body" aria-labelledby="about-intro-heading">
+      <h2 id="about-intro-heading" class="sr-only">소개</h2>
+      {paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+
+      <p class="about__more">
+        <a href={careerPath()} class="home-text-link">경력 보기 →</a>
+        <a href={portfolioPath()} class="home-text-link">포트폴리오 보기 →</a>
+      </p>
+    </section>
+
+    <aside class="about__side">
+      <section aria-labelledby="about-skills-heading">
+        <h2 id="about-skills-heading" class="about__side-heading">주로 쓰는 것</h2>
+        <ul class="portfolio-card__stack">
+          {profile.data.skills.map((skill) => <li class="stack-token">{skill}</li>)}
+        </ul>
+      </section>
+
+      {
+        profile.data.links.length > 0 && (
+          <section aria-labelledby="about-links-heading">
+            <h2 id="about-links-heading" class="about__side-heading">
+              연락과 프로필
+            </h2>
+            <ul class="about__links">
+              {profile.data.links.map((link) => (
+                <li>
+                  <a href={link.url} rel="me noopener noreferrer">
+                    <span>{link.label}</span>
+                    {link.handle && <span class="about__handle">{link.handle}</span>}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+    </aside>
+  </div>
+</ListLayout>
