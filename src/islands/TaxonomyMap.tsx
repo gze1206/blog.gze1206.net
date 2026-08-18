@@ -67,9 +67,7 @@ export default function TaxonomyMap({ map, details }: Props) {
         <h2 id="taxonomy-map-heading" className="taxonomy-map__title">
           관계 지도
         </h2>
-        <p className="taxonomy-map__hint">
-          카테고리와 태그가 글에서 만나는 빈도입니다. 노드를 고르면 그 주변만 남습니다.
-        </p>
+        <p className="taxonomy-map__hint">선이 굵을수록 함께 다룬 글이 많습니다</p>
         {selection.nodeId !== null && (
           <button type="button" className="taxonomy-map__clear" onClick={() => select(null)}>
             선택 해제
@@ -146,10 +144,7 @@ export default function TaxonomyMap({ map, details }: Props) {
 
       <div className="taxonomy-map__context">
         {detail === undefined ? (
-          <p className="taxonomy-map__empty">
-            전체 관계를 보고 있습니다. 카테고리나 태그를 고르면 그 주변 관계와 이어 읽을 글이 여기에
-            나타납니다.
-          </p>
+          <p className="taxonomy-map__empty">고르면 그 주변 관계와 이어 읽을 글이 나타납니다</p>
         ) : (
           <>
             <div>
