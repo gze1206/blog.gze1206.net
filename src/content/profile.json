@@ -1,6 +1,6 @@
 {
-  "name": "gze1206",
-  "headline": "게임·웹·서버 개발자",
-  "introduction": "게임 개발과 웹·서버 개발을 기록합니다.",
-  "skills": ["C#", "Unity", "ASP.NET Core", "TypeScript", "React", "Astro"]
+  "name": "김명식",
+  "headline": "게임 클라이언트·서버 개발자",
+  "introduction": "게임 클라이언트와 서버를 만들고, 그 과정에서 쓰는 도구와 웹도 함께 만듭니다. 주로 쓰는 언어는 C#입니다.",
+  "skills": ["C#", "Unity", "TypeScript", "Vue", "React", "Astro"]
 }
