@@ -71,6 +71,25 @@ export const profileSchema = z.object({
   tagline: z.string().min(1).optional(),
   introduction: z.string().min(1),
   skills: z.array(z.string().min(1)).min(1),
+  /**
+   * About 페이지의 본문 문단들 (NOR-156). 홈의 한 줄 소개보다 길게, 어떤 일을 어떻게
+   * 하는 사람인지 설명한다. 비어 있으면 About 은 `introduction` 만 보여 준다.
+   */
+  about: z.array(z.string().min(1)).default([]),
+  /**
+   * 연락·프로필 링크 (NOR-156). 외부 배지 이미지를 렌더 시점에 불러오지 않는다 —
+   * 남의 서버가 느리면 내 페이지가 느려지고, 죽으면 내 페이지가 깨진다.
+   */
+  links: z
+    .array(
+      z.object({
+        label: z.string().min(1),
+        url: z.string().url(),
+        /** 화면에 노출할 계정명 등. 없으면 라벨만 보여 준다. */
+        handle: z.string().min(1).optional(),
+      }),
+    )
+    .default([]),
 });
 
 export const experienceSchema = z.object({

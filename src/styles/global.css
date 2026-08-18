@@ -442,6 +442,80 @@ body {
   }
 }
 
+/* --- 소개 (NOR-156) --- */
+.about {
+  display: grid;
+  gap: clamp(2rem, 5vw, 3.5rem);
+}
+
+.about__body p {
+  color: var(--theme-body);
+  font-size: 1.0625rem;
+  line-height: 1.9;
+  word-break: keep-all;
+}
+
+.about__body p + p {
+  margin-top: 1.4em;
+}
+
+.about__more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.about__side {
+  display: grid;
+  gap: 2rem;
+  align-content: start;
+}
+
+.about__side-heading {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--theme-border);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.about__side .portfolio-card__stack {
+  margin-top: 1rem;
+}
+
+.about__links {
+  display: grid;
+  gap: 0.1rem;
+  margin-top: 0.5rem;
+}
+
+.about__links a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.65rem;
+  border-bottom: 1px solid var(--theme-border);
+  font-size: 0.9375rem;
+}
+
+.about__links a:hover {
+  color: var(--theme-accent);
+}
+
+.about__handle {
+  color: var(--theme-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+@media (min-width: 48rem) {
+  .about {
+    grid-template-columns: minmax(0, 1.55fr) minmax(14rem, 0.45fr);
+  }
+}
+
 /* --- 포트폴리오 (NOR-151) --- */
 .portfolio-grid {
   display: grid;

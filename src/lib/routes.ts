@@ -32,6 +32,11 @@ export function topicsPath(): string {
   return '/topics';
 }
 
+/** 소개 — 홈의 한 줄보다 긴 이야기와 연락처 (NOR-156). */
+export function aboutPath(): string {
+  return '/about';
+}
+
 /** 경력 — 역할·기간·맥락을 시간순으로 읽는 곳 (NOR-151). */
 export function careerPath(): string {
   return '/career';
