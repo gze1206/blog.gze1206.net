@@ -62,6 +62,8 @@
   --theme-scrim: rgb(41 38 35 / 0.5);
   /* 실패를 알리는 글자. danger 콜아웃과 같은 색이다. */
   --theme-danger: #a33a2c;
+  /* 코드 면. 종이보다 한 단계 가라앉혀 본문과 다른 종류의 내용임을 보인다. */
+  --theme-code-surface: #f2eee7;
 }
 
 .dark {
@@ -84,6 +86,8 @@
   --theme-notice-foreground: #dcb679;
   --theme-scrim: rgb(12 11 10 / 0.62);
   --theme-danger: #e5a598;
+  /* 다크에서는 Tokyo Night 의 배경을 그대로 쓴다 — 이미 페이지와 또렷이 구분된다. */
+  --theme-code-surface: #1a1b26;
 }
 
 html {
@@ -1083,14 +1087,34 @@ summary:focus-visible {
   text-align: left;
 }
 
+/* --- 코드 블록의 면 (NOR-162) ---
+   Shiki 는 `defaultColor: false` 로 두 테마의 값을 CSS 변수로만 내보낸다. 글자색은 테마
+   것을 그대로 쓰고, **면(배경)은 우리 토큰으로 준다** — 라이트 테마의 배경(#fdf6e3)이
+   본문 종이(#fcf9f4)와 거의 같아 그대로 두면 코드가 배경 없는 본문처럼 보인다.
+   다크에서는 Tokyo Night 의 배경이 이미 페이지와 또렷이 구분되므로 테마 것을 쓴다. */
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style);
+  font-weight: var(--shiki-light-font-weight);
+  text-decoration: var(--shiki-light-text-decoration);
+}
+
+.astro-code {
+  padding: 1.15rem 1.35rem;
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 0.65rem;
+  background-color: var(--theme-code-surface) !important;
+  overflow-x: auto;
+}
+
 .dark {
   .astro-code,
   .astro-code span {
-    color: var(--shiki-dark) !important;
-    background-color: var(--shiki-dark-bg) !important;
-    font-style: var(--shiki-dark-font-style) !important;
-    font-weight: var(--shiki-dark-font-weight) !important;
-    text-decoration: var(--shiki-dark-text-decoration) !important;
+    color: var(--shiki-dark);
+    font-style: var(--shiki-dark-font-style);
+    font-weight: var(--shiki-dark-font-weight);
+    text-decoration: var(--shiki-dark-text-decoration);
   }
 }
 
@@ -1125,18 +1149,21 @@ summary:focus-visible {
 
 .code-block-title {
   display: block;
-  padding: 0.4rem 1rem;
-  font-size: 0.8rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  border-radius: 0.375rem 0.375rem 0 0;
-  background: var(--theme-surface-sunken);
-  color: var(--theme-body);
-  border-bottom: 1px solid var(--theme-border-strong);
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--theme-border-strong);
+  border-bottom: 0;
+  border-radius: 0.65rem 0.65rem 0 0;
+  background: var(--theme-code-surface);
+  color: var(--theme-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
 }
 
+/* 파일명이 있으면 그 라벨과 코드가 한 상자로 보여야 한다. 위쪽 테두리와 모서리를 뗀다. */
 .code-block .astro-code {
   margin-top: 0;
-  border-radius: 0 0 0.375rem 0.375rem;
+  border-top: 1px dashed color-mix(in srgb, var(--theme-border-strong) 60%, transparent);
+  border-radius: 0 0 0.65rem 0.65rem;
 }
 
 .dark {

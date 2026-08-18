@@ -29,9 +29,12 @@ export default defineConfig({
   integrations: [sitemap({ filter: isSitemapPage }), markdoc(), react(), ogImageAudit()],
   markdown: {
     shikiConfig: {
+      // 라이트는 따뜻한 종이 팔레트와 같은 계열의 Everforest Light, 다크는 Tokyo Night.
+      // 라이트 테마의 배경(#fdf6e3)은 본문 종이(#fcf9f4)와 거의 같아 면이 구분되지 않으므로,
+      // 코드 표면은 CSS 토큰으로 따로 준다 (NOR-162, `global.css` 의 코드블럭 절 참고).
       themes: {
-        light: 'github-light',
-        dark: 'github-dark',
+        light: 'everforest-light',
+        dark: 'tokyo-night',
       },
       defaultColor: false,
       langs: [cilGrammar],
