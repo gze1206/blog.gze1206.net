@@ -27,6 +27,7 @@
   --color-notice: var(--theme-notice);
   --color-notice-foreground: var(--theme-notice-foreground);
   --color-scrim: var(--theme-scrim);
+  --color-danger: var(--theme-danger);
   --spacing-page: clamp(1rem, 2vw, 1.5rem);
   /* 읽기 열 · 목차/코드 열. 목업에서 확정한 폭 위계(NOR-149·NOR-150). */
   --spacing-reading: 56.25rem;
@@ -59,6 +60,8 @@
   --theme-notice-foreground: #8a5a12;
   /* 모달 뒤 어둠. 회색이 아니라 잉크색이어야 종이 위에서 자연스럽다. */
   --theme-scrim: rgb(41 38 35 / 0.5);
+  /* 실패를 알리는 글자. danger 콜아웃과 같은 색이다. */
+  --theme-danger: #a33a2c;
 }
 
 .dark {
@@ -80,6 +83,7 @@
   --theme-notice: #2a2113;
   --theme-notice-foreground: #dcb679;
   --theme-scrim: rgb(12 11 10 / 0.62);
+  --theme-danger: #e5a598;
 }
 
 html {
@@ -128,6 +132,19 @@ body {
   border-radius: 0.55rem;
   background: var(--theme-accent);
   color: var(--theme-accent-foreground);
+}
+
+/* 단축키 칩. 표기가 정해지기 전에도 폭을 지켜 헤더가 흔들리지 않게 한다(NOR-164). */
+.search-shortcut {
+  display: inline-block;
+  min-width: 3.1rem;
+  padding: 0 0.3rem;
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 0.25rem;
+  color: var(--theme-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-align: center;
 }
 
 .site-nav__link {
