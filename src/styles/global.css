@@ -616,29 +616,63 @@ summary:focus-visible {
   }
 }
 
-/* --- 포트폴리오 (NOR-151) --- */
-.portfolio-grid {
+/* --- 포트폴리오 (NOR-151, NOR-157) ---
+   링크가 없는 작업도 실린다. 그 자리를 이미지와 담당 업무가 채운다. */
+.portfolio-list {
   display: grid;
-  gap: 1.25rem;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
 }
 
 .portfolio-card {
-  padding: clamp(1.25rem, 3vw, 1.9rem);
+  overflow: hidden;
   border: 1px solid var(--theme-border);
   border-radius: 0.9rem;
   background: var(--theme-surface);
 }
 
+/* 크기를 마크업에 적어 두므로 이미지가 도착하기 전에도 자리가 잡혀 있다(CLS 0). */
+.portfolio-card__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.portfolio-card__body {
+  padding: clamp(1.25rem, 3vw, 1.9rem);
+}
+
 .portfolio-card__title {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: -0.03em;
 }
 
+.portfolio-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  margin-top: 0.5rem;
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+}
+
 .portfolio-card__summary {
-  margin-top: 0.7rem;
+  margin-top: 0.9rem;
   color: var(--theme-muted-strong);
   line-height: 1.8;
+  word-break: keep-all;
+}
+
+.portfolio-card__highlights {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1.1rem;
+  padding-left: 1.15rem;
+  color: var(--theme-body);
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  list-style: disc;
   word-break: keep-all;
 }
 
@@ -647,7 +681,7 @@ summary:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  margin-top: 1.25rem;
+  margin-top: 1.35rem;
 }
 
 .stack-token {
@@ -665,106 +699,6 @@ summary:focus-visible {
   flex-wrap: wrap;
   gap: 1rem;
   margin-top: 1.5rem;
-}
-
-.skip-link {
-  position: fixed;
-  z-index: 50;
-  top: 0.75rem;
-  left: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.375rem;
-  background: var(--theme-accent);
-  color: var(--theme-accent-foreground);
-  font-weight: 700;
-  transform: translateY(-200%);
-}
-
-.skip-link:focus-visible {
-  transform: translateY(0);
-}
-
-.theme-toggle {
-  display: inline-grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  margin-left: auto;
-  border: 1px solid var(--theme-border);
-  border-radius: 9999px;
-  background: var(--theme-surface);
-  color: var(--theme-foreground);
-  cursor: pointer;
-}
-
-.theme-toggle:hover {
-  border-color: var(--theme-accent);
-  color: var(--theme-accent);
-}
-
-.theme-toggle:focus-visible {
-  outline: 2px solid var(--theme-accent);
-  outline-offset: 2px;
-}
-
-/* --- 키보드 포커스 가시성 (NOR-16, NOR-18) ---
-   브라우저 기본 outline 이 요소 배경에 묻히는 경우가 있어 전역으로 한 번 고정한다.
-   `<summary>` 도 기본 포커스 대상이다(시리즈 목록 접기 — NOR-18). 링크·버튼과 같게 맞춘다. */
-a:focus-visible,
-button:focus-visible,
-summary:focus-visible {
-  outline: 2px solid var(--theme-focus);
-  outline-offset: 2px;
-}
-
-/* --- 앵커 이동 (NOR-17) ---
-   프래그먼트로 점프했을 때 헤딩이 뷰포트 맨 위에 딱 붙지 않도록 여유를 준다. */
-:target {
-  scroll-margin-top: 1.5rem;
-}
-
-/* 부드러운 스크롤은 '움직임 줄이기'를 켠 사용자에게는 적용하지 않는다. */
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
-}
-
-/* --- 헤딩 앵커 링크 (NOR-17) ---
-   `.md`(rehype) 와 `.mdoc`(Markdoc) 이 같은 마크업을 만든다: 자식이 없는 `<a class="heading-anchor">`.
-   보이는 `#` 는 여기서 그린다 — 텍스트로 넣으면 목차 텍스트가 오염되고 스크린리더가
-   "링크, 우물 정"으로 읽는다. 접근 가능한 이름은 마크업의 `aria-label` 이 준다. */
-.heading-anchor {
-  margin-left: 0.35em;
-  font-weight: 400;
-  /* 흐린 회색은 대비가 모자란다. 보이는 동안에는 본문 대비 AA(4.5:1) 를 넘겨야 한다. */
-  color: var(--theme-muted);
-  text-decoration: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.heading-anchor::before {
-  content: '#';
-}
-
-/* 호버뿐 아니라 **포커스에서도** 보여야 한다. 키보드 사용자가 못 쓰는 앵커는 없는 것과 같다. */
-.post-body :is(h1, h2, h3, h4, h5, h6):hover > .heading-anchor,
-.heading-anchor:focus-visible {
-  opacity: 1;
-}
-
-/* 호버가 없는 기기(터치)에서는 늘 보여 준다. 반투명으로 두면 대비만 깎이고 쓸 수는 없다. */
-@media (hover: none) {
-  .heading-anchor {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .heading-anchor {
-    transition: none;
-  }
 }
 
 /* --- 글 상세 읽기 레이아웃 (NOR-150) ---

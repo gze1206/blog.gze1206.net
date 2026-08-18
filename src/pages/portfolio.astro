@@ -2,8 +2,12 @@
 /**
  * 포트폴리오 (NOR-151).
  *
- * 공개 가능한 작업만 담는다. 카드 하나가 "무엇을 만들었고, 무엇으로 만들었고, 어디서 볼 수
- * 있는가"에 답해야 한다 — 셋 중 하나가 빠지면 그건 목록이지 포트폴리오가 아니다.
+ * 공개 가능한 작업만 담는다. 카드 하나가 "무엇을 만들었고, 무엇을 맡았고, 무엇으로
+ * 만들었는가"에 답해야 한다.
+ *
+ * 공개 링크는 **있으면 좋은 것**이지 필수가 아니다(NOR-157). 회사 프로젝트는 볼 수 있는
+ * 주소가 없지만 실제로 한 일 중 가장 큰 덩어리다. 링크가 없는 자리는 이미지와 담당 업무가
+ * 대신 채운다.
  */
 import { getCollection } from 'astro:content';
 import ListLayout from '../layouts/ListLayout.astro';
@@ -31,34 +35,64 @@ const LINK_LABELS: Record<string, string> = {
     entries.length === 0 ? (
       <EmptyState message="공개된 작업이 아직 없습니다." />
     ) : (
-      <div class="portfolio-grid">
+      <ol class="portfolio-list">
         {entries.map((entry) => (
-          <article class="portfolio-card">
-            <h2 class="portfolio-card__title">{entry.data.title}</h2>
-            <p class="portfolio-card__summary">{entry.data.summary}</p>
-            <ul class="portfolio-card__stack" aria-label={`${entry.data.title} 기술 스택`}>
-              {entry.data.stack.map((technology) => (
-                <li class="stack-token">{technology}</li>
+          <li>
+            <article class="portfolio-card">
+              {entry.data.media.map((image) => (
+                <img
+                  class="portfolio-card__image"
+                  src={image.src}
+                  alt={image.alt}
+                  width={image.width}
+                  height={image.height}
+                  loading="lazy"
+                  decoding="async"
+                />
               ))}
-            </ul>
-            <div class="portfolio-card__links">
-              {entry.data.links
-                .flatMap((link) => Object.entries(link))
-                .map(([kind, url]) => (
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="home-text-link"
-                    aria-label={`${entry.data.title} ${LINK_LABELS[kind] ?? kind}`}
-                  >
-                    {LINK_LABELS[kind] ?? kind}
-                  </a>
-                ))}
-            </div>
-          </article>
+              <div class="portfolio-card__body">
+                <h2 class="portfolio-card__title">{entry.data.title}</h2>
+                {(entry.data.role || entry.data.period) && (
+                  <p class="portfolio-card__meta">
+                    {entry.data.role && <span>{entry.data.role}</span>}
+                    {entry.data.period && <span>{entry.data.period}</span>}
+                  </p>
+                )}
+                <p class="portfolio-card__summary">{entry.data.summary}</p>
+                {entry.data.highlights.length > 0 && (
+                  <ul class="portfolio-card__highlights">
+                    {entry.data.highlights.map((highlight) => (
+                      <li>{highlight}</li>
+                    ))}
+                  </ul>
+                )}
+                <ul class="portfolio-card__stack" aria-label={`${entry.data.title} 기술 스택`}>
+                  {entry.data.stack.map((technology) => (
+                    <li class="stack-token">{technology}</li>
+                  ))}
+                </ul>
+                {entry.data.links.length > 0 && (
+                  <div class="portfolio-card__links">
+                    {entry.data.links
+                      .flatMap((link) => Object.entries(link))
+                      .map(([kind, url]) => (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="home-text-link"
+                          aria-label={`${entry.data.title} ${LINK_LABELS[kind] ?? kind}`}
+                        >
+                          {LINK_LABELS[kind] ?? kind}
+                        </a>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </article>
+          </li>
         ))}
-      </div>
+      </ol>
     )
   }
 </ListLayout>
