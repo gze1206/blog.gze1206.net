@@ -21,12 +21,14 @@
  */
 import BaseLayout from './BaseLayout.astro';
 import TableOfContents from '../components/TableOfContents.astro';
+import TocFab from '../components/TocFab.astro';
 import { formatKoreanDate } from '../lib/date';
 import { categoryPath, seriesPath, tagPath } from '../lib/routes';
 import { toSlug } from '../lib/slug';
 import type { Post, Series } from '../lib/content';
 import type { PostDetail } from '../lib/post-detail';
 import { buildArticleJsonLd, buildBreadcrumbJsonLd } from '../lib/json-ld';
+import { resolveTocPlacement } from '../lib/toc';
 
 interface Props {
   post: Post;
@@ -42,6 +44,7 @@ interface Props {
 const { post, detail, series } = Astro.props;
 const { title, description, category, tags, publishedAt, updatedAt, draft } = post.data;
 const { toc, readingTime, publishedISO, updatedISO, isUpdated } = detail;
+const tocPlacement = resolveTocPlacement(post.data.toc, toc.length);
 const url = `https://gze1206.net/blog/${post.data.slug}`;
 const jsonLd = [
   buildArticleJsonLd({ title, description, url, published: publishedISO, modified: updatedISO }),
@@ -60,20 +63,26 @@ const jsonLd = [
   article={{ publishedTime: publishedISO, modifiedTime: updatedISO }}
   jsonLd={jsonLd}
 >
-  <main id="main-content" class="mx-auto max-w-3xl px-4 py-10 sm:py-14">
+  <main id="main-content" class="article">
     <article data-pagefind-body>
-      <header class="border-border mb-8 border-b pb-6">
+      <header class="article__head">
         {
           draft && (
-            <p class="bg-notice text-notice-foreground mb-3 inline-block rounded px-2 py-1 text-sm font-semibold">
+            <p class="bg-notice text-notice-foreground mb-5 inline-block rounded px-2 py-1 text-sm font-semibold">
               초안 — 개발 서버에서만 보입니다
             </p>
           )
         }
-        <h1 class="display-serif text-3xl sm:text-4xl">{title}</h1>
-        <p class="text-muted mt-3">{description}</p>
 
-        <div class="text-muted mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        <div class="article-taxonomy">
+          <span class="article-taxonomy__label">카테고리</span>
+          <a href={categoryPath(toSlug(category))} class="category-badge">{category}</a>
+        </div>
+
+        <h1 class="article__title">{title}</h1>
+        <p class="article__summary">{description}</p>
+
+        <div class="article__meta">
           <time datetime={publishedISO}>{formatKoreanDate(publishedAt)}</time>
           {
             isUpdated && (
@@ -83,46 +92,49 @@ const jsonLd = [
             )
           }
           <span>읽는 시간 <time datetime={readingTime.iso}>{readingTime.label}</time></span>
-          <a href={categoryPath(toSlug(category))} class="rounded hover:underline">{category}</a>
+          {
+            series && (
+              <span>
+                시리즈{' '}
+                <a href={seriesPath(series.data.slug)} class="rounded font-medium hover:underline">
+                  {series.data.name}
+                </a>
+              </span>
+            )
+          }
         </div>
 
-        {
-          series && (
-            <p class="text-muted mt-3 text-sm">
-              시리즈{' '}
-              <a href={seriesPath(series.data.slug)} class="rounded font-medium hover:underline">
-                {series.data.name}
-              </a>
-            </p>
-          )
-        }
+        <div class="article-taxonomy">
+          <span class="article-taxonomy__label" id="post-tags-label">태그</span>
+          <ul class="tag-chips" aria-labelledby="post-tags-label">
+            {
+              tags.map((tag) => (
+                <li>
+                  <a href={tagPath(toSlug(tag))} class="tag-chip">
+                    {tag}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
       </header>
 
-      <TableOfContents entries={toc} />
+      {tocPlacement.inline && <TableOfContents entries={toc} />}
 
-      <div class="post-body">
+      <div class="post-body article__body">
         <slot />
       </div>
 
-      <slot name="after-content" />
-
-      <footer class="border-border mt-12 border-t pt-6">
-        <h2 class="text-muted text-sm font-semibold">태그</h2>
-        <ul class="mt-3 flex flex-wrap gap-2">
-          {
-            tags.map((tag) => (
-              <li>
-                <a
-                  href={tagPath(toSlug(tag))}
-                  class="bg-surface-sunken text-body hover:bg-accent-soft inline-block rounded-full px-2.5 py-0.5 text-sm"
-                >
-                  #{tag}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </footer>
+      <div class="article__after">
+        <slot name="after-content" />
+      </div>
     </article>
+
+    {
+      tocPlacement.floating && (
+        <TocFab entries={toc} followsScroll={tocPlacement.floatingFollowsScroll} />
+      )
+    }
   </main>
 </BaseLayout>

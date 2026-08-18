@@ -240,3 +240,20 @@ describe('experienceSchema', () => {
     );
   });
 });
+
+it('posts 의 toc 는 기본값이 auto 이고 false 를 받는다', () => {
+  const base = {
+    title: 't',
+    description: 'd',
+    slug: 'hello-world',
+    category: 'c',
+    tags: ['a'],
+    publishedAt: '2026-01-01',
+    updatedAt: '2026-01-01',
+  };
+
+  expect(postSchema.parse(base).toc).toBe('auto');
+  expect(postSchema.parse({ ...base, toc: false }).toc).toBe(false);
+  expect(postSchema.parse({ ...base, toc: 'floating' }).toc).toBe('floating');
+  expect(() => postSchema.parse({ ...base, toc: 'sidebar' })).toThrow();
+});

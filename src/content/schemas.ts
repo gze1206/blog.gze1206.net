@@ -26,6 +26,17 @@ export const postSchema = z
     publishedAt: z.coerce.date(),
     updatedAt: z.coerce.date(),
     draft: z.boolean().default(false),
+    /**
+     * 목차를 어디에 둘지 (NOR-150).
+     *
+     * - `auto` — 상단 목차를 열어 두고, 그것이 화면 밖으로 나가면 플로팅 목차를 띄운다.
+     * - `inline` — 상단 목차만. 긴 글이 아니어서 따라다닐 필요가 없을 때.
+     * - `floating` — 플로팅 목차만. 도입부를 길게 두고 싶을 때.
+     * - `false` — 목차 없음.
+     *
+     * 담을 헤딩이 모자라면 이 값과 무관하게 목차 자체가 생기지 않는다(`buildToc`).
+     */
+    toc: z.union([z.enum(['auto', 'inline', 'floating']), z.literal(false)]).default('auto'),
   })
   .refine(
     (data) => {
