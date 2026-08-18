@@ -17,20 +17,21 @@ export interface TaxonomyGraphEdge {
   readonly weight: number;
 }
 
+/** 같은 글에서 함께 쓰인 태그 쌍. `a` 가 항상 사전순으로 앞이라 같은 쌍이 두 번 생기지 않는다. */
+export interface TaxonomyCoOccurrence {
+  readonly aSlug: string;
+  readonly bSlug: string;
+  readonly weight: number;
+}
+
 export interface TaxonomyGraph {
   readonly nodes: readonly TaxonomyGraphNode[];
   readonly edges: readonly TaxonomyGraphEdge[];
-}
-
-export interface TaxonomyGraphLayoutNode extends TaxonomyGraphNode {
-  readonly x: number;
-  readonly y: number;
-}
-
-export interface TaxonomyGraphLayout extends TaxonomyGraph {
-  readonly width: number;
-  readonly height: number;
-  readonly nodes: readonly TaxonomyGraphLayoutNode[];
+  /**
+   * 태그끼리의 보조 관계. 카테고리–태그 간선과 달리 **기본 화면에서는 그리지 않는다** —
+   * 다 그리면 지도가 실뭉치가 된다. 선택한 노드 주변에서만 드러낸다(NOR-152).
+   */
+  readonly coOccurrences: readonly TaxonomyCoOccurrence[];
 }
 
 interface TaxonomyCounter {
@@ -38,12 +39,6 @@ interface TaxonomyCounter {
   readonly label: string;
   count: number;
 }
-
-const NODE_MARGIN_X = 80;
-const NODE_MARGIN_Y = 48;
-const NODE_GAP_Y = 40;
-const MIN_GRAPH_HEIGHT = 160;
-const GRAPH_WIDTH = 880;
 
 function compareLabels(left: { label: string }, right: { label: string }): number {
   return left.label.localeCompare(right.label, 'ko');
@@ -72,15 +67,27 @@ export function buildTaxonomyGraph(posts: readonly PostLike[]): TaxonomyGraph {
   const categories = new Map<string, TaxonomyCounter>();
   const tags = new Map<string, TaxonomyCounter>();
   const edgeWeights = new Map<string, number>();
+  const coWeights = new Map<string, number>();
 
   for (const post of posts) {
     const category = addCounter(categories, post.data.category);
     const uniqueTags = new Set(post.data.tags);
+    const postTagSlugs: string[] = [];
 
     for (const tagLabel of uniqueTags) {
       const tag = addCounter(tags, tagLabel);
+      postTagSlugs.push(tag.slug);
       const edgeId = `${category.slug}\u0000${tag.slug}`;
       edgeWeights.set(edgeId, (edgeWeights.get(edgeId) ?? 0) + 1);
+    }
+
+    // 한 글 안에서 만난 태그 쌍을 센다. 정렬해서 넣으므로 (a,b)와 (b,a)가 갈라지지 않는다.
+    const sortedTagSlugs = [...new Set(postTagSlugs)].sort();
+    for (let i = 0; i < sortedTagSlugs.length; i += 1) {
+      for (let j = i + 1; j < sortedTagSlugs.length; j += 1) {
+        const pairId = `${sortedTagSlugs[i]}\u0000${sortedTagSlugs[j]}`;
+        coWeights.set(pairId, (coWeights.get(pairId) ?? 0) + 1);
+      }
     }
   }
 
@@ -120,32 +127,16 @@ export function buildTaxonomyGraph(posts: readonly PostLike[]): TaxonomyGraph {
       );
     });
 
-  return { nodes: [...categoryNodes, ...tagNodes], edges };
-}
+  const coOccurrences = [...coWeights.entries()]
+    .map(([id, weight]) => {
+      const [aSlug, bSlug] = id.split('\u0000');
+      return { aSlug: aSlug ?? '', bSlug: bSlug ?? '', weight };
+    })
+    .sort((left, right) => {
+      if (left.weight !== right.weight) return right.weight - left.weight;
+      const aOrder = left.aSlug.localeCompare(right.aSlug, 'ko');
+      return aOrder !== 0 ? aOrder : left.bSlug.localeCompare(right.bSlug, 'ko');
+    });
 
-/** SVG가 추가 상태 없이 같은 좌표를 재현할 수 있도록 두 열로 배치한다. */
-export function layoutTaxonomyGraph(graph: TaxonomyGraph): TaxonomyGraphLayout {
-  const categories = graph.nodes.filter((node) => node.kind === 'category');
-  const tags = graph.nodes.filter((node) => node.kind === 'tag');
-  const rowCount = Math.max(categories.length, tags.length, 1);
-  const height = Math.max(MIN_GRAPH_HEIGHT, NODE_MARGIN_Y * 2 + (rowCount - 1) * NODE_GAP_Y);
-  const yAt = (index: number, count: number): number => {
-    if (count <= 1) return height / 2;
-    return NODE_MARGIN_Y + (index * (height - NODE_MARGIN_Y * 2)) / (count - 1);
-  };
-
-  const nodes = [
-    ...categories.map((node, index) => ({
-      ...node,
-      x: NODE_MARGIN_X,
-      y: yAt(index, categories.length),
-    })),
-    ...tags.map((node, index) => ({
-      ...node,
-      x: GRAPH_WIDTH - NODE_MARGIN_X,
-      y: yAt(index, tags.length),
-    })),
-  ];
-
-  return { ...graph, width: GRAPH_WIDTH, height, nodes };
+  return { nodes: [...categoryNodes, ...tagNodes], edges, coOccurrences };
 }

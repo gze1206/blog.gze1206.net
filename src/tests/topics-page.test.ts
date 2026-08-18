@@ -5,42 +5,44 @@ import { describe, expect, it } from 'vitest';
 const readSource = (relativePath: string) =>
   readFileSync(join(process.cwd(), relativePath), 'utf8');
 
-describe('/topics 정적 탐색과 분류 맵 계약', () => {
+describe('/topics 탐색 계약 (NOR-152)', () => {
   const pageSource = readSource('src/pages/topics.astro');
-  const graphSource = readSource('src/islands/TaxonomyGraph.tsx');
+  const mapSource = readSource('src/islands/TaxonomyMap.tsx');
 
-  it('정적 탐색기를 분류 맵보다 먼저 제공한다', () => {
-    expect(pageSource).toContain('분류 맵');
-    expect(pageSource.indexOf('<TaxonomyExplorer')).toBeLessThan(
-      pageSource.indexOf('<TaxonomyGraph'),
-    );
+  it('지도 없이도 갈 수 있도록 정적 목록을 지도 앞뒤에 둔다', () => {
+    const categories = pageSource.indexOf('<TaxonomyCategoryList');
+    const map = pageSource.indexOf('<TaxonomyMap');
+    const tags = pageSource.indexOf('<TaxonomyTagList');
+
+    expect(categories).toBeGreaterThan(-1);
+    expect(categories).toBeLessThan(map);
+    expect(map).toBeLessThan(tags);
   });
 
-  it('그래프의 노드 유형과 SVG 대체 텍스트를 명시한다', () => {
-    expect(graphSource).toContain('taxonomy-graph-legend');
-    expect(graphSource).toContain('<span>카테고리</span>');
-    expect(graphSource).toContain('<span>태그</span>');
-    expect(graphSource).toContain('<title id="topics-graph-title">');
-    expect(graphSource).toContain('<desc id="topics-graph-description">');
+  it('선택 이후의 행동(글 목록)을 서버에서 만들어 넘긴다', () => {
+    expect(pageSource).toContain('details[`category:${group.slug}`]');
+    expect(pageSource).toContain('details[`tag:${group.slug}`]');
+    expect(pageSource).toContain('postPath(post.data.slug)');
   });
 
-  it('SVG 내부 링크의 접근 가능한 이름을 평탄화하지 않는다', () => {
-    expect(graphSource).not.toContain('role="img"');
-    expect(graphSource).toContain('aria-labelledby="topics-graph-title topics-graph-description"');
+  it('좌표는 빌드타임에 고정한다', () => {
+    expect(pageSource).toContain('buildTaxonomyMap(buildTaxonomyGraph(posts))');
+    expect(mapSource).not.toContain('Math.random');
   });
 
-  it('SVG 노드를 분류 결과의 앵커 링크로 만든다', () => {
-    expect(graphSource).toContain(
-      "const href = node.kind === 'category' ? categoryPath(node.slug) : tagPath(node.slug);",
-    );
-    expect(graphSource).toContain('href={href}');
+  it('노드는 실제 링크이고, 새 탭으로 여는 조작은 브라우저에 맡긴다', () => {
+    expect(mapSource).toContain('href={nodeDetail?.href');
+    expect(mapSource).toContain('event.metaKey || event.ctrlKey || event.shiftKey');
   });
 
-  it('투명 hit area를 보이는 노드 원과 분리한다', () => {
-    const stylesSource = readSource('src/styles/global.css');
+  it('전체 보기로 돌아가는 길을 항상 제공한다', () => {
+    expect(mapSource).toContain('선택 해제');
+    expect(mapSource).toContain('select(null)');
+  });
 
-    expect(stylesSource).toContain(
-      '.taxonomy-graph-node circle:not(.taxonomy-graph-node-hit-area)',
-    );
+  it('노드와 간선이 같은 좌표 배열을 쓴다', () => {
+    // 간선은 노드 좌표를 조회해서 긋는다. 각자 계산하면 선 끝이 노드에서 어긋난다.
+    expect(mapSource).toContain('nodePositions.get(edge.sourceId)');
+    expect(mapSource).toContain('nodePositions.get(edge.targetId)');
   });
 });

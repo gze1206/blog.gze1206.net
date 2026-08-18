@@ -1,0 +1,30 @@
+---
+/**
+ * 카테고리 목록 (NOR-135, NOR-152). 지도가 없어도 큰 분류로 갈 수 있는 정적 경로다.
+ */
+import type { PostLike, TaxonomyGroup } from '../lib/posts';
+import { categoryPath } from '../lib/routes';
+
+interface Props {
+  categories: readonly TaxonomyGroup<PostLike>[];
+}
+
+const { categories } = Astro.props;
+---
+
+<section class="taxonomy-section" aria-labelledby="topics-categories-heading">
+  <h2 id="topics-categories-heading" class="taxonomy-section__title">카테고리</h2>
+  <p class="taxonomy-section__lead">글의 큰 주제입니다. 하나의 글은 하나의 카테고리에 속합니다.</p>
+  <ul class="taxonomy-category-grid">
+    {
+      categories.map((category) => (
+        <li>
+          <a href={categoryPath(category.slug)} class="taxonomy-category-card">
+            <span class="taxonomy-category-card__label">{category.label}</span>
+            <span class="taxonomy-category-card__count">글 {category.posts.length}개</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>

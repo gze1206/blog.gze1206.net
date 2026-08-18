@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PostLike } from './posts';
-import { buildTaxonomyGraph, layoutTaxonomyGraph } from './taxonomy-graph';
+import { buildTaxonomyGraph } from './taxonomy-graph';
 
 function post(slug: string, category: string, tags: string[], draft = false): PostLike {
   return {
@@ -42,32 +42,5 @@ describe('buildTaxonomyGraph', () => {
 
     expect(forward).toEqual(backward);
     expect(forward.nodes.map((node) => node.label)).toEqual(['개발', '회고', 'Astro', 'Zod']);
-  });
-});
-
-describe('layoutTaxonomyGraph', () => {
-  it('카테고리와 태그를 양쪽 열에 결정적으로 배치한다', () => {
-    const graph = buildTaxonomyGraph([
-      post('one', '개발', ['Astro']),
-      post('two', '회고', ['TypeScript']),
-    ]);
-
-    const first = layoutTaxonomyGraph(graph);
-    const second = layoutTaxonomyGraph(graph);
-
-    expect(first).toEqual(second);
-    expect(first.width).toBeGreaterThan(0);
-    expect(first.height).toBeGreaterThan(0);
-    expect(
-      first.nodes.filter((node) => node.kind === 'category').every((node) => node.x === 80),
-    ).toBe(true);
-    expect(
-      first.nodes
-        .filter((node) => node.kind === 'tag')
-        .every((node) => node.x === first.width - 80),
-    ).toBe(true);
-    expect(first.nodes.every((node) => Number.isFinite(node.x) && Number.isFinite(node.y))).toBe(
-      true,
-    );
   });
 });
