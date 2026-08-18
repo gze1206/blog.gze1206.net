@@ -13,8 +13,7 @@ const { tags } = Astro.props;
 ---
 
 <section class="taxonomy-section" aria-labelledby="topics-tags-heading">
-  <h2 id="topics-tags-heading" class="taxonomy-section__title">전체 태그</h2>
-  <p class="taxonomy-section__lead">글에서 다룬 세부 주제입니다. 한 글에 여러 개가 붙습니다.</p>
+  <h2 id="topics-tags-heading" class="taxonomy-section__title">태그</h2>
   <ul class="taxonomy-tag-index">
     {
       tags.map((tag) => (
