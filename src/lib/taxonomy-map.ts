@@ -36,6 +36,9 @@ export interface TaxonomyMapEdge {
 export interface TaxonomyMap {
   readonly width: number;
   readonly height: number;
+  /** 간선이 어느 쪽으로 휠지 정하는 기준점. */
+  readonly centerX: number;
+  readonly centerY: number;
   readonly nodes: readonly TaxonomyMapNode[];
   readonly edges: readonly TaxonomyMapEdge[];
   /** 간선 굵기를 정규화할 때 쓰는 최대 가중치. 0 이면 간선이 없다는 뜻이다. */
@@ -214,7 +217,15 @@ export function buildTaxonomyMap(graph: TaxonomyGraph): TaxonomyMap {
 
   const maxWeight = graph.edges.reduce((max, edge) => Math.max(max, edge.weight), 0);
 
-  return { width: WIDTH, height: HEIGHT, nodes, edges, maxWeight };
+  return {
+    width: WIDTH,
+    height: HEIGHT,
+    centerX: CENTER_X,
+    centerY: CENTER_Y,
+    nodes,
+    edges,
+    maxWeight,
+  };
 }
 
 /**
@@ -264,4 +275,62 @@ function relax(points: readonly MutablePoint[]): void {
       );
     }
   }
+}
+
+/** 이름표가 지도에서 차지할 최대 글자 수. 넘치면 줄이고 전체 이름은 `<title>` 로 남긴다. */
+const LABEL_MAX_CHARS = 11;
+
+/**
+ * 지도에 그릴 이름표 (NOR-163).
+ *
+ * 이름이 길면 겹침 풀기가 노드를 크게 밀어내 배치의 뜻(방향)이 흐려진다. 지도는 훑어보는
+ * 장치이고 전체 이름은 아래 목록에 있으므로, 여기서는 줄여서 형태를 지킨다.
+ */
+export function mapLabel(label: string): string {
+  if (label.length <= LABEL_MAX_CHARS) return label;
+  return `${label.slice(0, LABEL_MAX_CHARS - 1).trimEnd()}…`;
+}
+
+/**
+ * 간선의 SVG 경로 (NOR-163).
+ *
+ * 직선으로 그으면 그 선이 관계없는 노드 위를 지나가고, 한 노드에서 여러 갈래가 나갈 때
+ * 서로 겹쳐 얽혀 보인다. 그래서 **지도 중심에서 멀어지는 쪽으로 살짝 휘게** 그린다.
+ * 허브에서 방사되는 선들이 서로 벌어지고, 가운데가 덜 붐빈다.
+ *
+ * 시작점과 끝점은 노드 중심 그대로다 — 곡선이어도 선 끝은 노드에서 어긋나지 않는다.
+ */
+export function edgePath(
+  source: { readonly x: number; readonly y: number },
+  target: { readonly x: number; readonly y: number },
+  center: { readonly x: number; readonly y: number },
+  /** 휘는 정도. 0 이면 직선이다. */
+  curvature = 0.16,
+): string {
+  const midX = (source.x + target.x) / 2;
+  const midY = (source.y + target.y) / 2;
+
+  const dx = target.x - source.x;
+  const dy = target.y - source.y;
+  const length = Math.hypot(dx, dy);
+  if (length === 0 || curvature === 0) {
+    return `M${round(source.x)} ${round(source.y)}L${round(target.x)} ${round(target.y)}`;
+  }
+
+  // 선에 수직인 두 방향 중, 중심에서 멀어지는 쪽을 고른다.
+  const normalX = -dy / length;
+  const normalY = dx / length;
+  const awayX = midX - center.x;
+  const awayY = midY - center.y;
+  const sign = normalX * awayX + normalY * awayY >= 0 ? 1 : -1;
+  const offset = length * curvature * sign;
+
+  const controlX = midX + normalX * offset;
+  const controlY = midY + normalY * offset;
+
+  return `M${round(source.x)} ${round(source.y)}Q${round(controlX)} ${round(controlY)} ${round(target.x)} ${round(target.y)}`;
+}
+
+function round(value: number): number {
+  return Math.round(value * 100) / 100;
 }

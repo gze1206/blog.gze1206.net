@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTaxonomyGraph } from './taxonomy-graph';
-import { buildTaxonomyMap } from './taxonomy-map';
+import { buildTaxonomyMap, edgePath, mapLabel } from './taxonomy-map';
 
 function post(category: string, tags: string[]) {
   return { data: { category, tags } } as never;
@@ -88,5 +88,52 @@ describe('buildTaxonomyMap', () => {
     expect(map.nodes).toEqual([]);
     expect(map.edges).toEqual([]);
     expect(map.maxWeight).toBe(0);
+  });
+});
+
+describe('edgePath', () => {
+  const center = { x: 450, y: 280 };
+
+  it('시작점과 끝점은 노드 중심 그대로다', () => {
+    const path = edgePath({ x: 100, y: 100 }, { x: 300, y: 200 }, center);
+
+    expect(path.startsWith('M100 100')).toBe(true);
+    expect(path.endsWith('300 200')).toBe(true);
+  });
+
+  it('곡률이 0 이면 직선이다', () => {
+    expect(edgePath({ x: 0, y: 0 }, { x: 10, y: 0 }, center, 0)).toBe('M0 0L10 0');
+  });
+
+  it('길이가 0 이면 곡선을 만들지 않는다', () => {
+    expect(edgePath({ x: 5, y: 5 }, { x: 5, y: 5 }, center)).toBe('M5 5L5 5');
+  });
+
+  it('제어점은 지도 중심에서 멀어지는 쪽에 놓인다', () => {
+    // 중심 위쪽을 지나는 수평선이면 제어점도 중심보다 위(y 가 더 작은 쪽)에 있어야 한다.
+    const path = edgePath({ x: 350, y: 100 }, { x: 550, y: 100 }, center);
+    const control = path.match(/Q(-?[\d.]+) (-?[\d.]+)/);
+
+    expect(control).not.toBeNull();
+    expect(Number(control?.[2])).toBeLessThan(100);
+  });
+
+  it('같은 입력은 같은 경로를 낸다', () => {
+    const a = edgePath({ x: 12, y: 34 }, { x: 56, y: 78 }, center);
+    const b = edgePath({ x: 12, y: 34 }, { x: 56, y: 78 }, center);
+
+    expect(a).toBe(b);
+  });
+});
+
+describe('mapLabel', () => {
+  it('짧은 이름은 그대로 둔다', () => {
+    expect(mapLabel('C#')).toBe('C#');
+    expect(mapLabel('성능 최적화')).toBe('성능 최적화');
+  });
+
+  it('긴 이름은 줄이고 말줄임을 붙인다', () => {
+    expect(mapLabel('content collections')).toBe('content co…');
+    expect(mapLabel('content collections').length).toBeLessThanOrEqual(11);
   });
 });
