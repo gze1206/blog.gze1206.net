@@ -1,6 +1,6 @@
 import { Command } from 'cmdk';
 import { useEffect, useRef, useState } from 'react';
-import { canSearch, isSearchShortcut } from '../lib/search';
+import { canSearch, isSearchShortcut, searchShortcutLabel } from '../lib/search';
 
 interface SearchResult {
   readonly url: string;
@@ -27,6 +27,18 @@ export default function SearchPalette() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<readonly SearchResult[]>([]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  /**
+   * 단축키 표기는 브라우저에서만 알 수 있다. 서버 렌더 결과에 한쪽을 박아 두면 다른 쪽
+   * 사용자에게 틀린 안내가 잠깐 보이므로, 정해지기 전까지는 자리만 잡아 둔다(NOR-164).
+   */
+  const [shortcutLabel, setShortcutLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    const platform =
+      (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData
+        ?.platform ?? navigator.platform;
+    setShortcutLabel(searchShortcutLabel(platform));
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -78,7 +90,7 @@ export default function SearchPalette() {
           setOpen(true);
         }}
       >
-        검색 <kbd className="ml-1 rounded border px-1 text-xs">⌘K</kbd>
+        검색 <kbd className="search-shortcut">{shortcutLabel ?? ''}</kbd>
       </a>
       <Command.Dialog
         open={open}
@@ -101,7 +113,7 @@ export default function SearchPalette() {
             )}
             {status === 'loading' && <p className="text-muted p-3 text-sm">검색 중…</p>}
             {status === 'error' && (
-              <p className="p-3 text-sm text-red-700">검색 인덱스를 불러오지 못했습니다.</p>
+              <p className="text-danger p-3 text-sm">검색 인덱스를 불러오지 못했습니다.</p>
             )}
             {canSearch(query) && status === 'idle' && results.length === 0 && (
               <Command.Empty className="text-muted p-3 text-sm">
