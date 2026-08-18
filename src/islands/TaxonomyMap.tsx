@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { TaxonomyMap as TaxonomyMapModel } from '../lib/taxonomy-map';
+import { edgePath, mapLabel, type TaxonomyMap as TaxonomyMapModel } from '../lib/taxonomy-map';
 import {
   isEdgeVisible,
   queryFromSelectionId,
@@ -91,13 +91,10 @@ export default function TaxonomyMap({ map, details }: Props) {
                 const strength = map.maxWeight === 0 ? 0 : edge.weight / map.maxWeight;
 
                 return (
-                  <line
+                  <path
                     key={`${edge.kind}:${edge.sourceId}:${edge.targetId}`}
                     className={`taxonomy-map__edge taxonomy-map__edge--${edge.kind}`}
-                    x1={source.x}
-                    y1={source.y}
-                    x2={target.x}
-                    y2={target.y}
+                    d={edgePath(source, target, { x: map.centerX, y: map.centerY })}
                     strokeWidth={edge.kind === 'co' ? 1 : 1 + strength * 2.6}
                     opacity={edge.kind === 'co' ? 0.35 : 0.3 + strength * 0.5}
                   />
@@ -133,7 +130,9 @@ export default function TaxonomyMap({ map, details }: Props) {
                 >
                   <circle cx={node.x} cy={node.y} r={node.radius} />
                   <text x={node.x} y={node.y + node.radius + 13} textAnchor="middle">
-                    {node.label}
+                    {mapLabel(node.label)}
+                    {/* 줄인 이름의 전체는 접근성 트리와 툴팁에 남긴다. */}
+                    <title>{node.label}</title>
                   </text>
                 </a>
               );
