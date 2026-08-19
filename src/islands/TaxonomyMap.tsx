@@ -76,11 +76,19 @@ export default function TaxonomyMap({ map, details }: Props) {
       </div>
 
       <div className="taxonomy-map__canvas">
+        {/*
+          `role="img"` 를 주면 안 된다 — 이미지라고 선언한 요소 안에 초점을 받는 링크가 들어가면
+          보조기술이 그 링크들을 읽을 수 없다. 이름은 `<title>`·`<desc>` 로 붙인다.
+        */}
         <svg
           viewBox={`0 0 ${map.width} ${map.height}`}
-          role="img"
-          aria-label="카테고리와 태그의 관계 지도"
+          aria-labelledby="taxonomy-map-title taxonomy-map-desc"
         >
+          <title id="taxonomy-map-title">카테고리와 태그의 관계 지도</title>
+          <desc id="taxonomy-map-desc">
+            큰 원은 카테고리, 작은 원은 태그입니다. 선이 굵을수록 두 분류를 함께 다룬 글이 많습니다.
+            같은 목록을 지도 위아래의 링크로도 볼 수 있습니다.
+          </desc>
           <g className="taxonomy-map__edges">
             {map.edges
               .filter((edge) => isEdgeVisible(edge, selection))
@@ -126,7 +134,7 @@ export default function TaxonomyMap({ map, details }: Props) {
                     event.preventDefault();
                     select(selected ? null : node.id);
                   }}
-                  aria-pressed={selected}
+                  aria-current={selected ? 'true' : undefined}
                 >
                   <circle cx={node.x} cy={node.y} r={node.radius} />
                   <text x={node.x} y={node.y + node.radius + 13} textAnchor="middle">
