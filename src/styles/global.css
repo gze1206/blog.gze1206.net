@@ -616,6 +616,71 @@ summary:focus-visible {
   margin-top: 1rem;
 }
 
+/* 소개 옆의 "요즘 읽는 것" (NOR-188). 책장으로 가는 입구이므로 표지는 작게, 제목이 먼저 읽히게. */
+.about__reading {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.about__reading a {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.about__reading a:hover .about__reading-title {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.about__reading-cover {
+  flex: none;
+  width: 2.25rem;
+  aspect-ratio: 2 / 3;
+  height: auto;
+  border-radius: 0.1rem 0.2rem 0.2rem 0.1rem;
+  object-fit: cover;
+}
+
+/* 책장 규칙(`.book-card__blank`)의 색은 그대로 쓰고, 크기만 여기서 다시 정한다 —
+   그쪽 규칙이 뒤에 있어 폭·높이를 덮어쓴다. */
+.about__reading-cover.book-card__blank {
+  display: flex;
+  width: 2.25rem;
+  height: auto;
+  padding: 0.3rem 0.25rem;
+  overflow: hidden;
+}
+
+/* 2.25rem 폭에는 제목이 온전히 들어가지 않는다. 색과 결로만 구분되면 충분하다. */
+.about__reading-spine {
+  font-family: var(--font-serif);
+  font-size: 0.5rem;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.about__reading-body {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.about__reading-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+
+.about__reading-author {
+  color: var(--theme-muted);
+  font-size: 0.75rem;
+}
+
 .about__links {
   display: grid;
   gap: 0.1rem;
@@ -648,13 +713,14 @@ summary:focus-visible {
   }
 }
 
-/* --- 읽은 책 (NOR-153) ---
-   목록은 "무엇을 읽었는가"만 말한다. 밑줄과 메모는 워크벤치에 비공개로 남는다. */
-.book-year + .book-year {
+/* --- 읽은 책 책장 (NOR-153, NOR-188) ---
+   목록은 "무엇을 읽었는가"만 말한다. 밑줄과 메모는 워크벤치에 비공개로 남는다.
+   표지를 세워 책장처럼 보이되, 표지 없는 책이 흔하다는 사실을 디자인의 전제로 둔다. */
+.shelf + .shelf {
   margin-top: clamp(2.5rem, 6vw, 3.5rem);
 }
 
-.book-year__heading {
+.shelf__heading {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -666,7 +732,7 @@ summary:focus-visible {
   letter-spacing: -0.04em;
 }
 
-.book-year__count {
+.shelf__count {
   color: var(--theme-muted);
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -674,87 +740,165 @@ summary:focus-visible {
   letter-spacing: 0;
 }
 
-.book-list {
+.shelf__row {
   display: grid;
-  gap: 0;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: clamp(2rem, 5vw, 3rem) 1.5rem;
+  align-items: start;
+  margin-top: 2rem;
 }
 
-.book {
-  display: flex;
-  gap: 1.25rem;
-  padding-block: 1.5rem;
+.book-card__frame {
+  position: relative;
+  aspect-ratio: 2 / 3;
 }
 
-.book + .book {
-  border-top: 1px solid var(--theme-border);
+/* 책이 놓인 선반. 칸 사이 간격(1.5rem)만큼 양옆으로 넘겨 한 줄이 하나의 판처럼 이어지게 한다.
+   칸마다 그리므로 몇 줄로 접히든 각 줄 아래에 선반이 생긴다. */
+.book-card__frame::after {
+  content: '';
+  position: absolute;
+  right: -0.75rem;
+  bottom: -0.55rem;
+  left: -0.75rem;
+  height: 1px;
+  background: var(--theme-border-strong);
+  box-shadow: 0 2px 5px -3px rgb(var(--theme-shadow) / 0.5);
 }
 
-.book__cover {
-  flex: none;
-  width: 4.5rem;
-  height: auto;
+.book-card__cover,
+.book-card__blank {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.15rem 0.3rem 0.3rem 0.15rem;
+  box-shadow: 0 4px 10px -6px rgb(var(--theme-shadow) / 0.55);
+}
+
+.book-card__cover {
   border: 1px solid var(--theme-border);
-  border-radius: 0.35rem;
+  object-fit: cover;
 }
 
-.book__body {
-  min-width: 0;
+/* 표지를 못 구한 책. 제목에서 정해진 색이라 다시 빌드해도 같은 책은 같은 색으로 선다. */
+.book-card__blank {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.9rem 0.75rem 0.8rem;
+  background: var(--spine);
+  color: #f6f2ea;
+  /* 책등처럼 보이도록 왼쪽에 접힘선 하나. */
+  border-left: 3px solid rgb(0 0 0 / 0.18);
+  /* 어두운 배경에서 판이 배경에 잠기지 않게 하는 실오라기 하나. */
+  outline: 1px solid rgb(255 255 255 / 0.07);
+  outline-offset: -1px;
 }
 
-.book__title {
-  font-size: 1.0625rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
+.book-card__blank--t1 {
+  --spine: #3d7364;
 }
 
-.book__authors {
-  margin-top: 0.3rem;
-  color: var(--theme-muted);
-  font-size: 0.875rem;
+.book-card__blank--t2 {
+  --spine: #6b5344;
 }
 
-.book__one-liner {
-  margin-top: 0.7rem;
-  color: var(--theme-body);
+.book-card__blank--t3 {
+  --spine: #4a5568;
+}
+
+.book-card__blank--t4 {
+  --spine: #7a4a4a;
+}
+
+.book-card__blank--t5 {
+  --spine: #56583c;
+}
+
+.book-card__blank-title {
+  font-family: var(--font-serif);
   font-size: 0.9375rem;
-  line-height: 1.75;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.03em;
   word-break: keep-all;
 }
 
-.book__meta {
+.book-card__blank-author {
+  font-size: 0.6875rem;
+  opacity: 0.82;
+  word-break: keep-all;
+}
+
+/* 지금 손에 든 책. 책장에서 먼저 눈에 들어와야 하므로 표지 위에 끼운 갈피처럼 얹는다. */
+.book-card__now {
+  position: absolute;
+  top: 0.6rem;
+  right: 0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.2rem 0 0 0.2rem;
+  background: var(--theme-accent);
+  color: var(--theme-accent-foreground);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+/* 갈피가 붙은 칸에서만 제목이 그 자리를 비켜 간다. 붙지 않은 칸까지 좁힐 이유는 없다. */
+.book-card__frame:has(.book-card__now) .book-card__blank-title {
+  padding-right: 3.4rem;
+}
+
+.book-card__body {
+  margin-top: 1.1rem;
+}
+
+.book-card__title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+
+.book-card__authors {
+  margin-top: 0.25rem;
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+  word-break: keep-all;
+}
+
+.book-card__meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem 0.75rem;
-  margin-top: 0.8rem;
+  gap: 0.25rem 0.5rem;
+  margin-top: 0.5rem;
   color: var(--theme-muted);
   font-size: 0.75rem;
 }
 
-.book__status {
-  padding: 0.2rem 0.45rem;
-  border-radius: 0.25rem;
-  background: var(--theme-surface-sunken);
+.book-card__status {
   color: var(--theme-muted-strong);
   font-weight: 700;
 }
 
-/* 읽는 중인 책만 브랜드색으로 표시한다 — 지금 손에 든 것이 목록에서 먼저 보여야 한다. */
-.book__status--reading {
-  background: var(--theme-accent);
-  color: var(--theme-accent-foreground);
+.book-card__one-liner {
+  margin-top: 0.6rem;
+  color: var(--theme-body);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  word-break: keep-all;
 }
 
-.book__tags {
+.book-card__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.8rem;
+  gap: 0.3rem;
+  margin-top: 0.7rem;
 }
 
-.book__related {
-  margin-top: 0.85rem;
-  font-size: 0.875rem;
+.book-card__related {
+  margin-top: 0.6rem;
+  font-size: 0.8125rem;
 }
 
 /* --- 포트폴리오 (NOR-151, NOR-157) ---

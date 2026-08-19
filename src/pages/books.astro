@@ -1,14 +1,18 @@
 ---
 /**
- * 읽은 책 (NOR-153).
+ * 읽은 책 (NOR-153, NOR-188).
  *
  * 무엇을 읽었는지는 공개하고, 밑줄과 메모는 워크벤치에 비공개로 남는다. 그래서 이 화면에는
  * 감상이 있으면 한 줄, 길게 쓴 것이 있으면 그 글로 가는 링크만 있다 — 책마다 상세 페이지를
  * 만들지 않는다. 한 줄짜리 책이 수백 개인 사이트에 페이지 수백 개를 만들 이유가 없다.
+ *
+ * 표지를 세워 책장처럼 보인다(NOR-188). 표지를 못 구한 책은 제목으로 색을 정해 그 자리에
+ * 세운다 — 표지 없는 책이 흔하므로, 빈 자리가 사고처럼 보이면 안 된다.
  */
 import ListLayout from '../layouts/ListLayout.astro';
 import EmptyState from '../components/EmptyState.astro';
 import { getVisibleBooks, groupBooksByYear } from '../lib/books';
+import { spineTitle, spineTone } from '../lib/book-shelf';
 import { getTagGroups } from '../lib/content';
 import { postPath, tagPath } from '../lib/routes';
 import { toSlug } from '../lib/slug';
@@ -43,43 +47,55 @@ const FORMAT_LABELS = { ebook: '전자책', paper: '종이책', audio: '오디�
       <EmptyState message="아직 공개된 독서 기록이 없습니다." />
     ) : (
       groups.map((group) => (
-        <section class="book-year" aria-labelledby={`books-${group.year ?? 'unknown'}`}>
-          <h2 id={`books-${group.year ?? 'unknown'}`} class="book-year__heading">
+        <section class="shelf" aria-labelledby={`books-${group.year ?? 'unknown'}`}>
+          <h2 id={`books-${group.year ?? 'unknown'}`} class="shelf__heading">
             {group.year === null ? '연도 미상' : `${group.year}년`}
-            <span class="book-year__count">{group.books.length}권</span>
+            <span class="shelf__count">{group.books.length}권</span>
           </h2>
 
-          <ol class="book-list">
+          <ul class="shelf__row">
             {group.books.map((book) => (
-              <li class="book">
-                {book.data.cover && (
-                  <img
-                    class="book__cover"
-                    src={book.data.cover.src}
-                    alt={`${book.data.title} 표지`}
-                    width={book.data.cover.width}
-                    height={book.data.cover.height}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                )}
-                <div class="book__body">
-                  <h3 class="book__title">{book.data.title}</h3>
-                  <p class="book__authors">
+              <li class="book-card">
+                <div class="book-card__frame">
+                  {book.data.cover ? (
+                    <img
+                      class="book-card__cover"
+                      src={book.data.cover.src}
+                      alt={`${book.data.title} 표지`}
+                      width={book.data.cover.width}
+                      height={book.data.cover.height}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    /* 표지가 없는 책. 읽는 사람에게는 그림이 아니라 글자이므로 이미지로 흉내내지 않는다. */
+                    <div
+                      class={`book-card__blank book-card__blank--t${spineTone(book.data.title)}`}
+                    >
+                      <p class="book-card__blank-title">{spineTitle(book.data.title)}</p>
+                      <p class="book-card__blank-author">{book.data.authors[0]}</p>
+                    </div>
+                  )}
+                  {book.data.status === 'reading' && <p class="book-card__now">읽는 중</p>}
+                </div>
+
+                <div class="book-card__body">
+                  <h3 class="book-card__title">{book.data.title}</h3>
+                  <p class="book-card__authors">
                     {book.data.authors.join(', ')}
                     {book.data.translators.length > 0 &&
                       ` · ${book.data.translators.join(', ')} 옮김`}
                   </p>
-                  {book.data.oneLiner && <p class="book__one-liner">{book.data.oneLiner}</p>}
-                  <p class="book__meta">
-                    <span class={`book__status book__status--${book.data.status}`}>
-                      {STATUS_LABELS[book.data.status]}
-                    </span>
+                  <p class="book-card__meta">
+                    {book.data.status !== 'reading' && (
+                      <span class="book-card__status">{STATUS_LABELS[book.data.status]}</span>
+                    )}
                     <span>{FORMAT_LABELS[book.data.format]}</span>
                     {book.data.rating && <span>★ {book.data.rating}/5</span>}
                   </p>
+                  {book.data.oneLiner && <p class="book-card__one-liner">{book.data.oneLiner}</p>}
                   {book.data.tags.length > 0 && (
-                    <ul class="book__tags">
+                    <ul class="book-card__tags">
                       {book.data.tags.map((tag) =>
                         linkableTagSlugs.has(toSlug(tag)) ? (
                           <li>
@@ -96,7 +112,7 @@ const FORMAT_LABELS = { ebook: '전자책', paper: '종이책', audio: '오디�
                     </ul>
                   )}
                   {book.data.relatedPost && (
-                    <p class="book__related">
+                    <p class="book-card__related">
                       <a href={postPath(book.data.relatedPost)} class="home-text-link">
                         이 책에 대해 쓴 글 →
                       </a>
@@ -105,7 +121,7 @@ const FORMAT_LABELS = { ebook: '전자책', paper: '종이책', audio: '오디�
                 </div>
               </li>
             ))}
-          </ol>
+          </ul>
         </section>
       ))
     )
