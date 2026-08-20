@@ -23,3 +23,37 @@ const REQUIRED_RULES = [
 export function verifyBaseStyles(css) {
   return REQUIRED_RULES.filter(([needle]) => !css.includes(needle)).map(([, message]) => message);
 }
+
+/**
+ * 코드 블록이 화면 밖으로 나가지 않는지 확인한다 (NOR-150).
+ *
+ * 코드는 본문보다 넓은 면이지만, 넓힐 자리가 없는 화면에서까지 넓히면 **페이지 전체에 가로
+ * 스크롤**이 생긴다. 실제로 그런 적이 있다 — 여백을 `4vw` 로 두는 바람에 화면이 400~980px 일 때
+ * 글의 좌우 여백(16px)보다 커져서, 820px 화면에서 코드가 17px 씩 잘려 나갔다.
+ *
+ * 넓힘값은 **화면 크기에 비례하면 안 된다**. 넓힐 자리가 생기는 폭에서 미디어 쿼리로 한 번에
+ * 바꾸는 것만 안전하다.
+ *
+ * @param {string} css `src/styles/global.css` 내용
+ * @returns {string[]} 위반 목록. 비어 있으면 통과.
+ */
+export function verifyCodeBleed(css) {
+  const problems = [];
+  const declarations = [...css.matchAll(/--code-bleed:\s*([^;]+);/gu)].map(([, value]) =>
+    value.trim(),
+  );
+
+  if (declarations.length === 0) {
+    problems.push('code bleed variable is missing');
+    return problems;
+  }
+  if (declarations[0] !== '0px') {
+    problems.push('code bleed must start at 0 — narrow screens have no room to widen into');
+  }
+  for (const value of declarations) {
+    if (/\d\s*(vw|vi|cqw|cqi)\b/u.test(value)) {
+      problems.push(`code bleed must not scale with the viewport: ${value}`);
+    }
+  }
+  return problems;
+}
