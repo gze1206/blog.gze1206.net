@@ -29,9 +29,12 @@
   --color-scrim: var(--theme-scrim);
   --color-danger: var(--theme-danger);
   --spacing-page: clamp(1rem, 2vw, 1.5rem);
-  /* 읽기 열 · 목차/코드 열. 목업에서 확정한 폭 위계(NOR-149·NOR-150). */
+  /* 읽기 열. 글 상세와 목록 페이지가 **같은 하나의 열**을 쓴다(NOR-150).
+     한때 제목·목차·코드를 저마다 다른 폭에 두었는데, 화면에서는 의도가 아니라 어긋난 줄로
+     보였다 — 한 페이지 안에 왼쪽 끝이 세 군데였다. */
   --spacing-reading: 56.25rem;
-  --spacing-reading-wide: 61.25rem;
+  /* 읽기 열 + 좌우 여백. 바깥 상자의 폭이다. */
+  --spacing-reading-frame: calc(var(--spacing-reading) + 2rem);
   /* 헤더·푸터가 쓰는 바깥 격자. 읽기 열보다 넓어서 브랜드와 내비게이션이 가장자리에 선다. */
   --spacing-shell: 75rem;
 }
@@ -168,7 +171,7 @@ body {
 /* 목록 성격 페이지의 골격 (NOR-151). 글 상세와 같은 폭 위에 서서 페이지를 오갈 때
    본문 열이 흔들리지 않는다. */
 .list-page {
-  width: min(100%, var(--spacing-reading-wide));
+  width: min(100%, var(--spacing-reading-frame));
   margin-inline: auto;
   padding-inline: 1rem;
   padding-block: clamp(2.5rem, 6vw, 4rem) clamp(3rem, 8vw, 5rem);
@@ -987,20 +990,15 @@ summary:focus-visible {
 }
 
 /* --- 글 상세 읽기 레이아웃 (NOR-150) ---
-   폭이 세 단계다. 제목·목차는 넓게(`--spacing-reading-wide`), 본문은 한 줄이 길어지지 않도록
-   좁게(`--spacing-reading`), 코드는 본문보다 좌우로 더 나가게 둔다. 세 폭이 **의도적으로**
-   다르다는 것이 보여야 각 요소의 역할이 읽힌다. */
+   제목·목차·본문·코드·댓글이 **한 열**을 쓴다. 예전에는 셋으로 나뉘어 있었고(제목·목차 948,
+   본문 900, 코드 980) 역할의 위계를 폭으로 말하려던 것이었지만, 읽는 쪽에서는 위계가 아니라
+   **어긋난 줄**로 보였다 — 한 화면 안에 왼쪽 끝이 세 군데였다. 종류가 다르다는 것은 코드 면의
+   배경색과 테두리가 이미 말하고 있으므로, 폭까지 동원할 필요가 없다. */
 .article {
-  width: min(100%, var(--spacing-reading-wide));
+  width: min(100%, var(--spacing-reading-frame));
   margin-inline: auto;
   padding-inline: 1rem;
   padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(4rem, 10vw, 8rem);
-}
-
-.article__body,
-.article__after {
-  width: min(100%, var(--spacing-reading));
-  margin-inline: auto;
 }
 
 .article__head {
@@ -1378,35 +1376,6 @@ summary:focus-visible {
     font-weight: var(--shiki-dark-font-weight);
     text-decoration: var(--shiki-dark-text-decoration);
   }
-}
-
-/* --- 코드 블록의 폭 (NOR-150) ---
-   코드는 본문과 다른 종류의 내용이라 읽기 열보다 넓은 별도의 면으로 분리한다. 넓은 화면에서
-   좌우 40px 씩 더 나가 `.article` 의 가장자리에 선다(900 → 980).
-
-   좁은 화면에서는 **아예 나가지 않는다**. 본문이 이미 화면을 꽉 채우고 있어 넓힐 자리가 없고,
-   폭의 위계로 말할 것도 없다. 억지로 밀어내면 본문만 여백을 갖고 코드는 화면 끝에 붙어 줄이
-   어긋나 보인다. 예전 값(`4vw`)은 그 정도가 아니라 **화면 밖으로 삐져나가** 페이지 전체에 가로
-   스크롤을 만들었다 — 820px 화면에서 17px 이 잘려 나갔다.
-
-   경계는 `.article`(61.25rem)이 화면에 다 들어가는 지점이지만, 세로 스크롤바가 있으면 `100vw`
-   가 실제 배치 폭보다 넓게 잡히므로 한 뼘 뒤(62.5rem)에서 바꾼다. 그 사이 구간에서는 코드가
-   본문과 나란할 뿐, 삐져나가지는 않는다.
-
-   본문 **직계 자식**만 대상이다 — 콜아웃이나 목록 안의 코드까지 밀어내면 그 상자가 깨진다. */
-.post-body {
-  --code-bleed: 0px;
-}
-
-@media (min-width: 62.5rem) {
-  .post-body {
-    --code-bleed: 2.5rem;
-  }
-}
-
-:is(.post-body, .post-body > article) > :is(.code-block, pre.astro-code) {
-  width: calc(100% + 2 * var(--code-bleed));
-  margin-inline: calc(-1 * var(--code-bleed));
 }
 
 /* 코드는 본문 글자 크기를 물려받지 않는다. 물려받으면 좁은 화면에서 등폭 글자가 본문보다
