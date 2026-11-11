@@ -18,6 +18,8 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@gze1206/content-contract": "workspace:*",
+    "zod": "catalog:",
     "@astrojs/markdoc": "^2.0.3",
     "@astrojs/markdown-remark": "^7.2.1",
     "@astrojs/rss": "4.0.19",
