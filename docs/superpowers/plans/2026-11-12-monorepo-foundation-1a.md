@@ -17,7 +17,7 @@
 - Vitest 는 4.x 를 유지한다(5.x 업그레이드는 하위 프로젝트 2).
 - 패키지 이름: `@gze1206/blog`, `@gze1206/workbench`, `@gze1206/content-contract`, `@gze1206/config`, `@gze1206/repo-tools`. 모두 `"private": true`.
 - 의존 방향: `apps/*` → `packages/*` 만. 앱끼리, 패키지→앱 import 금지.
-- 커밋: `<gitmoji> <type>(<scope>): <한국어 요약> (NOR-195)` + 필요 시 `TDD: red|green|refactor|regression` 과 `Spec: NOR-195 AC-n` trailer + `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- 커밋: `<gitmoji> <type>(<scope>): <한국어 요약> (NOR-195)` + 필요 시 `TDD: red|green|refactor|regression` 과 `Spec: NOR-195 AC-n` trailer + `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. **trailer 는 반드시 마지막 한 단락에 모은다** — git 은 마지막 단락만 trailer 로 읽는다. 예: `-m $'TDD: red\nSpec: NOR-195 AC-4\nCo-Authored-By: …'`.
 - red 커밋은 **테스트 실패를 직접 실행해 확인한 뒤** 만든다. 처음부터 통과하는 테스트는 `TDD: regression`.
 - 공개 저장소로 push·저장소 archive·GHCR 권한·ruleset·Linear 생성은 **실행 직전 사용자 확인**.
 - 이 계획은 블로그 동작을 바꾸지 않는다. Task 3 의 이동은 경로에서 나오는 해시(아일랜드 `uid`, 이미지 변환 파일명)를 바꾸고, Tailwind 자동 소스 감지 범위를 저장소 루트에서 `apps/blog` 로 좁혀 블로그가 쓰지 않는 `.contents`·`.outline` 유틸리티 2개를 뺀다. 이 차이는 경로 해시를 정규화하면 0 이다(2026-11-12 확인). 그래서 Task 3 이후의 바이트 비교 기준선은 `$BASE/post-move.sha` 다.
@@ -257,7 +257,7 @@ git add -A
 git status --short | grep -v '^R ' | head      # 이동 외 변경은 package.json·lock·ignore 뿐이어야 한다
 git commit -m "♻️ refactor(infra): 블로그를 apps/blog 로 옮긴다 (NOR-195)" \
   -m "파일 이동과 워크스페이스 골격만 담는다. dist 는 이동 전과 바이트 단위로 같다." \
-  -m "Spec: NOR-195 AC-10" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'Spec: NOR-195 AC-10\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 ---
@@ -760,7 +760,7 @@ Expected: FAIL — `Failed to load url ./boundaries.ts` 또는 `Cannot find modu
 ```bash
 git add packages/repo-tools pnpm-lock.yaml
 git commit -m "✅ test(infra): 패키지 경계를 벗어나는 import 를 잡는 테스트를 쓴다 (NOR-195)" \
-  -m "TDD: red" -m "Spec: NOR-195 AC-1" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: red\nSpec: NOR-195 AC-1\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 - [ ] **Step 5: 최소 구현**
@@ -911,7 +911,7 @@ Expected: `0 violations`, typecheck·lint 통과.
 ```bash
 git add packages/repo-tools package.json
 git commit -m "✨ feat(infra): 패키지 경계 검사기를 만든다 (NOR-195)" \
-  -m "TDD: green" -m "Spec: NOR-195 AC-1" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: green\nSpec: NOR-195 AC-1\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 ---
@@ -982,7 +982,7 @@ Expected: FAIL — `Failed to load url ./spec-check.ts`.
 ```bash
 git add packages/repo-tools/src/spec-check.test.ts
 git commit -m "✅ test(infra): 테스트와 이어지지 않은 수용 기준을 찾는 테스트를 쓴다 (NOR-195)" \
-  -m "TDD: red" -m "Spec: NOR-195 AC-2" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: red\nSpec: NOR-195 AC-2\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 - [ ] **Step 4: 최소 구현**
@@ -1092,7 +1092,7 @@ Expected: `NOR-195 AC-3` ~ `AC-9` 가 unlinked 로 나오고 `exit=1`. 정상이
 ```bash
 git add packages/repo-tools package.json
 git commit -m "✨ feat(infra): 수용 기준과 테스트의 연결을 검사한다 (NOR-195)" \
-  -m "TDD: green" -m "Spec: NOR-195 AC-2" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: green\nSpec: NOR-195 AC-2\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 ---
@@ -1290,7 +1290,7 @@ Expected: FAIL — `Failed to load url ./classify.ts`.
 ```bash
 git add packages/repo-tools/src/tdd/tdd.test.ts
 git commit -m "✅ test(infra): red→green 증거를 판정하는 테스트를 쓴다 (NOR-195)" \
-  -m "TDD: red" -m "Spec: NOR-195 AC-3" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: red\nSpec: NOR-195 AC-3\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 - [ ] **Step 4: 구현 — `trailers.ts`**
@@ -1577,9 +1577,8 @@ process.exit(result.ok ? 0 : 1);
 
 ```bash
 pnpm --filter @gze1206/repo-tools typecheck && pnpm --filter @gze1206/repo-tools lint
-git stash -u   # 작업 트리를 깨끗하게 (worktree 는 커밋만 본다)
-pnpm tdd:evidence --base v4
-git stash pop
+# stash 하지 않는다. 검사는 커밋마다 임시 worktree 를 만들므로 작업 트리 상태와 무관하다.
+node packages/repo-tools/src/cli/tdd-evidence.ts --base v4
 ```
 
 Expected: Task 6·7 의 red 커밋 두 개가 `✓ … missing-module → green` 으로 나오고 exit 0. (Task 8 자신의 red 는 아직 green 커밋 전이라 `뒤따르는 green 이 없다` 로 나온다. 정상이다.)
@@ -1589,7 +1588,7 @@ Expected: Task 6·7 의 red 커밋 두 개가 `✓ … missing-module → green`
 ```bash
 git add packages/repo-tools package.json
 git commit -m "✨ feat(infra): red→green 증거를 커밋 이력에서 검증한다 (NOR-195)" \
-  -m "TDD: green" -m "Spec: NOR-195 AC-3" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: green\nSpec: NOR-195 AC-3\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 pnpm tdd:evidence --base v4
 ```
 
@@ -1737,7 +1736,7 @@ Expected: FAIL — `Failed to load url ./index.js`.
 ```bash
 git add packages/content-contract pnpm-lock.yaml
 git commit -m "✅ test(contract): 글 계약과 블로그 레이아웃의 테스트를 쓴다 (NOR-195)" \
-  -m "TDD: red" -m "Spec: NOR-195 AC-4, NOR-195 AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: red\nSpec: NOR-195 AC-4, NOR-195 AC-7\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 - [ ] **Step 4: 구현**
@@ -1873,7 +1872,7 @@ Expected: PASS (7 tests), typecheck·lint 통과. `satisfies` 에서 타입 오�
 ```bash
 git add packages/content-contract
 git commit -m "✨ feat(contract): 글·시리즈 계약과 블로그 레이아웃을 한 곳에 둔다 (NOR-195)" \
-  -m "TDD: green" -m "Spec: NOR-195 AC-4, NOR-195 AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: green\nSpec: NOR-195 AC-4, NOR-195 AC-7\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 - [ ] **Step 7: 실제 글 전수 검사 (regression)**
@@ -1913,7 +1912,7 @@ Expected: PASS. 실패하면 그 글이 계약 밖의 키를 쓰거나 빈 값�
 ```bash
 git add packages/content-contract/src/corpus.test.ts
 git commit -m "✅ test(contract): 블로그의 모든 글이 strict 계약을 지키는지 본다 (NOR-195)" \
-  -m "TDD: regression" -m "Spec: NOR-195 AC-9" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: regression\nSpec: NOR-195 AC-9\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 ---
@@ -1960,7 +1959,7 @@ Expected: zod 는 한 버전만 보인다(두 버전이면 catalog 범위를 ast
 ```bash
 git add apps/blog/package.json apps/blog/src/content/contract-wiring.test.ts pnpm-lock.yaml
 git commit -m "✅ test(blog): 블로그가 계약 패키지의 스키마를 쓰는지 본다 (NOR-195)" \
-  -m "TDD: red" -m "Spec: NOR-195 AC-5" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: red\nSpec: NOR-195 AC-5\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 - [ ] **Step 3: 구현**
@@ -2001,7 +2000,7 @@ Expected: `389 passed`(기존 388 + 1), `0 errors`, `IDENTICAL`. 다르면 계�
 git add apps/blog
 git commit -m "♻️ refactor(blog): 글·시리즈 스키마를 계약 패키지에서 가져온다 (NOR-195)" \
   -m "dist 는 계약 적용 전과 바이트 단위로 같다." \
-  -m "TDD: green" -m "Spec: NOR-195 AC-5, NOR-195 AC-10" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: green\nSpec: NOR-195 AC-5, NOR-195 AC-10\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 ---
@@ -2055,7 +2054,7 @@ Expected: FAIL — `expected undefined to be 'floating'`.
 ```bash
 git add apps/workbench/package.json apps/workbench/src/core/publishing/publishing.test.ts pnpm-lock.yaml
 git commit -m "✅ test(workbench): 발행하면 초안의 toc 가 사라지는 버그를 재현한다 (NOR-195)" \
-  -m "TDD: red" -m "Spec: NOR-195 AC-6" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: red\nSpec: NOR-195 AC-6\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 - [ ] **Step 3: 구현**
@@ -2119,7 +2118,7 @@ Expected: `233 passed`, typecheck·lint 통과. 기존 테스트 `coerces Blog v
 git add apps/workbench
 git commit -m "🐛 fix(workbench): 발행할 때 초안의 toc 를 지킨다 (NOR-195)" \
   -m "글 계약을 content-contract 에서 가져온다. toc 는 초안에 있을 때만 쓴다." \
-  -m "TDD: green" -m "Spec: NOR-195 AC-6" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: green\nSpec: NOR-195 AC-6\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 - [ ] **Step 6: 회귀 테스트 두 개 (regression)**
@@ -2163,7 +2162,7 @@ Expected: PASS (처음부터 통과 — 회귀 테스트다).
 ```bash
 git add apps/workbench/src/core/publishing/publishing.test.ts
 git commit -m "✅ test(workbench): toc 생략과 블로그 스키마 왕복을 지킨다 (NOR-195)" \
-  -m "TDD: regression" -m "Spec: NOR-195 AC-6, NOR-195 AC-8" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: regression\nSpec: NOR-195 AC-6, NOR-195 AC-8\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 ---
@@ -2208,7 +2207,7 @@ Expected: FAIL — config 테스트가 `expected 'main' to be 'v4'`, publicBlog�
 ```bash
 git add apps/workbench/src/server
 git commit -m "✅ test(workbench): 발행 경로와 기본 브랜치를 블로그 레이아웃에서 기대한다 (NOR-195)" \
-  -m "TDD: red" -m "Spec: NOR-195 AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: red\nSpec: NOR-195 AC-7\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 - [ ] **Step 3: 구현**
@@ -2236,7 +2235,7 @@ Expected: 전부 통과.
 ```bash
 git add apps/workbench
 git commit -m "✨ feat(workbench): 발행 경로와 기본 브랜치를 블로그 레이아웃에서 가져온다 (NOR-195)" \
-  -m "TDD: green" -m "Spec: NOR-195 AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: green\nSpec: NOR-195 AC-7\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 - [ ] **Step 6: slug 규칙 중복 제거 (refactor)**
@@ -2247,7 +2246,7 @@ git commit -m "✨ feat(workbench): 발행 경로와 기본 브랜치를 블로�
 pnpm --filter @gze1206/workbench test src/core/import
 git add apps/workbench/src/core/import/blogImport.ts
 git commit -m "♻️ refactor(workbench): slug 규칙을 계약에서 가져온다 (NOR-195)" \
-  -m "TDD: refactor" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: refactor\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 - [ ] **Step 7: `verify` 에 `spec:check` 를 넣는다**
@@ -2343,7 +2342,7 @@ Expected: 3 passed. 선택자가 실제 마크업과 다르면 `apps/blog/src/pa
 ```bash
 git add apps/blog .gitignore pnpm-lock.yaml
 git commit -m "✅ test(blog): 빌드 산출물을 띄워 보는 e2e 골격을 둔다 (NOR-195)" \
-  -m "TDD: regression" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'TDD: regression\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 `TDD: regression` 커밋의 e2e 파일은 `tdd-evidence` 대상(`*.test.*`)이 아니므로 검사에 영향이 없다.
@@ -2475,7 +2474,7 @@ Expected: 이미지 크기 출력(기존 510MB 와 비교해 PR 에 적는다), 
 git add .dockerignore apps/workbench
 git commit -m "👷 ci(workbench): 모노레포에서 arm64 이미지를 빌드한다 (NOR-195)" \
   -m "계약 패키지는 서버 번들에 인라인한다. Node 26 이미지에는 corepack 이 없어 packageManager 의 pnpm 을 설치한다." \
-  -m "Spec: NOR-195 AC-11" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'Spec: NOR-195 AC-11\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 ---
@@ -2649,7 +2648,7 @@ jobs:
 pnpm dlx @action-validator/cli .github/workflows/ci.yml .github/workflows/workbench-image.yml
 git add .github
 git commit -m "👷 ci(infra): 모노레포 CI 와 워크벤치 arm64 이미지 게시를 만든다 (NOR-195)" \
-  -m "Spec: NOR-195 AC-12" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m $'Spec: NOR-195 AC-12\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>'
 ```
 
 Expected: validator 오류 없음. (`@action-validator/cli` 를 쓸 수 없으면 `gh workflow view` 는 push 후에만 되므로, Task 16 의 PR CI 결과로 확인한다.)
