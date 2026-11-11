@@ -42,7 +42,7 @@ Cloudflare Access 정책은 저장소에 기록하지 않는다. 인증·저장 
 
 ## 운영 절차와 미완료 승인
 
-[CMS 원격 작성과 안전한 발행](../operations/cms-authoring.md)은 인증, 콘텐츠 브랜치, preview 검토,
+CMS 원격 작성과 안전한 발행 문서(NOR-142 에서 삭제)는 인증, 콘텐츠 브랜치, preview 검토,
 `draft` 제외, `v4` 병합까지의 소유자 절차를 정의한다. `.env.example`에는 필요한 변수 이름만 두며,
 실제 값은 Cloudflare Worker의 암호화된 비밀값/환경 변수로만 관리한다.
 
