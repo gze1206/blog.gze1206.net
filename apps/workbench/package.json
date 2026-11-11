@@ -30,6 +30,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@gze1206/content-contract": "workspace:*",
     "@eslint/js": "catalog:",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "catalog:",

@@ -229,6 +229,9 @@ importers:
       '@gze1206/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@gze1206/content-contract':
+        specifier: workspace:*
+        version: link:../../packages/content-contract
       '@playwright/test':
         specifier: ^1.62.1
         version: 1.65.0

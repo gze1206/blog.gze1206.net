@@ -21,6 +21,23 @@ publishedAt: 2026-08-12
 본문입니다.
 `;
 
+const tocDraft = validDraft.replace(
+  'publishedAt: 2026-08-12\n',
+  'publishedAt: 2026-08-12\ntoc: floating\n',
+);
+
+describe('toc', () => {
+  it('NOR-195 AC-6: 초안의 toc 를 발행 결과에 남긴다', () => {
+    const result = transformPublicDraft({
+      source: tocDraft,
+      privateRoot: '/srv/private-workbench',
+      assets: [],
+    });
+    expect(result.metadata.toc).toBe('floating');
+    expect(result.source).toMatch(/^toc: floating$/mu);
+  });
+});
+
 describe('public post contract', () => {
   it.each([
     ['uppercase slug', { slug: 'Unsafe-Slug' }],
