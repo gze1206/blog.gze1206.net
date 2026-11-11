@@ -12,12 +12,12 @@
 
 ## Global Constraints
 
-- **`NOR-A`** 는 Task 0 에서 만든 Linear 일감 번호다. 이 문서의 `NOR-A` 를 전부 그 번호로 바꿔 쓴다(파일명·테스트 이름·커밋 포함).
+- **`NOR-195`** 는 Task 0 에서 만든 Linear 일감 번호다. 이 문서의 `NOR-195` 를 전부 그 번호로 바꿔 쓴다(파일명·테스트 이름·커밋 포함).
 - Node `26`, pnpm `11.15.0`(`packageManager`), TypeScript `6.0.3` 고정. TypeScript 7 은 `typescript-eslint`(`<6.1.0`)·`@astrojs/check`(`^5 || ^6`)가 지원하지 않으므로 쓰지 않는다.
 - Vitest 는 4.x 를 유지한다(5.x 업그레이드는 하위 프로젝트 2).
 - 패키지 이름: `@gze1206/blog`, `@gze1206/workbench`, `@gze1206/content-contract`, `@gze1206/config`, `@gze1206/repo-tools`. 모두 `"private": true`.
 - 의존 방향: `apps/*` → `packages/*` 만. 앱끼리, 패키지→앱 import 금지.
-- 커밋: `<gitmoji> <type>(<scope>): <한국어 요약> (NOR-A)` + 필요 시 `TDD: red|green|refactor|regression` 과 `Spec: NOR-A AC-n` trailer + `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- 커밋: `<gitmoji> <type>(<scope>): <한국어 요약> (NOR-195)` + 필요 시 `TDD: red|green|refactor|regression` 과 `Spec: NOR-195 AC-n` trailer + `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - red 커밋은 **테스트 실패를 직접 실행해 확인한 뒤** 만든다. 처음부터 통과하는 테스트는 `TDD: regression`.
 - 공개 저장소로 push·저장소 archive·GHCR 권한·ruleset·Linear 생성은 **실행 직전 사용자 확인**.
 - 이 계획은 블로그 동작을 바꾸지 않는다. 블로그 `dist/` 는 Task 3 이후, Task 10 이후 두 번 기준선과 바이트 비교한다.
@@ -50,7 +50,7 @@ apps/workbench/                (스냅샷: src, e2e, test, workspace-seed, deplo
 packages/config/               tsconfig.base.json, eslint.js, package.json
 packages/repo-tools/src/       boundaries.ts, spec-check.ts, tdd/{trailers,plan,classify,run}.ts, cli/*.ts
 packages/content-contract/src/ slug.ts, post.ts, series.ts, layout.ts, index.ts (+ *.test.ts)
-docs/spec/repo/NOR-A-monorepo-foundation.md
+docs/spec/repo/NOR-195-monorepo-foundation.md
 docs/spec/blog/                (기존 docs/spec/NOR-*.md 이동)
 docs/spec/workbench/           (워크벤치 spec·specs 이동)
 docs/operations/workbench/     (워크벤치 운영 문서, 검수 후)
@@ -66,14 +66,14 @@ docs/decisions/0017-…          (ADR)
 
 - [ ] **Step 1: Linear 일감 생성 (사용자 확인 후)**
 
-사용자에게 "Linear 팀 `NOR` 에 '모노레포 기반 (하위 프로젝트 1a)' 일감을 만들어도 되는지" 확인한다. 승인되면 `orca linear --help` 로 생성 명령을 확인해 만들고, 받은 번호를 `NOR-A` 로 쓴다.
+사용자에게 "Linear 팀 `NOR` 에 '모노레포 기반 (하위 프로젝트 1a)' 일감을 만들어도 되는지" 확인한다. 승인되면 `orca linear --help` 로 생성 명령을 확인해 만들고, 받은 번호를 `NOR-195` 로 쓴다.
 
 - [ ] **Step 2: 작업 브랜치**
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
 git switch docs/monorepo-foundation-design
-git switch -c feat/nor-A-monorepo-foundation
+git switch -c feat/nor-195-monorepo-foundation
 ```
 
 설계·계획 문서 커밋을 포함한 채 시작한다. PR base 는 `v4`.
@@ -93,12 +93,12 @@ node -v                      # v26.x
 
 **Files:**
 
-- Create: `docs/spec/repo/NOR-A-monorepo-foundation.md`
+- Create: `docs/spec/repo/NOR-195-monorepo-foundation.md`
 
 - [ ] **Step 1: spec 작성**
 
 ```markdown
-# NOR-A — 모노레포 기반 (하위 프로젝트 1a)
+# NOR-195 — 모노레포 기반 (하위 프로젝트 1a)
 
 - 설계: [../../superpowers/specs/2026-11-12-monorepo-foundation-design.md](../../superpowers/specs/2026-11-12-monorepo-foundation-design.md)
 - 계획: [../../superpowers/plans/2026-11-12-monorepo-foundation-1a.md](../../superpowers/plans/2026-11-12-monorepo-foundation-1a.md)
@@ -122,8 +122,8 @@ node -v                      # v26.x
 - [ ] **Step 2: 커밋**
 
 ```bash
-git add docs/spec/repo/NOR-A-monorepo-foundation.md
-git commit -m "📝 docs(infra): 모노레포 기반 수용 기준을 정한다 (NOR-A)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git add docs/spec/repo/NOR-195-monorepo-foundation.md
+git commit -m "📝 docs(infra): 모노레포 기반 수용 기준을 정한다 (NOR-195)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -255,9 +255,9 @@ Expected: 둘 다 통과.
 ```bash
 git add -A
 git status --short | grep -v '^R ' | head      # 이동 외 변경은 package.json·lock·ignore 뿐이어야 한다
-git commit -m "♻️ refactor(infra): 블로그를 apps/blog 로 옮긴다 (NOR-A)" \
+git commit -m "♻️ refactor(infra): 블로그를 apps/blog 로 옮긴다 (NOR-195)" \
   -m "파일 이동과 워크스페이스 골격만 담는다. dist 는 이동 전과 바이트 단위로 같다." \
-  -m "Spec: NOR-A AC-10" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m "Spec: NOR-195 AC-10" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -347,7 +347,7 @@ Expected: 출력 없음. `docs/superpowers/specs/2026-11-12-monorepo-foundation-
 
 ```bash
 git add -A
-git commit -m "🎉 feat(workbench): personal-workbench 스냅샷을 apps/workbench 로 들인다 (NOR-A)" \
+git commit -m "🎉 feat(workbench): personal-workbench 스냅샷을 apps/workbench 로 들인다 (NOR-195)" \
   -m "원본: github.com/gze1206/personal-workbench (private) 8453402. 이력은 공개하지 않고 현재 트리만 검수해 가져온다. docs/_temp, dist, test-results, .env 는 제외했다. gitleaks·식별 정보 검색·운영 문서 수동 검토를 통과했다." \
   -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
@@ -597,9 +597,9 @@ Expected: 패키지별 커버리지 요약이 나오고(기준선으로 PR 에 �
 
 ```bash
 git add mise.toml pnpm-workspace.yaml package.json packages/config .prettierrc apps/*/package.json apps/*/eslint.config.* apps/workbench pnpm-lock.yaml
-git commit -m "🔧 chore(infra): 툴체인을 Node 26·TS 6.0.3·공통 설정으로 맞춘다 (NOR-A)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "🔧 chore(infra): 툴체인을 Node 26·TS 6.0.3·공통 설정으로 맞춘다 (NOR-195)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 git add apps/blog
-git commit -m "🐛 fix(blog): TS 6 타입 검사 오류 8건을 고친다 (NOR-A)" \
+git commit -m "🐛 fix(blog): TS 6 타입 검사 오류 8건을 고친다 (NOR-195)" \
   -m "astro check 를 처음 도입하면서 드러난 오류다. 페이지 산출물은 바뀌지 않는다." \
   -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
@@ -680,7 +680,7 @@ const packages = [
 ];
 
 describe('extractImportSpecifiers', () => {
-  it('NOR-A AC-1: 정적·동적·부수효과·재수출 import 를 모두 찾는다', () => {
+  it('NOR-195 AC-1: 정적·동적·부수효과·재수출 import 를 모두 찾는다', () => {
     const source = [
       "import a from './a.ts';",
       'import { b } from "../b";',
@@ -701,7 +701,7 @@ describe('extractImportSpecifiers', () => {
 });
 
 describe('findBoundaryViolations', () => {
-  it('NOR-A AC-1: 패키지 안의 상대 import 와 packages 이름 import 는 허용한다', () => {
+  it('NOR-195 AC-1: 패키지 안의 상대 import 와 packages 이름 import 는 허용한다', () => {
     expect(
       findBoundaryViolations(
         [
@@ -714,7 +714,7 @@ describe('findBoundaryViolations', () => {
     ).toEqual([]);
   });
 
-  it('NOR-A AC-1: 패키지 디렉터리를 벗어나는 상대 import 를 보고한다', () => {
+  it('NOR-195 AC-1: 패키지 디렉터리를 벗어나는 상대 import 를 보고한다', () => {
     expect(
       findBoundaryViolations(
         [{ file: 'apps/blog/src/lib/a.ts', specifier: '../../../workbench/src/core/x.ts' }],
@@ -729,7 +729,7 @@ describe('findBoundaryViolations', () => {
     ]);
   });
 
-  it('NOR-A AC-1: apps 패키지를 이름으로 import 하면 보고한다', () => {
+  it('NOR-195 AC-1: apps 패키지를 이름으로 import 하면 보고한다', () => {
     expect(
       findBoundaryViolations(
         [{ file: 'packages/content-contract/src/x.ts', specifier: '@gze1206/blog/src/y' }],
@@ -759,8 +759,8 @@ Expected: FAIL — `Failed to load url ./boundaries.ts` 또는 `Cannot find modu
 
 ```bash
 git add packages/repo-tools pnpm-lock.yaml
-git commit -m "✅ test(infra): 패키지 경계를 벗어나는 import 를 잡는 테스트를 쓴다 (NOR-A)" \
-  -m "TDD: red" -m "Spec: NOR-A AC-1" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✅ test(infra): 패키지 경계를 벗어나는 import 를 잡는 테스트를 쓴다 (NOR-195)" \
+  -m "TDD: red" -m "Spec: NOR-195 AC-1" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 - [ ] **Step 5: 최소 구현**
@@ -910,8 +910,8 @@ Expected: `0 violations`, typecheck·lint 통과.
 
 ```bash
 git add packages/repo-tools package.json
-git commit -m "✨ feat(infra): 패키지 경계 검사기를 만든다 (NOR-A)" \
-  -m "TDD: green" -m "Spec: NOR-A AC-1" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✨ feat(infra): 패키지 경계 검사기를 만든다 (NOR-195)" \
+  -m "TDD: green" -m "Spec: NOR-195 AC-1" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -945,7 +945,7 @@ const spec = [
 ].join('\n');
 
 describe('parseSpecCriteria', () => {
-  it('NOR-A AC-2: 파일명의 일감 번호와 목록의 AC 를 읽고 manual 을 구분한다', () => {
+  it('NOR-195 AC-2: 파일명의 일감 번호와 목록의 AC 를 읽고 manual 을 구분한다', () => {
     expect(parseSpecCriteria('docs/spec/repo/NOR-12-example.md', spec)).toEqual([
       { ticket: 'NOR-12', id: 'AC-1', manual: false, specPath: 'docs/spec/repo/NOR-12-example.md' },
       { ticket: 'NOR-12', id: 'AC-2', manual: true, specPath: 'docs/spec/repo/NOR-12-example.md' },
@@ -953,13 +953,13 @@ describe('parseSpecCriteria', () => {
     ]);
   });
 
-  it('NOR-A AC-2: 일감 번호가 없는 파일은 비어 있다', () => {
+  it('NOR-195 AC-2: 일감 번호가 없는 파일은 비어 있다', () => {
     expect(parseSpecCriteria('docs/spec/README.md', spec)).toEqual([]);
   });
 });
 
 describe('findUnlinkedCriteria', () => {
-  it('NOR-A AC-2: 테스트 이름에 연결되지 않은 자동 기준만 보고한다', () => {
+  it('NOR-195 AC-2: 테스트 이름에 연결되지 않은 자동 기준만 보고한다', () => {
     const criteria = parseSpecCriteria('docs/spec/repo/NOR-12-example.md', spec);
     const references = findCriterionReferences(
       "it('NOR-12 AC-1: 첫 번째', () => {});\nit('NOR-13 AC-3: 다른 일감', () => {});",
@@ -981,8 +981,8 @@ Expected: FAIL — `Failed to load url ./spec-check.ts`.
 
 ```bash
 git add packages/repo-tools/src/spec-check.test.ts
-git commit -m "✅ test(infra): 테스트와 이어지지 않은 수용 기준을 찾는 테스트를 쓴다 (NOR-A)" \
-  -m "TDD: red" -m "Spec: NOR-A AC-2" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✅ test(infra): 테스트와 이어지지 않은 수용 기준을 찾는 테스트를 쓴다 (NOR-195)" \
+  -m "TDD: red" -m "Spec: NOR-195 AC-2" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 - [ ] **Step 4: 최소 구현**
@@ -1085,14 +1085,14 @@ process.exit(unlinked.length === 0 ? 0 : 1);
 pnpm spec:check; echo "exit=$?"
 ```
 
-Expected: `NOR-A AC-3` ~ `AC-9` 가 unlinked 로 나오고 `exit=1`. 정상이다.
+Expected: `NOR-195 AC-3` ~ `AC-9` 가 unlinked 로 나오고 `exit=1`. 정상이다.
 
 - [ ] **Step 7: green 커밋**
 
 ```bash
 git add packages/repo-tools package.json
-git commit -m "✨ feat(infra): 수용 기준과 테스트의 연결을 검사한다 (NOR-A)" \
-  -m "TDD: green" -m "Spec: NOR-A AC-2" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✨ feat(infra): 수용 기준과 테스트의 연결을 검사한다 (NOR-195)" \
+  -m "TDD: green" -m "Spec: NOR-195 AC-2" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -1126,7 +1126,7 @@ const RS = '\x1e';
 const US = '\x1f';
 
 describe('parseCommitLog', () => {
-  it('NOR-A AC-3: 커밋마다 TDD·Spec trailer 와 바뀐 파일을 읽는다', () => {
+  it('NOR-195 AC-3: 커밋마다 TDD·Spec trailer 와 바뀐 파일을 읽는다', () => {
     const raw =
       `${RS}aaa${US}✅ test: red${US}red\n${US}NOR-1 AC-2\n\n\napps/blog/src/a.test.ts\n` +
       `${RS}bbb${US}✨ feat: green${US}green${US}\n\napps/blog/src/a.ts\n` +
@@ -1150,7 +1150,7 @@ describe('parseCommitLog', () => {
     ]);
   });
 
-  it('NOR-A AC-3: 모르는 TDD 단계는 거부한다', () => {
+  it('NOR-195 AC-3: 모르는 TDD 단계는 거부한다', () => {
     expect(() => parseCommitLog(`${RS}aaa${US}x${US}blue${US}\n`)).toThrow(
       /unknown TDD phase "blue"/u,
     );
@@ -1166,7 +1166,7 @@ describe('planRedGreenChecks', () => {
     files,
   });
 
-  it('NOR-A AC-3: red 마다 다음 green 과 바뀐 테스트 파일을 짝짓는다', () => {
+  it('NOR-195 AC-3: red 마다 다음 green 과 바뀐 테스트 파일을 짝짓는다', () => {
     expect(
       planRedGreenChecks([
         commit('r1', 'red', ['apps/blog/src/a.test.ts', 'apps/blog/src/a.ts']),
@@ -1180,13 +1180,13 @@ describe('planRedGreenChecks', () => {
     ]);
   });
 
-  it('NOR-A AC-3: 테스트 파일을 바꾸지 않은 red 는 거부한다', () => {
+  it('NOR-195 AC-3: 테스트 파일을 바꾸지 않은 red 는 거부한다', () => {
     expect(() => planRedGreenChecks([commit('r1', 'red', ['apps/blog/src/a.ts'])])).toThrow(
       /r1 changes no test file/u,
     );
   });
 
-  it('NOR-A AC-3: 테스트 파일이 속한 패키지 디렉터리를 찾는다', () => {
+  it('NOR-195 AC-3: 테스트 파일이 속한 패키지 디렉터리를 찾는다', () => {
     expect(packageDirOf('apps/blog/src/a.test.ts')).toBe('apps/blog');
     expect(packageDirOf('packages/repo-tools/src/x.test.ts')).toBe('packages/repo-tools');
     expect(packageDirOf('scripts/x.test.ts')).toBeUndefined();
@@ -1204,7 +1204,7 @@ function report(overrides: Partial<VitestJsonReport>): VitestJsonReport {
 }
 
 describe('classifyRedRun', () => {
-  it('NOR-A AC-3: 단언 실패는 red 로 인정한다', () => {
+  it('NOR-195 AC-3: 단언 실패는 red 로 인정한다', () => {
     expect(
       classifyRedRun(
         report({
@@ -1217,7 +1217,7 @@ describe('classifyRedRun', () => {
     ).toEqual({ kind: 'assertion' });
   });
 
-  it('NOR-A AC-3: 아직 없는 모듈 때문에 못 읽은 테스트는 red 로 인정한다', () => {
+  it('NOR-195 AC-3: 아직 없는 모듈 때문에 못 읽은 테스트는 red 로 인정한다', () => {
     expect(
       classifyRedRun(
         report({
@@ -1235,7 +1235,7 @@ describe('classifyRedRun', () => {
     ).toEqual({ kind: 'missing-module' });
   });
 
-  it('NOR-A AC-3: 문법 오류는 가짜 red 로 거부한다', () => {
+  it('NOR-195 AC-3: 문법 오류는 가짜 red 로 거부한다', () => {
     expect(
       classifyRedRun(
         report({
@@ -1253,7 +1253,7 @@ describe('classifyRedRun', () => {
     ).toEqual({ kind: 'broken', reason: 'SyntaxError: Unexpected token' });
   });
 
-  it('NOR-A AC-3: 통과하는 테스트는 red 가 아니다', () => {
+  it('NOR-195 AC-3: 통과하는 테스트는 red 가 아니다', () => {
     expect(
       classifyRedRun(
         report({
@@ -1268,7 +1268,7 @@ describe('classifyRedRun', () => {
 });
 
 describe('classifyGreenRun', () => {
-  it('NOR-A AC-3: 실패 없이 하나 이상 통과해야 green 이다', () => {
+  it('NOR-195 AC-3: 실패 없이 하나 이상 통과해야 green 이다', () => {
     expect(classifyGreenRun(report({ numPassedTests: 2 }))).toBe(true);
     expect(classifyGreenRun(report({ numPassedTests: 0 }))).toBe(false);
     expect(classifyGreenRun(report({ numPassedTests: 2, numFailedTests: 1 }))).toBe(false);
@@ -1289,8 +1289,8 @@ Expected: FAIL — `Failed to load url ./classify.ts`.
 
 ```bash
 git add packages/repo-tools/src/tdd/tdd.test.ts
-git commit -m "✅ test(infra): red→green 증거를 판정하는 테스트를 쓴다 (NOR-A)" \
-  -m "TDD: red" -m "Spec: NOR-A AC-3" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✅ test(infra): red→green 증거를 판정하는 테스트를 쓴다 (NOR-195)" \
+  -m "TDD: red" -m "Spec: NOR-195 AC-3" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 - [ ] **Step 4: 구현 — `trailers.ts`**
@@ -1588,8 +1588,8 @@ Expected: Task 6·7 의 red 커밋 두 개가 `✓ … missing-module → green`
 
 ```bash
 git add packages/repo-tools package.json
-git commit -m "✨ feat(infra): red→green 증거를 커밋 이력에서 검증한다 (NOR-A)" \
-  -m "TDD: green" -m "Spec: NOR-A AC-3" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✨ feat(infra): red→green 증거를 커밋 이력에서 검증한다 (NOR-195)" \
+  -m "TDD: green" -m "Spec: NOR-195 AC-3" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 pnpm tdd:evidence --base v4
 ```
 
@@ -1666,7 +1666,7 @@ const valid = {
 };
 
 describe('postSchema', () => {
-  it('NOR-A AC-4: toc 는 auto·inline·floating·false 만 받고 기본값은 auto 다', () => {
+  it('NOR-195 AC-4: toc 는 auto·inline·floating·false 만 받고 기본값은 auto 다', () => {
     expect(postSchema.parse(valid).toc).toBe('auto');
     for (const toc of ['auto', 'inline', 'floating', false] as const) {
       expect(postSchema.parse({ ...valid, toc }).toc).toBe(toc);
@@ -1675,7 +1675,7 @@ describe('postSchema', () => {
     expect(postSchema.safeParse({ ...valid, toc: true }).success).toBe(false);
   });
 
-  it('NOR-A AC-4: series 와 seriesOrder 는 함께 있어야 한다 (두 변형 모두)', () => {
+  it('NOR-195 AC-4: series 와 seriesOrder 는 함께 있어야 한다 (두 변형 모두)', () => {
     for (const schema of [postSchema, strictPostSchema]) {
       expect(schema.safeParse({ ...valid, series: 's' }).success).toBe(false);
       expect(schema.safeParse({ ...valid, seriesOrder: 1 }).success).toBe(false);
@@ -1683,24 +1683,24 @@ describe('postSchema', () => {
     }
   });
 
-  it('NOR-A AC-4: 빈 제목과 대문자 slug 를 거부한다', () => {
+  it('NOR-195 AC-4: 빈 제목과 대문자 slug 를 거부한다', () => {
     expect(postSchema.safeParse({ ...valid, title: '  ' }).success).toBe(false);
     expect(postSchema.safeParse({ ...valid, slug: 'Hello' }).success).toBe(false);
     expect(postSchema.safeParse({ ...valid, tags: [] }).success).toBe(false);
   });
 
-  it('NOR-A AC-4: strict 변형만 모르는 키를 거부한다', () => {
+  it('NOR-195 AC-4: strict 변형만 모르는 키를 거부한다', () => {
     expect(postSchema.safeParse({ ...valid, extra: 1 }).success).toBe(true);
     expect(strictPostSchema.safeParse({ ...valid, extra: 1 }).success).toBe(false);
   });
 
-  it('NOR-A AC-4: 날짜는 Date 로 강제 변환하고 draft 기본값은 false 다', () => {
+  it('NOR-195 AC-4: 날짜는 Date 로 강제 변환하고 draft 기본값은 false 다', () => {
     const post = postSchema.parse(valid);
     expect(post.publishedAt).toBeInstanceOf(Date);
     expect(post.draft).toBe(false);
   });
 
-  it('NOR-A AC-4: POST_FIELD_ORDER 는 스키마의 모든 키를 정확히 한 번씩 담는다', () => {
+  it('NOR-195 AC-4: POST_FIELD_ORDER 는 스키마의 모든 키를 정확히 한 번씩 담는다', () => {
     expect(new Set(POST_FIELD_ORDER).size).toBe(POST_FIELD_ORDER.length);
     expect([...POST_FIELD_ORDER].sort()).toEqual(Object.keys(postObject.shape).sort());
   });
@@ -1718,7 +1718,7 @@ import { BLOG_LAYOUT } from './index.js';
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 
 describe('BLOG_LAYOUT', () => {
-  it('NOR-A AC-7: 경로가 실제 블로그 디렉터리를 가리킨다', () => {
+  it('NOR-195 AC-7: 경로가 실제 블로그 디렉터리를 가리킨다', () => {
     expect(existsSync(`${repoRoot}${BLOG_LAYOUT.postsDir}`)).toBe(true);
     expect(existsSync(`${repoRoot}${BLOG_LAYOUT.publicDir}`)).toBe(true);
   });
@@ -1736,8 +1736,8 @@ Expected: FAIL — `Failed to load url ./index.js`.
 
 ```bash
 git add packages/content-contract pnpm-lock.yaml
-git commit -m "✅ test(contract): 글 계약과 블로그 레이아웃의 테스트를 쓴다 (NOR-A)" \
-  -m "TDD: red" -m "Spec: NOR-A AC-4, NOR-A AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✅ test(contract): 글 계약과 블로그 레이아웃의 테스트를 쓴다 (NOR-195)" \
+  -m "TDD: red" -m "Spec: NOR-195 AC-4, NOR-195 AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 - [ ] **Step 4: 구현**
@@ -1872,8 +1872,8 @@ Expected: PASS (7 tests), typecheck·lint 통과. `satisfies` 에서 타입 오�
 
 ```bash
 git add packages/content-contract
-git commit -m "✨ feat(contract): 글·시리즈 계약과 블로그 레이아웃을 한 곳에 둔다 (NOR-A)" \
-  -m "TDD: green" -m "Spec: NOR-A AC-4, NOR-A AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✨ feat(contract): 글·시리즈 계약과 블로그 레이아웃을 한 곳에 둔다 (NOR-195)" \
+  -m "TDD: green" -m "Spec: NOR-195 AC-4, NOR-195 AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 - [ ] **Step 7: 실제 글 전수 검사 (regression)**
@@ -1891,7 +1891,7 @@ const postsDir = fileURLToPath(new URL(`../../../${BLOG_LAYOUT.postsDir}/`, impo
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---/u;
 
 describe('블로그 글 전수', () => {
-  it('NOR-A AC-9: 모든 글 frontmatter 가 strict 계약을 통과한다', () => {
+  it('NOR-195 AC-9: 모든 글 frontmatter 가 strict 계약을 통과한다', () => {
     const files = readdirSync(postsDir).filter((name) => /\.(?:md|mdx|mdoc)$/u.test(name));
     expect(files.length).toBeGreaterThan(0);
     const failures = files.flatMap((name) => {
@@ -1912,8 +1912,8 @@ Expected: PASS. 실패하면 그 글이 계약 밖의 키를 쓰거나 빈 값�
 
 ```bash
 git add packages/content-contract/src/corpus.test.ts
-git commit -m "✅ test(contract): 블로그의 모든 글이 strict 계약을 지키는지 본다 (NOR-A)" \
-  -m "TDD: regression" -m "Spec: NOR-A AC-9" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✅ test(contract): 블로그의 모든 글이 strict 계약을 지키는지 본다 (NOR-195)" \
+  -m "TDD: regression" -m "Spec: NOR-195 AC-9" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -1940,7 +1940,7 @@ import { describe, expect, it } from 'vitest';
 import { postSchema, seriesSchema } from './schemas';
 
 describe('계약 연결', () => {
-  it('NOR-A AC-5: 블로그의 글·시리즈 스키마는 계약 패키지의 것과 같은 객체다', () => {
+  it('NOR-195 AC-5: 블로그의 글·시리즈 스키마는 계약 패키지의 것과 같은 객체다', () => {
     expect(postSchema).toBe(contractPost);
     expect(seriesSchema).toBe(contractSeries);
   });
@@ -1959,8 +1959,8 @@ Expected: zod 는 한 버전만 보인다(두 버전이면 catalog 범위를 ast
 
 ```bash
 git add apps/blog/package.json apps/blog/src/content/contract-wiring.test.ts pnpm-lock.yaml
-git commit -m "✅ test(blog): 블로그가 계약 패키지의 스키마를 쓰는지 본다 (NOR-A)" \
-  -m "TDD: red" -m "Spec: NOR-A AC-5" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✅ test(blog): 블로그가 계약 패키지의 스키마를 쓰는지 본다 (NOR-195)" \
+  -m "TDD: red" -m "Spec: NOR-195 AC-5" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 - [ ] **Step 3: 구현**
@@ -1971,7 +1971,7 @@ git commit -m "✅ test(blog): 블로그가 계약 패키지의 스키마를 쓰
 import { z } from 'astro/zod';
 import { SLUG_PATTERN } from './slug-pattern';
 
-// 글·시리즈는 워크벤치와 함께 지키는 계약이라 한 곳에서 정의한다 (NOR-A).
+// 글·시리즈는 워크벤치와 함께 지키는 계약이라 한 곳에서 정의한다 (NOR-195).
 export { postSchema, seriesSchema } from '@gze1206/content-contract';
 ```
 
@@ -1999,9 +1999,9 @@ Expected: `389 passed`(기존 388 + 1), `0 errors`, `IDENTICAL`. 다르면 계�
 
 ```bash
 git add apps/blog
-git commit -m "♻️ refactor(blog): 글·시리즈 스키마를 계약 패키지에서 가져온다 (NOR-A)" \
+git commit -m "♻️ refactor(blog): 글·시리즈 스키마를 계약 패키지에서 가져온다 (NOR-195)" \
   -m "dist 는 계약 적용 전과 바이트 단위로 같다." \
-  -m "TDD: green" -m "Spec: NOR-A AC-5, NOR-A AC-10" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m "TDD: green" -m "Spec: NOR-195 AC-5, NOR-195 AC-10" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -2031,7 +2031,7 @@ const tocDraft = validDraft.replace(
 );
 
 describe('toc', () => {
-  it('NOR-A AC-6: 초안의 toc 를 발행 결과에 남긴다', () => {
+  it('NOR-195 AC-6: 초안의 toc 를 발행 결과에 남긴다', () => {
     const result = transformPublicDraft({
       source: tocDraft,
       privateRoot: '/srv/private-workbench',
@@ -2054,8 +2054,8 @@ Expected: FAIL — `expected undefined to be 'floating'`.
 
 ```bash
 git add apps/workbench/package.json apps/workbench/src/core/publishing/publishing.test.ts pnpm-lock.yaml
-git commit -m "✅ test(workbench): 발행하면 초안의 toc 가 사라지는 버그를 재현한다 (NOR-A)" \
-  -m "TDD: red" -m "Spec: NOR-A AC-6" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✅ test(workbench): 발행하면 초안의 toc 가 사라지는 버그를 재현한다 (NOR-195)" \
+  -m "TDD: red" -m "Spec: NOR-195 AC-6" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 - [ ] **Step 3: 구현**
@@ -2117,9 +2117,9 @@ Expected: `233 passed`, typecheck·lint 통과. 기존 테스트 `coerces Blog v
 
 ```bash
 git add apps/workbench
-git commit -m "🐛 fix(workbench): 발행할 때 초안의 toc 를 지킨다 (NOR-A)" \
+git commit -m "🐛 fix(workbench): 발행할 때 초안의 toc 를 지킨다 (NOR-195)" \
   -m "글 계약을 content-contract 에서 가져온다. toc 는 초안에 있을 때만 쓴다." \
-  -m "TDD: green" -m "Spec: NOR-A AC-6" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m "TDD: green" -m "Spec: NOR-195 AC-6" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 - [ ] **Step 6: 회귀 테스트 두 개 (regression)**
@@ -2127,7 +2127,7 @@ git commit -m "🐛 fix(workbench): 발행할 때 초안의 toc 를 지킨다 (N
 같은 `describe('toc'` 안에 추가한다.
 
 ```ts
-it('NOR-A AC-6: 초안에 toc 가 없으면 발행 결과에도 쓰지 않는다', () => {
+it('NOR-195 AC-6: 초안에 toc 가 없으면 발행 결과에도 쓰지 않는다', () => {
   const result = transformPublicDraft({
     source: validDraft,
     privateRoot: '/srv/private-workbench',
@@ -2137,7 +2137,7 @@ it('NOR-A AC-6: 초안에 toc 가 없으면 발행 결과에도 쓰지 않는다
   expect(result.source).not.toMatch(/^toc:/mu);
 });
 
-it('NOR-A AC-8: 변환 결과를 블로그 스키마로 다시 읽으면 같은 값이다', () => {
+it('NOR-195 AC-8: 변환 결과를 블로그 스키마로 다시 읽으면 같은 값이다', () => {
   const result = transformPublicDraft({
     source: tocDraft,
     privateRoot: '/srv/private-workbench',
@@ -2162,8 +2162,8 @@ Expected: PASS (처음부터 통과 — 회귀 테스트다).
 
 ```bash
 git add apps/workbench/src/core/publishing/publishing.test.ts
-git commit -m "✅ test(workbench): toc 생략과 블로그 스키마 왕복을 지킨다 (NOR-A)" \
-  -m "TDD: regression" -m "Spec: NOR-A AC-6, NOR-A AC-8" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✅ test(workbench): toc 생략과 블로그 스키마 왕복을 지킨다 (NOR-195)" \
+  -m "TDD: regression" -m "Spec: NOR-195 AC-6, NOR-195 AC-8" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -2183,7 +2183,7 @@ git commit -m "✅ test(workbench): toc 생략과 블로그 스키마 왕복을 
 
 세 테스트 파일 위에 `import { BLOG_LAYOUT } from '@gze1206/content-contract';` 를 더하고 다음을 바꾼다.
 
-- `config.test.ts` 88·89·168행의 `'main'` → `BLOG_LAYOUT.publishBranch`. 테스트 이름 앞에 `NOR-A AC-7: ` 을 붙인다(기본 브랜치를 보는 `it`).
+- `config.test.ts` 88·89·168행의 `'main'` → `BLOG_LAYOUT.publishBranch`. 테스트 이름 앞에 `NOR-195 AC-7: ` 을 붙인다(기본 브랜치를 보는 `it`).
 - `publicBlog.test.ts`·`publishOutbox.test.ts` 의 `'src/content/posts'` 문자열을 전부 `BLOG_LAYOUT.postsDir` 로, `'public/assets/posts` 로 시작하는 문자열의 `public` 을 `${BLOG_LAYOUT.publicDir}` 로 바꾼다(템플릿 리터럴로). 예:
 
 ```ts
@@ -2195,7 +2195,7 @@ targetPath: (`${BLOG_LAYOUT.postsDir}/safe-publish.mdoc`,
   await mkdir(path.join(sourceRoot, BLOG_LAYOUT.postsDir), { recursive: true }));
 ```
 
-가짜 원격 저장소의 `git init -b main` 과 clone 옵션의 `branch: 'main'` 은 테스트 고정 값이므로 그대로 둔다. `publicBlog.test.ts` 에서 발행 경로를 보는 첫 `it` 의 이름 앞에 `NOR-A AC-7: ` 을 붙인다.
+가짜 원격 저장소의 `git init -b main` 과 clone 옵션의 `branch: 'main'` 은 테스트 고정 값이므로 그대로 둔다. `publicBlog.test.ts` 에서 발행 경로를 보는 첫 `it` 의 이름 앞에 `NOR-195 AC-7: ` 을 붙인다.
 
 ```bash
 pnpm --filter @gze1206/workbench test src/server 2>&1 | grep -E "✗|×|FAIL|Tests "
@@ -2207,8 +2207,8 @@ Expected: FAIL — config 테스트가 `expected 'main' to be 'v4'`, publicBlog�
 
 ```bash
 git add apps/workbench/src/server
-git commit -m "✅ test(workbench): 발행 경로와 기본 브랜치를 블로그 레이아웃에서 기대한다 (NOR-A)" \
-  -m "TDD: red" -m "Spec: NOR-A AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✅ test(workbench): 발행 경로와 기본 브랜치를 블로그 레이아웃에서 기대한다 (NOR-195)" \
+  -m "TDD: red" -m "Spec: NOR-195 AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 - [ ] **Step 3: 구현**
@@ -2235,8 +2235,8 @@ Expected: 전부 통과.
 
 ```bash
 git add apps/workbench
-git commit -m "✨ feat(workbench): 발행 경로와 기본 브랜치를 블로그 레이아웃에서 가져온다 (NOR-A)" \
-  -m "TDD: green" -m "Spec: NOR-A AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "✨ feat(workbench): 발행 경로와 기본 브랜치를 블로그 레이아웃에서 가져온다 (NOR-195)" \
+  -m "TDD: green" -m "Spec: NOR-195 AC-7" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 - [ ] **Step 6: slug 규칙 중복 제거 (refactor)**
@@ -2246,7 +2246,7 @@ git commit -m "✨ feat(workbench): 발행 경로와 기본 브랜치를 블로�
 ```bash
 pnpm --filter @gze1206/workbench test src/core/import
 git add apps/workbench/src/core/import/blogImport.ts
-git commit -m "♻️ refactor(workbench): slug 규칙을 계약에서 가져온다 (NOR-A)" \
+git commit -m "♻️ refactor(workbench): slug 규칙을 계약에서 가져온다 (NOR-195)" \
   -m "TDD: refactor" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
@@ -2261,7 +2261,7 @@ Expected: `0 unlinked` (AC-10~12 는 manual). 루트 `package.json` 의 `verify`
 ```bash
 pnpm verify
 git add package.json
-git commit -m "🔧 chore(infra): 로컬 게이트에 명세 연결 검사를 더한다 (NOR-A)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "🔧 chore(infra): 로컬 게이트에 명세 연결 검사를 더한다 (NOR-195)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -2342,7 +2342,7 @@ Expected: 3 passed. 선택자가 실제 마크업과 다르면 `apps/blog/src/pa
 
 ```bash
 git add apps/blog .gitignore pnpm-lock.yaml
-git commit -m "✅ test(blog): 빌드 산출물을 띄워 보는 e2e 골격을 둔다 (NOR-A)" \
+git commit -m "✅ test(blog): 빌드 산출물을 띄워 보는 e2e 골격을 둔다 (NOR-195)" \
   -m "TDD: regression" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
@@ -2473,9 +2473,9 @@ Expected: 이미지 크기 출력(기존 510MB 와 비교해 PR 에 적는다), 
 
 ```bash
 git add .dockerignore apps/workbench
-git commit -m "👷 ci(workbench): 모노레포에서 arm64 이미지를 빌드한다 (NOR-A)" \
+git commit -m "👷 ci(workbench): 모노레포에서 arm64 이미지를 빌드한다 (NOR-195)" \
   -m "계약 패키지는 서버 번들에 인라인한다. Node 26 이미지에는 corepack 이 없어 packageManager 의 pnpm 을 설치한다." \
-  -m "Spec: NOR-A AC-11" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  -m "Spec: NOR-195 AC-11" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -2648,8 +2648,8 @@ jobs:
 ```bash
 pnpm dlx @action-validator/cli .github/workflows/ci.yml .github/workflows/workbench-image.yml
 git add .github
-git commit -m "👷 ci(infra): 모노레포 CI 와 워크벤치 arm64 이미지 게시를 만든다 (NOR-A)" \
-  -m "Spec: NOR-A AC-12" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "👷 ci(infra): 모노레포 CI 와 워크벤치 arm64 이미지 게시를 만든다 (NOR-195)" \
+  -m "Spec: NOR-195 AC-12" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 Expected: validator 오류 없음. (`@action-validator/cli` 를 쓸 수 없으면 `gh workflow view` 는 push 후에만 되므로, Task 16 의 PR CI 결과로 확인한다.)
@@ -2665,7 +2665,7 @@ Expected: validator 오류 없음. (`@action-validator/cli` 를 쓸 수 없으�
 
 - [ ] **Step 1: ADR 0017 — 모노레포**
 
-`docs/decisions/_template.md` 형식으로 쓴다. 맥락(계약 어긋남·`main` 브랜치·책 경로 부재), 대안(A 공개 저장소 모노레포 / B 새 private 모노레포 / C 워크벤치 쪽으로), 결정 A, 근거(개인 기록은 WORKSPACE_ROOT 에 있어 코드에 비밀 없음, 스냅샷 이관으로 private 이력 비공개), 영향(Cloudflare 빌드 루트 `apps/blog`, 발행 경로 `apps/blog/src/content/posts`, 워크벤치 원본 저장소 archive). `related: [NOR-A]`. ADR 0016 은 superseded 가 아니다(작성 경계 결정은 유지된다) — 본문에서 "0016 의 '저장소 분리' 서술을 이 ADR 이 개정한다"고 적는다.
+`docs/decisions/_template.md` 형식으로 쓴다. 맥락(계약 어긋남·`main` 브랜치·책 경로 부재), 대안(A 공개 저장소 모노레포 / B 새 private 모노레포 / C 워크벤치 쪽으로), 결정 A, 근거(개인 기록은 WORKSPACE_ROOT 에 있어 코드에 비밀 없음, 스냅샷 이관으로 private 이력 비공개), 영향(Cloudflare 빌드 루트 `apps/blog`, 발행 경로 `apps/blog/src/content/posts`, 워크벤치 원본 저장소 archive). `related: [NOR-195]`. ADR 0016 은 superseded 가 아니다(작성 경계 결정은 유지된다) — 본문에서 "0016 의 '저장소 분리' 서술을 이 ADR 이 개정한다"고 적는다.
 
 - [ ] **Step 2: ADR 0018 — 워크벤치 결정 D1~D6 이관**
 
@@ -2687,7 +2687,7 @@ grep -rnoE '\]\((\.\.?/[^)#]+)' docs AGENTS.md README.md | while IFS=: read -r f
   target="$(dirname "$file")/${link#](}"; [ -e "$target" ] || echo "BROKEN $file -> $target"; done
 pnpm format:check
 git add docs AGENTS.md README.md
-git commit -m "📝 docs(infra): 모노레포 결정과 SDD/TDD 규약을 문서에 반영한다 (NOR-A)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "📝 docs(infra): 모노레포 결정과 SDD/TDD 규약을 문서에 반영한다 (NOR-195)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 Expected: `BROKEN` 출력 없음.
@@ -2715,13 +2715,13 @@ Task 4 의 Step 6·7 을 브랜치 전체(`git diff v4...HEAD --name-only` 의 �
 
 - [ ] **Step 4: push 와 PR (사용자 확인 후)**
 
-사용자에게 "공개 저장소에 `feat/nor-A-monorepo-foundation` 를 push 하고 `v4` 로 PR 을 열어도 되는지" 확인한다. 승인되면:
+사용자에게 "공개 저장소에 `feat/nor-195-monorepo-foundation` 를 push 하고 `v4` 로 PR 을 열어도 되는지" 확인한다. 승인되면:
 
 ```bash
-git push -u origin feat/nor-A-monorepo-foundation
-gh pr create --base v4 --title "🎉 feat(infra): 모노레포 기반과 SDD/TDD 환경 (NOR-A)" --body-file <(cat <<'EOF'
+git push -u origin feat/nor-195-monorepo-foundation
+gh pr create --base v4 --title "🎉 feat(infra): 모노레포 기반과 SDD/TDD 환경 (NOR-195)" --body-file <(cat <<'EOF'
 ## 관련 일감
-- NOR-A
+- NOR-195
 
 ## 변경 요약
 - 블로그를 apps/blog 로 옮기고(dist 바이트 동일), personal-workbench 스냅샷(8453402)을 apps/workbench 로 들였다.

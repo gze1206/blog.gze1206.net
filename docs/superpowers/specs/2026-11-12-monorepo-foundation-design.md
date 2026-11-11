@@ -1,6 +1,6 @@
 # 모노레포 기반과 SDD/TDD 환경 설계
 
-- Linear: 미생성 (하위 프로젝트별 일감은 사용자 확인 후 만든다)
+- Linear: [NOR-194](https://linear.app/noru-kim/issue/NOR-194) (상위), 1a [NOR-195](https://linear.app/noru-kim/issue/NOR-195), 1b NOR-196, 2 NOR-197, 3 NOR-198, 4 NOR-199, 5 NOR-200
 - 상태: 섹션별 사용자 승인 완료, 구현 계획 작성 전
 - 작성일: 2026-11-12
 - 범위: 아래 "하위 프로젝트" 중 **1번**. 나머지는 각자 별도의 설계 → 계획 → 구현 주기를 밟는다.
