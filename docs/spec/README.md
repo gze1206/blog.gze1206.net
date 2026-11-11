@@ -4,11 +4,19 @@
 
 ## 규칙
 
-- 파일명: `NOR-N-제목-slug.md` (예: `NOR-9-content-schema.md`).
+- 위치: 영역별 하위 디렉터리 `docs/spec/<영역>/`.
+  - [`blog/`](./blog/): 블로그(`apps/blog`)
+  - [`workbench/`](./workbench/): 워크벤치(`apps/workbench`)
+  - `contract/`: 공유 계약(`packages/content-contract`). 첫 spec 을 쓸 때 만든다.
+  - [`repo/`](./repo/): 저장소 공통(툴체인·CI·`packages/repo-tools`)
+- 파일명: `NOR-N-제목-slug.md` (예: `blog/NOR-9-content-schema.md`). `pnpm spec:check` 는 이 파일명에서 일감 번호를 읽는다.
+- 수용 기준은 `- **AC-n**` 목록 항목으로 쓰고, 자동화할 수 없으면 `(manual)` 을 붙인다. 테스트 이름에 `NOR-N AC-n:` 을 넣어 잇는다([workflow.md](../conventions/workflow.md#tdd)).
 - 단순 일감은 spec 없이 로드맵 완료 조건으로 갈음.
 - 템플릿: [`_template.md`](./_template.md)
 
 ## 목록
+
+### 블로그 (`blog/`)
 
 | 일감    | 제목                                                                              | 상태        |
 | ------- | --------------------------------------------------------------------------------- | ----------- |
@@ -25,3 +33,18 @@
 | NOR-19  | [Keystatic 설치·구성 (Content Collections 매핑)](./blog/NOR-19-keystatic.md)      | done        |
 | NOR-27  | [메타 위생 — title/description/canonical/robots/OG](./blog/NOR-27-meta.md)        | done        |
 | NOR-28  | [OG 이미지 자동생성 (Satori)](./blog/NOR-28-og-images.md)                         | done        |
+
+### 워크벤치 (`workbench/`)
+
+| 일감    | 제목                                                                                                       | 상태 |
+| ------- | ---------------------------------------------------------------------------------------------------------- | ---- |
+| NOR-139 | [개인 워크벤치 아키텍처 스펙 (M1)](./workbench/2026-08-12-personal-workbench-architecture.md)              | done |
+| NOR-143 | [Private Workbench M1 기반 명세](./workbench/NOR-143-workbench-foundation.md)                              | done |
+| NOR-148 | [GHCR 이미지 배포·임시 발행 워크스페이스 스펙](./workbench/2026-08-13-workbench-ghcr-ephemeral-publish.md) | done |
+| NOR-189 | [워크벤치 읽은 책 관리 명세](./workbench/NOR-189-book-management.md)                                       | done |
+
+### 저장소 공통 (`repo/`)
+
+| 일감    | 제목                                                                      | 상태        |
+| ------- | ------------------------------------------------------------------------- | ----------- |
+| NOR-195 | [모노레포 기반 (하위 프로젝트 1a)](./repo/NOR-195-monorepo-foundation.md) | in-progress |

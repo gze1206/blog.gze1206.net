@@ -300,6 +300,8 @@ CI 게이트: `pnpm test && pnpm lint && pnpm format:check && pnpm build && pnpm
 
 ## 12. 결정 기록 (ADR 요약)
 
+> D1~D6 은 [ADR 0018](../../decisions/0018-workbench-architecture-decisions.md) 로 옮겼다. D1 은 그 ADR 에서 개정됐으며, 아래는 2026-08-12 시점의 원문이다.
+
 - **D1 — 세 저장소 분리.** 앱 코드(①)·콘텐츠(②)·공개 블로그 clone(③)을 독립 트리로 나눈다. 이전 트리가 콘텐츠를 앱 루트에 둔 모호함을 해소. 근거: 코드/기록 이력 분리, 재설치 내구성, 공개/비공개 물리적 차단. ②는 ①의 서브모듈이 아니다.
 - **D2 — Vite + React + Hono(Node), Next.js 기각.** 1인 Tailnet 서비스에 Next.js는 과함. 도메인을 프레임워크에서 분리해 웹 계층을 교체 가능하게 유지.
 - **D3 — M1 DB 없음.** 원본은 파일. 인덱스는 부팅 시 재생성하는 인메모리. 영속 저장은 도입하지 않으며, 훗날 SQLite도 재생성 캐시로만.
