@@ -115,7 +115,7 @@ id와 같아서 `posts.series`가 가리키던 값도, `getSeriesById()`도, 시
     명시해야 어드민이 뜬다(빠지면 `Could not resolve "@keystar/ui/layout"`).
   - Keystatic은 **필드 간 제약**(series↔seriesOrder 동반 필수, portfolio 링크 항목당 URL 최소 1개)을
     표현하지 못한다. 어긋난 저장을 막지 못하고 다음 빌드의 zod에서 걸린다. 자세한 내용과 완화책은
-    [`docs/spec/NOR-19-keystatic.md`](../spec/NOR-19-keystatic.md).
+    [`docs/spec/NOR-19-keystatic.md`](../spec/blog/NOR-19-keystatic.md).
 - 후속 작업: NOR-20 — GitHub 모드/웹 에디터, 커스텀 블럭 삽입 UI(`fields.markdoc`의 `components`),
   이미지 업로드 경로. GitHub 모드는 배포된 사이트에서 어드민이 떠야 하므로 **이 ADR의 C안을 다시
   검토**해야 한다(별도 어드민 배포 등).

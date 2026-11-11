@@ -323,4 +323,4 @@ Spec: NOR-201 AC-2
 - 워크벤치 원 설계: [2026-08-12-private-workbench-design.md](./2026-08-12-private-workbench-design.md)
 - 작성 경계: [ADR 0016](../../decisions/0016-private-workbench-authoring.md)
 - 작업 흐름: [conventions/workflow.md](../../conventions/workflow.md)
-- 책장: [NOR-188](../../spec/NOR-188-bookshelf.md)
+- 책장: [NOR-188](../../spec/blog/NOR-188-bookshelf.md)

@@ -74,7 +74,7 @@ Cloudflare Web Analytics를 정적 배포에 연결한다. 별도 토큰을 저�
 - 현재의 로컬 Lighthouse/axe 결과는 실사용자 지표를 대체하지 않는다.
 
 참고: [Cloudflare Web Analytics 시작](https://developers.cloudflare.com/web-analytics/get-started/),
-[성능·접근성 감사 기록](./spec/NOR-34-performance-a11y-audit.md).
+[성능·접근성 감사 기록](./spec/blog/NOR-34-performance-a11y-audit.md).
 
 ### 5. NOR-36 — 프로덕션 QA와 GSC
 
