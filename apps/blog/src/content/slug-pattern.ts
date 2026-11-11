@@ -1,10 +1,2 @@
-/**
- * URL 슬러그 패턴 — 소문자·숫자·하이픈만, 하이픈 연속/양끝 금지.
- *
- * 콘텐츠 스키마와 슬러그 검증이 같은 규칙을 공유한다.
- */
-export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
-/** 슬러그 규칙을 사람이 읽는 문장으로. */
-export const SLUG_PATTERN_MESSAGE =
-  '소문자·숫자·하이픈만 쓸 수 있습니다 (예: hello-world). 하이픈으로 시작/끝나거나 연달아 쓸 수 없습니다.';
+// 슬러그 규칙은 계약 패키지가 정의한다. 기존 import 경로를 지키려고 다시 내보낸다.
+export { SLUG_PATTERN, SLUG_PATTERN_MESSAGE } from '@gze1206/content-contract';
