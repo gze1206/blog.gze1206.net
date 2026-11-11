@@ -1,0 +1,5 @@
+{
+  "extends": "@gze1206/config/tsconfig.base.json",
+  "compilerOptions": { "types": ["node"] },
+  "include": ["src"]
+}
