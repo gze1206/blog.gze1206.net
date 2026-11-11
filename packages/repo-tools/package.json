@@ -1,0 +1,17 @@
+{
+  "name": "@gze1206/repo-tools",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "vitest run", "typecheck": "tsc -p tsconfig.json", "lint": "eslint ." },
+  "devDependencies": {
+    "@gze1206/config": "workspace:*",
+    "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
+  }
+}
