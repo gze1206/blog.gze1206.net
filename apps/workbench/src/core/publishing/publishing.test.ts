@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { postSchema } from '@gze1206/content-contract';
 
+import { parseFrontmatter } from '../document/frontmatter.js';
 import { parsePublishedPost } from './contract.js';
 import { transformPublicDraft } from './transform.js';
 import { PublicDraftValidationError, validatePublicDraft } from './validate.js';
@@ -35,6 +37,30 @@ describe('toc', () => {
     });
     expect(result.metadata.toc).toBe('floating');
     expect(result.source).toMatch(/^toc: floating$/mu);
+  });
+
+  it('NOR-195 AC-6: 초안에 toc 가 없으면 발행 결과에도 쓰지 않는다', () => {
+    const result = transformPublicDraft({
+      source: validDraft,
+      privateRoot: '/srv/private-workbench',
+      assets: [],
+    });
+    expect(result.metadata.toc).toBeUndefined();
+    expect(result.source).not.toMatch(/^toc:/mu);
+  });
+
+  it('NOR-195 AC-8: 변환 결과를 블로그 스키마로 다시 읽으면 같은 값이다', () => {
+    const result = transformPublicDraft({
+      source: tocDraft,
+      privateRoot: '/srv/private-workbench',
+      assets: [],
+    });
+    const reread = postSchema.parse(parseFrontmatter(result.source).data);
+    expect({
+      ...reread,
+      publishedAt: reread.publishedAt.toISOString().slice(0, 10),
+      updatedAt: reread.updatedAt.toISOString().slice(0, 10),
+    }).toEqual(result.metadata);
   });
 });
 
