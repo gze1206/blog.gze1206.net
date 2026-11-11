@@ -86,7 +86,8 @@ interface Props {
 export const GET: APIRoute<Props> = async ({ props }) => {
   // 어떤 실패도 예외로 전파되지 않는다 — 실패하면 기본 이미지 바이트가 온다.
   const png = await renderOgImageOrFallback(props.card);
-  return new Response(new Uint8Array(png.buffer, png.byteOffset, png.byteLength), {
+  // TS 6 lib 에서 Buffer 의 ArrayBufferLike 는 BodyInit 이 아니다. 복사본은 ArrayBuffer 위에 선다.
+  return new Response(new Uint8Array(png), {
     headers: { 'Content-Type': OG_IMAGE_TYPE },
   });
 };

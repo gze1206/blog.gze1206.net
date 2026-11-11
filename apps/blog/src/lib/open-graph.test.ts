@@ -134,7 +134,7 @@ describe('fetchOpenGraph', () => {
   });
 
   it('타임아웃을 위한 AbortSignal 을 붙인다', async () => {
-    const spy = vi.fn(async () => htmlResponse(htmlPage(`<title>x</title>`)));
+    const spy = vi.fn<typeof fetch>(async () => htmlResponse(htmlPage(`<title>x</title>`)));
     vi.stubGlobal('fetch', spy);
     await fetchOpenGraph(BASE);
     const init = spy.mock.calls[0]?.[1] as RequestInit | undefined;

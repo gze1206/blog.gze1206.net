@@ -76,7 +76,7 @@ describe('fetchGitHubRepo', () => {
   });
 
   it('올바른 REST 엔드포인트를 타임아웃과 함께 호출한다', async () => {
-    const spy = vi.fn(async () => apiResponse(REPO_PAYLOAD));
+    const spy = vi.fn<typeof fetch>(async () => apiResponse(REPO_PAYLOAD));
     vi.stubGlobal('fetch', spy);
     await fetchGitHubRepo({ owner: 'withastro', name: 'astro' });
     expect(spy.mock.calls[0]?.[0]).toBe('https://api.github.com/repos/withastro/astro');
@@ -86,7 +86,7 @@ describe('fetchGitHubRepo', () => {
 
   it('GITHUB_TOKEN 이 있으면 Authorization 헤더를 붙인다', async () => {
     process.env.GITHUB_TOKEN = 'ghp_test';
-    const spy = vi.fn(async () => apiResponse(REPO_PAYLOAD));
+    const spy = vi.fn<typeof fetch>(async () => apiResponse(REPO_PAYLOAD));
     vi.stubGlobal('fetch', spy);
     await fetchGitHubRepo({ owner: 'withastro', name: 'astro' });
     const headers = (spy.mock.calls[0]?.[1] as RequestInit | undefined)?.headers as
@@ -95,7 +95,7 @@ describe('fetchGitHubRepo', () => {
   });
 
   it('토큰이 없으면 Authorization 헤더를 붙이지 않는다', async () => {
-    const spy = vi.fn(async () => apiResponse(REPO_PAYLOAD));
+    const spy = vi.fn<typeof fetch>(async () => apiResponse(REPO_PAYLOAD));
     vi.stubGlobal('fetch', spy);
     await fetchGitHubRepo({ owner: 'withastro', name: 'astro' });
     const headers = (spy.mock.calls[0]?.[1] as RequestInit | undefined)?.headers as

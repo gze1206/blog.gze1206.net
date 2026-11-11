@@ -3,7 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "/pagefind/pagefind.js": ["src/pagefind.d.ts"]
     }
   },
   "include": [".astro/types.d.ts", "**/*"],
