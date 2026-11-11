@@ -15,7 +15,14 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['dist/', '.astro/', 'node_modules/', 'public/pagefind/'],
+    ignores: [
+      'dist/',
+      '.astro/',
+      'node_modules/',
+      'public/pagefind/',
+      'test-results/',
+      'playwright-report/',
+    ],
   },
   prettierLast,
 );

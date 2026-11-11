@@ -147,6 +147,9 @@ importers:
       '@gze1206/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@playwright/test':
+        specifier: ^1.62.1
+        version: 1.65.0
       '@types/hast':
         specifier: ^3.0.4
         version: 3.0.5

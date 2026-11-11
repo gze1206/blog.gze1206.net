@@ -12,10 +12,11 @@
     "postbuild": "pagefind --site dist",
     "preview": "astro preview",
     "lint": "eslint .",
-    "test": "vitest run",
+    "test": "vitest run --exclude e2e/**",
     "astro": "astro",
     "typecheck": "astro check",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@gze1206/content-contract": "workspace:*",
@@ -59,6 +60,7 @@
     "eslint-config-prettier": "catalog:",
     "@astrojs/check": "0.9.12",
     "@types/hast": "^3.0.4",
-    "@vitest/coverage-v8": "catalog:"
+    "@vitest/coverage-v8": "catalog:",
+    "@playwright/test": "^1.62.1"
   }
 }
