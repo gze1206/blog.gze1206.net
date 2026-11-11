@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.astro
+**/test-results
+**/playwright-report
+.git
+docs
+apps/blog/*
+!apps/blog/package.json
+.env
+**/.env

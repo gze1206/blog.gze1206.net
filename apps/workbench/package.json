@@ -13,7 +13,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "lint": "eslint .",
-    "build": "tsc -b && vite build && tsup src/server/index.ts --format esm --platform node --target node22 --out-dir dist/server --clean false",
+    "build": "tsc -b && vite build && tsup",
     "start": "node dist/server/index.js",
     "e2e": "playwright test",
     "coverage": "vitest run --coverage"
