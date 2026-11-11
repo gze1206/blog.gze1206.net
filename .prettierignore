@@ -6,3 +6,5 @@ apps/blog/public/pagefind/
 .superpowers/
 **/test-results/
 **/playwright-report/
+
+**/coverage/

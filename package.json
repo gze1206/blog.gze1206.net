@@ -12,7 +12,12 @@
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "dev:workbench": "pnpm --filter @gze1206/workbench dev",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "e2e": "pnpm -r --if-present e2e",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build",
+    "coverage": "pnpm -r --if-present coverage"
   },
   "devDependencies": {
     "prettier": "^3.9.5",

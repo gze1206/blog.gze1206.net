@@ -1,10 +1,9 @@
 // @ts-check
-import eslint from '@eslint/js';
+import { base, prettierLast } from '@gze1206/config/eslint';
 import tseslint from 'typescript-eslint';
 import eslintPluginAstro from 'eslint-plugin-astro';
 export default tseslint.config(
-  eslint.configs.recommended,
-  ...tseslint.configs.strict,
+  ...base,
   ...eslintPluginAstro.configs.recommended,
   ...eslintPluginAstro.configs['jsx-a11y-recommended'],
   {
@@ -16,14 +15,7 @@ export default tseslint.config(
     },
   },
   {
-    rules: {
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
-    },
-  },
-  {
     ignores: ['dist/', '.astro/', 'node_modules/', 'public/pagefind/'],
   },
+  prettierLast,
 );
