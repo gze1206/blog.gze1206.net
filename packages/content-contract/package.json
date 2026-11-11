@@ -3,9 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
-  "scripts": { "test": "vitest run", "typecheck": "tsc -p tsconfig.json", "lint": "eslint ." },
-  "peerDependencies": { "zod": "catalog:" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint ."
+  },
+  "peerDependencies": {
+    "zod": "catalog:"
+  },
   "devDependencies": {
     "@gze1206/config": "workspace:*",
     "@eslint/js": "catalog:",

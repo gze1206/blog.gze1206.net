@@ -40,7 +40,12 @@ describe('PublishOutbox', () => {
       source: 'published source\n',
       diff: 'diff --git a b\n',
       author: 'Publisher <publisher@example.test>',
-      assets: [{ reference: `${BLOG_LAYOUT.publicDir}/assets/posts/safe/image.png`, bytes: Buffer.from('image') }],
+      assets: [
+        {
+          reference: `${BLOG_LAYOUT.publicDir}/assets/posts/safe/image.png`,
+          bytes: Buffer.from('image'),
+        },
+      ],
       forceFormat: 'format-patch',
     });
 

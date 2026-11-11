@@ -68,7 +68,10 @@ describe('PublicBlogAdapter', () => {
         readFile(path.join(consumer, BLOG_LAYOUT.postsDir, 'safe-publish.mdoc'), 'utf8'),
       ).resolves.toContain('![diagram](/assets/posts/safe-publish/images/flow.png)');
       await expect(
-        readFile(path.join(consumer, BLOG_LAYOUT.publicDir, 'assets/posts/safe-publish/images/flow.png'), 'utf8'),
+        readFile(
+          path.join(consumer, BLOG_LAYOUT.publicDir, 'assets/posts/safe-publish/images/flow.png'),
+          'utf8',
+        ),
       ).resolves.toBe('approved-image');
       await expect(git(consumer, 'log', '-1', '--format=%an <%ae>|%cn <%ce>')).resolves.toBe(
         'Publish Bot <publish@example.test>|Publish Bot <publish@example.test>',

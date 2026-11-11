@@ -87,7 +87,9 @@ describe('loadConfig', () => {
     const { env } = await environment();
 
     expect(loadConfig(env).publicBlogBranch).toBe(BLOG_LAYOUT.publishBranch);
-    expect(loadConfig({ ...env, PUBLISH_BRANCH: 'x' }).publicBlogBranch).toBe(BLOG_LAYOUT.publishBranch);
+    expect(loadConfig({ ...env, PUBLISH_BRANCH: 'x' }).publicBlogBranch).toBe(
+      BLOG_LAYOUT.publishBranch,
+    );
     expect(loadConfig({ ...env, PUBLIC_BLOG_BRANCH: 'release' }).publicBlogBranch).toBe('release');
   });
 
