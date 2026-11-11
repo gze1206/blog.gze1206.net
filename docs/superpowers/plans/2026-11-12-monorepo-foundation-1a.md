@@ -2381,10 +2381,10 @@ export default defineConfig({
 
 ```bash
 pnpm --filter @gze1206/workbench build
-grep -c "content-contract" apps/workbench/dist/server/index.js
+grep -cE "(from|import\\()\\s*['\"]@gze1206/content-contract" apps/workbench/dist/server/index.js
 ```
 
-Expected: 빌드 성공, `0` (import 문이 남지 않고 인라인됐다).
+Expected: 빌드 성공, `0` (import 문이 남지 않고 인라인됐다). esbuild 가 남기는 `// ../../packages/content-contract/src/*.ts` 경로 주석은 세지 않는다.
 
 - [ ] **Step 2: 루트 `.dockerignore`**
 
