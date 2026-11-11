@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { tocSchema } from '@gze1206/content-contract';
 
 import {
   orderedFields,
@@ -79,6 +80,7 @@ const commonSchema = z.object({
   seriesOrder: z.number().int().positive().optional(),
   publishedAt: publishDateInputSchema.optional(),
   draft: z.boolean().optional(),
+  toc: tocSchema.optional(),
   // --- 책 (NOR-189) ---
   authors: z.array(z.string().min(1)).optional(),
   translators: z.array(z.string().min(1)).optional(),
@@ -136,6 +138,7 @@ const knownKeys = [
   'seriesOrder',
   'publishedAt',
   'draft',
+  'toc',
   'authors',
   'translators',
   'publisher',
@@ -172,6 +175,7 @@ const kindKeys: Record<DocumentKind, readonly (typeof knownKeys)[number][]> = {
     'seriesOrder',
     'publishedAt',
     'draft',
+    'toc',
   ],
   'weekly-review': ['period'],
   'monthly-review': ['period'],

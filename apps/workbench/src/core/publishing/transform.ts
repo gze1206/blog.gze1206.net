@@ -1,4 +1,5 @@
 import { orderedFields, parseFrontmatter, serializeFrontmatter } from '../document/frontmatter.js';
+import { POST_FIELD_ORDER } from '@gze1206/content-contract';
 import { parsePublishedPost, type PublicPost } from './contract.js';
 import { rewriteAssetReferences } from './references.js';
 import {
@@ -6,19 +7,6 @@ import {
   type PublicAssetInput,
   type PublicDraftValidationInput,
 } from './validate.js';
-
-const postFieldOrder = [
-  'title',
-  'description',
-  'slug',
-  'category',
-  'tags',
-  'series',
-  'seriesOrder',
-  'publishedAt',
-  'updatedAt',
-  'draft',
-] as const;
 
 export interface PublicAssetCopy {
   readonly privatePath: string;
@@ -39,7 +27,7 @@ export function transformPublicDraft(input: TransformPublicDraftInput): Transfor
   const validated = validatePublicDraft(input.source, input);
   const content = rewriteApprovedAssets(validated.content, validated.assets);
   const source = serializeFrontmatter(
-    orderedFields(validated.metadata as unknown as Record<string, unknown>, postFieldOrder, {}),
+    orderedFields(validated.metadata as unknown as Record<string, unknown>, POST_FIELD_ORDER, {}),
     content,
   );
   const parsed = parseFrontmatter(source);

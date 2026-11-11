@@ -45,6 +45,7 @@ export function validatePublicDraft(
       publishedAt: document.publishedAt,
       updatedAt: document.updatedAt,
       draft: document.draft ?? false,
+      ...(document.toc === undefined ? {} : { toc: document.toc }),
     });
     const assets = validateAssets(input.assets, input.privateRoot, metadata.slug);
     assertAllAssetReferencesResolved(document.content, assets);
