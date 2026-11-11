@@ -3,6 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { chmod, mkdir, open, readFile, realpath, rename, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { BLOG_LAYOUT } from '@gze1206/content-contract';
 
 const run = promisify(execFile);
 
@@ -157,7 +158,9 @@ export class PublishOutbox {
 }
 
 function slugFromTargetPath(targetPath: string): string {
-  const match = /^src\/content\/posts\/([a-z0-9-]+)\.mdoc$/u.exec(targetPath);
+  const prefix = `${BLOG_LAYOUT.postsDir}/`;
+  const fileName = targetPath.startsWith(prefix) ? targetPath.slice(prefix.length) : '';
+  const match = /^([a-z0-9-]+)\.mdoc$/u.exec(fileName);
   if (!match?.[1]) throw new Error('invalid publish target path');
   return match[1];
 }

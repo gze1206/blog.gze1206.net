@@ -9,6 +9,8 @@
  */
 import { parseFrontmatter, serializeFrontmatter } from '../document/frontmatter.js';
 
+const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+
 /** 블로그 저장소에서 읽어 온 글 하나. */
 export interface BlogPost {
   /** 저장소 기준 경로. 같은 글을 다시 가져올 때의 식별자다. */
@@ -52,7 +54,6 @@ export class ImportPlanError extends Error {
   public override readonly name = 'ImportPlanError';
 }
 
-const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 /** 가져온 글이 놓이는 자리. 공개 대상 초안이므로 `drafts` 다. */
 const IMPORT_DIRECTORY = 'drafts';
 

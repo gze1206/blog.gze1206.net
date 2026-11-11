@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { lstat, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { BLOG_LAYOUT } from '@gze1206/content-contract';
 
 import { parseDocument } from '../../core/document/document.js';
 import { parseFrontmatter } from '../../core/document/frontmatter.js';
@@ -73,7 +74,7 @@ export interface PublicBlogAdapterOptions {
 }
 
 /** 블로그 저장소에서 글이 사는 자리. 발행과 가져오기가 같은 값을 본다. */
-const POSTS_DIRECTORY = 'src/content/posts';
+const POSTS_DIRECTORY = BLOG_LAYOUT.postsDir;
 
 /**
  * 블로그 글 파일에서 목록에 필요한 것만 뽑는다.
@@ -216,7 +217,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         await this.writeApprovedAsset(
           clone.repositoryRoot,
           asset.bytes,
-          `public/assets/posts/${prepared.transformed.metadata.slug}/${asset.reference}`,
+          `${BLOG_LAYOUT.publicDir}/assets/posts/${prepared.transformed.metadata.slug}/${asset.reference}`,
         );
       }
       await this.cloneManager.git(clone, ['add', '--', review.targetPath, ...review.assets]);
@@ -244,7 +245,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         diff: review.diff,
         author: `${this.options.author.name} <${this.options.author.email}>`,
         assets: prepared.assets.map((asset) => ({
-          reference: `public/assets/posts/${prepared.transformed.metadata.slug}/${asset.reference}`,
+          reference: `${BLOG_LAYOUT.publicDir}/assets/posts/${prepared.transformed.metadata.slug}/${asset.reference}`,
           bytes: asset.bytes,
         })),
         exporter: {
@@ -314,7 +315,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       this.cloneManager.git(clone, ['rev-parse', 'HEAD']),
       Promise.all(
         prepared.transformed.assets.map(({ publicPath }) =>
-          this.readPublicAssetState(clone.repositoryRoot, `public/${publicPath}`),
+          this.readPublicAssetState(clone.repositoryRoot, `${BLOG_LAYOUT.publicDir}/${publicPath}`),
         ),
       ),
     ]);
@@ -325,7 +326,9 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         branch: `content/${prepared.transformed.metadata.slug}`,
         targetPath,
         metadata: prepared.transformed.metadata,
-        assets: prepared.transformed.assets.map(({ publicPath }) => `public/${publicPath}`),
+        assets: prepared.transformed.assets.map(
+          ({ publicPath }) => `${BLOG_LAYOUT.publicDir}/${publicPath}`,
+        ),
         diff,
       },
       destinationStates,

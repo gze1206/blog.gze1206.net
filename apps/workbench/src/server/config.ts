@@ -11,6 +11,7 @@ import {
 } from 'node:fs';
 
 import { z } from 'zod';
+import { BLOG_LAYOUT } from '@gze1206/content-contract';
 
 import { isValidTimeZone } from '../core/reviews/calendar.js';
 
@@ -28,7 +29,7 @@ import { isValidTimeZone } from '../core/reviews/calendar.js';
 const ALLOWED_REMOTE_HOST = 'github.com';
 /** `/<owner>/<repo>` 또는 `/<owner>/<repo>.git` 만 받는다. */
 const REMOTE_PATH_PATTERN = /^\/[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/;
-const DEFAULT_BRANCH = 'main';
+const DEFAULT_BRANCH = BLOG_LAYOUT.publishBranch;
 const DEFAULT_WORK_BASE = '/run/publish';
 const OUTBOX_RELATIVE_PATH = '.workbench/publish-outbox';
 /** outbox 는 사람만 열어 보는 자리다. 그룹·타인 권한을 남기지 않는다. */

@@ -168,13 +168,13 @@ test('reviews a public draft before explicitly creating an outbox publish artifa
   await expect(page.getByRole('heading', { name: '공개 발행 검토' })).toBeVisible();
   await expect(page.getByText('asset-publish', { exact: true })).toBeVisible();
   await expect(
-    page.getByText('src/content/posts/asset-publish.mdoc', { exact: true }),
+    page.getByText('apps/blog/src/content/posts/asset-publish.mdoc', { exact: true }),
   ).toBeVisible();
   await expect(page.getByLabel('통합 diff')).toContainText(
-    '+++ b/src/content/posts/asset-publish.mdoc',
+    '+++ b/apps/blog/src/content/posts/asset-publish.mdoc',
   );
   await expect(
-    page.getByText('public/assets/posts/asset-publish/images/flow.png', { exact: true }),
+    page.getByText('apps/blog/public/assets/posts/asset-publish/images/flow.png', { exact: true }),
   ).toBeVisible();
   expect(reviewPayload).toMatchObject({
     assetIds: [expect.stringMatching(/^[A-Za-z0-9_-]{43}$/u)],

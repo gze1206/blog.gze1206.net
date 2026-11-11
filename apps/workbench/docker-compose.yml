@@ -21,7 +21,7 @@ services:
       APP_TIME_ZONE: '${APP_TIME_ZONE:?APP_TIME_ZONE is required}'
       # 발행 대상 remote. 컨테이너에는 이 저장소에 쓸 자격 증명이 없다 — 읽기만 한다.
       PUBLIC_BLOG_REMOTE: '${PUBLIC_BLOG_REMOTE:?PUBLIC_BLOG_REMOTE is required}'
-      PUBLIC_BLOG_BRANCH: '${PUBLIC_BLOG_BRANCH:-main}'
+      PUBLIC_BLOG_BRANCH: '${PUBLIC_BLOG_BRANCH:-v4}'
       # 임시 clone 자리. 아래 tmpfs 와 같은 경로여야 한다.
       PUBLISH_WORK_BASE: /run/publish
       # 발행 커밋 identity. 없으면 부팅하지 않는다.
