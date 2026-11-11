@@ -1,0 +1,10 @@
+# 워크플로의 action 은 커밋 SHA 로 고정한다. 새 버전이 나오면 Dependabot 이 SHA 와 주석을 함께 올린다.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: v4
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: '⬆️ chore(infra)'

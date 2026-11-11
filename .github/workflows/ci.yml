@@ -1,6 +1,7 @@
 name: ci
 
 on:
+  # PR 브랜치의 코드(테스트, lifecycle 스크립트)를 실행한다. 비밀값과 쓰기 권한이 생기는 pull_request_target 으로 바꾸지 않는다.
   pull_request:
   push:
     branches: [v4, master]
@@ -16,16 +17,17 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { fetch-depth: 0 }
-      - uses: jdx/mise-action@v5
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
       - run: pnpm install --frozen-lockfile
       # 변경 영향 범위만 돈다. 계약은 두 앱이 모두 의존하므로 바뀌면 둘 다 돈다.
       - name: verify (affected)
         env:
           BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
         run: |
-          F="...[${BASE}]"
+          # 브랜치를 새로 만든 push 는 before 가 0 SHA 다. 비교 대상이 없으므로 전체를 돈다.
+          if [ -z "${BASE//0/}" ]; then F="./**"; else F="...[${BASE}]"; fi
           pnpm --filter "$F" --if-present typecheck
           pnpm --filter "$F" --if-present lint
           pnpm format:check
@@ -39,8 +41,8 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @gze1206/workbench exec playwright install --with-deps chromium
       - run: pnpm --filter @gze1206/workbench build
@@ -51,15 +53,17 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
       - run: pnpm spec:check
 
   tdd-evidence:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { fetch-depth: 0 }
-      - uses: jdx/mise-action@v5
-      - run: pnpm tdd:evidence --base origin/${{ github.base_ref }}
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - env:
+          BASE_REF: ${{ github.base_ref }}
+        run: pnpm tdd:evidence --base "origin/$BASE_REF"
