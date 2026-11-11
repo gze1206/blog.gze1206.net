@@ -7,5 +7,27 @@
 docs
 apps/blog/*
 !apps/blog/package.json
+# 비밀값이 될 수 있는 파일은 컨텍스트에 넣지 않는다(옛 워크벤치 제외 목록을 옮겼다).
 .env
 **/.env
+.env.*
+**/.env.*
+!**/.env.example
+**/.git-credentials
+**/.netrc
+**/.aws/
+**/credentials
+**/credentials.json
+**/service-account*
+**/service_account*
+**/deploy_key*
+**/.ssh/
+**/id_*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+# 루트 .npmrc 는 빌드에 쓴다(비밀값 없음). 하위 디렉터리의 .npmrc 는 넣지 않는다.
+apps/**/.npmrc
+packages/**/.npmrc
+**/coverage
