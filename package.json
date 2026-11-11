@@ -16,7 +16,7 @@
     "dev:workbench": "pnpm --filter @gze1206/workbench dev",
     "typecheck": "pnpm -r --if-present typecheck",
     "e2e": "pnpm -r --if-present e2e",
-    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build && pnpm boundaries",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build && pnpm boundaries && pnpm spec:check",
     "coverage": "pnpm -r --if-present coverage",
     "boundaries": "node packages/repo-tools/src/cli/boundaries.ts",
     "spec:check": "node packages/repo-tools/src/cli/spec-check.ts",
