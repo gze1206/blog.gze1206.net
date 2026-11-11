@@ -7,9 +7,8 @@
  * 이 모듈은 **판단만** 한다 — 파일을 읽지도 쓰지도 않는다. 무엇을 어디에 쓸지 정하는 일과
  * 실제로 쓰는 일을 갈라 두어야, 충돌 처리 규칙을 파일 시스템 없이 시험할 수 있다.
  */
+import { SLUG_PATTERN } from '@gze1206/content-contract';
 import { parseFrontmatter, serializeFrontmatter } from '../document/frontmatter.js';
-
-const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 
 /** 블로그 저장소에서 읽어 온 글 하나. */
 export interface BlogPost {
@@ -126,7 +125,7 @@ export function planImport(input: {
       }
       case 'rename': {
         const slug = selection.slug;
-        if (slug === undefined || !slugPattern.test(slug)) {
+        if (slug === undefined || !SLUG_PATTERN.test(slug)) {
           throw new ImportPlanError(`invalid replacement slug for ${post.repoPath}`);
         }
         if (claimed.has(slug)) {
