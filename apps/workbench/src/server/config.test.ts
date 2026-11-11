@@ -29,7 +29,7 @@ async function environment(overrides: Record<string, string | undefined> = {}) {
       PUBLIC_BLOG_REMOTE: 'https://github.com/gze1206/blog.gze1206.net',
       PUBLISH_WORK_BASE: workBase,
       PUBLISH_GIT_AUTHOR_NAME: '김명식',
-      PUBLISH_GIT_AUTHOR_EMAIL: 'gze1206@kakao.com',
+      PUBLISH_GIT_AUTHOR_EMAIL: 'publisher@example.test',
       ...overrides,
     } satisfies Record<string, string | undefined>,
   };
@@ -172,7 +172,7 @@ describe('loadConfig', () => {
       publishWorkBase: await realpath(workBase),
       publishOutboxRoot: path.join(await realpath(workspace), '.workbench/publish-outbox'),
       publishAuthorName: '김명식',
-      publishAuthorEmail: 'gze1206@kakao.com',
+      publishAuthorEmail: 'publisher@example.test',
     });
   });
 
