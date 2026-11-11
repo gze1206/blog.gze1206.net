@@ -1,60 +1,22 @@
 {
-  "name": "blog-gze1206-net",
-  "type": "module",
-  "version": "4.0.0",
+  "name": "gze1206-net",
   "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.15.0",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=26"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "postbuild": "pagefind --site dist",
-    "preview": "astro preview",
-    "lint": "eslint .",
+    "dev:blog": "pnpm --filter @gze1206/blog dev",
+    "build": "pnpm -r --if-present build",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "test": "vitest run",
-    "astro": "astro"
-  },
-  "dependencies": {
-    "@astrojs/markdoc": "^2.0.3",
-    "@astrojs/markdown-remark": "^7.2.1",
-    "@astrojs/rss": "4.0.19",
-    "@astrojs/sitemap": "3.7.3",
-    "@fontsource/noto-serif-kr": "5.3.0",
-    "@markdoc/markdoc": "^0.5.8",
-    "@shikijs/transformers": "^4.3.1",
-    "@tailwindcss/vite": "^4.3.3",
-    "astro": "^7.1.1",
-    "cmdk": "1.1.1",
-    "katex": "^0.18.1",
-    "mermaid": "^11.16.0",
-    "pretendard": "1.3.9",
-    "rehype-katex": "^7.0.1",
-    "remark-math": "^6.0.0",
-    "satori": "^0.28.1",
-    "sharp": "^0.35.3",
-    "shiki": "^4.3.1",
-    "tailwindcss": "^4.3.3"
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "@astrojs/react": "^6.0.1",
-    "@eslint/js": "^10.0.1",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "eslint": "^10.7.0",
-    "eslint-plugin-astro": "^3.0.1",
-    "eslint-plugin-jsx-a11y": "^6.10.2",
-    "pagefind": "1.5.2",
     "prettier": "^3.9.5",
     "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-tailwindcss": "^0.8.1",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.64.0",
-    "vitest": "^4.1.10",
-    "wrangler": "4.120.0"
+    "prettier-plugin-tailwindcss": "^0.8.1"
   }
 }

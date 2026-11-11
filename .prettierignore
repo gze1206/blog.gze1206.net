@@ -1,6 +1,6 @@
-dist/
-.astro/
-node_modules/
+**/dist/
+**/.astro/
+**/node_modules/
 pnpm-lock.yaml
-public/pagefind/
+apps/blog/public/pagefind/
 .superpowers/

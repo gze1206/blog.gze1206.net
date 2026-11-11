@@ -11,7 +11,7 @@ dist/
 .netlify/
 
 # Search index (Pagefind, generated at build)
-public/pagefind/
+apps/blog/public/pagefind/
 
 # Env & secrets
 .env

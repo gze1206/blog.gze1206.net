@@ -20,7 +20,7 @@
 - 커밋: `<gitmoji> <type>(<scope>): <한국어 요약> (NOR-195)` + 필요 시 `TDD: red|green|refactor|regression` 과 `Spec: NOR-195 AC-n` trailer + `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - red 커밋은 **테스트 실패를 직접 실행해 확인한 뒤** 만든다. 처음부터 통과하는 테스트는 `TDD: regression`.
 - 공개 저장소로 push·저장소 archive·GHCR 권한·ruleset·Linear 생성은 **실행 직전 사용자 확인**.
-- 이 계획은 블로그 동작을 바꾸지 않는다. 블로그 `dist/` 는 Task 3 이후, Task 10 이후 두 번 기준선과 바이트 비교한다.
+- 이 계획은 블로그 동작을 바꾸지 않는다. Task 3 의 이동은 경로에서 나오는 해시(아일랜드 `uid`, 이미지 변환 파일명)를 바꾸고, Tailwind 자동 소스 감지 범위를 저장소 루트에서 `apps/blog` 로 좁혀 블로그가 쓰지 않는 `.contents`·`.outline` 유틸리티 2개를 뺀다. 이 차이는 경로 해시를 정규화하면 0 이다(2026-11-12 확인). 그래서 Task 3 이후의 바이트 비교 기준선은 `$BASE/post-move.sha` 다.
 - 공개 문서에 Tailnet 도메인·Tailscale IP·호스트명·개인 이메일·로컬 절대 경로를 남기지 않는다.
 - 셸을 새로 열 때마다 아래 두 줄을 먼저 실행한다. Task 2 이후의 바이트 비교가 이것을 쓴다.
 
@@ -558,7 +558,7 @@ declare module '/pagefind/pagefind.js' {
 pnpm --filter @gze1206/blog typecheck 2>&1 | tail -4
 pnpm --filter @gze1206/blog test 2>&1 | grep -E "Tests "
 pnpm --filter @gze1206/blog build && hashdist apps/blog/dist > "$BASE/post-ts6.sha"
-diff "$BASE/pre-a.sha" "$BASE/post-ts6.sha" && echo IDENTICAL
+diff "$BASE/post-move.sha" "$BASE/post-ts6.sha" && echo IDENTICAL
 ```
 
 Expected: `0 errors`, `388 passed`, `IDENTICAL`. `export =` 선언이 `as PagefindModule` 단언과 충돌해 오류가 나면 `const pagefind: { search(query: string): Promise<unknown> }; export = pagefind;` 처럼 `unknown` 을 구체 타입으로 바꾼다.

@@ -7,6 +7,18 @@ settings:
 importers:
 
   .:
+    devDependencies:
+      prettier:
+        specifier: ^3.9.5
+        version: 3.9.5
+      prettier-plugin-astro:
+        specifier: ^0.14.1
+        version: 0.14.1
+      prettier-plugin-tailwindcss:
+        specifier: ^0.8.1
+        version: 0.8.1(prettier-plugin-astro@0.14.1)(prettier@3.9.5)
+
+  apps/blog:
     dependencies:
       '@astrojs/markdoc':
         specifier: ^2.0.3
@@ -90,15 +102,6 @@ importers:
       pagefind:
         specifier: 1.5.2
         version: 1.5.2
-      prettier:
-        specifier: ^3.9.5
-        version: 3.9.5
-      prettier-plugin-astro:
-        specifier: ^0.14.1
-        version: 0.14.1
-      prettier-plugin-tailwindcss:
-        specifier: ^0.8.1
-        version: 0.8.1(prettier-plugin-astro@0.14.1)(prettier@3.9.5)
       react:
         specifier: ^19.2.7
         version: 19.2.7
