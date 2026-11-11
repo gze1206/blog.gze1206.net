@@ -5,6 +5,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { describe, expect, it } from 'vitest';
+import { BLOG_LAYOUT } from '@gze1206/content-contract';
 
 import { PublicBlogAdapter } from './publicBlog.js';
 import { startHttpsGitServer } from '../../../test/fixtures/httpsGitServer.js';
@@ -30,7 +31,7 @@ publishedAt: 2026-08-12
 `;
 
 describe('PublicBlogAdapter', () => {
-  it('exports a bundle from an HTTPS shallow clone without modifying the remote', async () => {
+  it('NOR-195 AC-7: 발행 경로가 블로그 레이아웃을 따른다', async () => {
     const fixture = await createFixture();
     try {
       const adapter = fixture.adapter();
@@ -47,7 +48,7 @@ describe('PublicBlogAdapter', () => {
       expect(review.reviewId).toMatch(/^[A-Za-z0-9_-]{43}$/u);
       expect(result).toMatchObject({
         branch: 'content/safe-publish',
-        targetPath: 'src/content/posts/safe-publish.mdoc',
+        targetPath: `${BLOG_LAYOUT.postsDir}/safe-publish.mdoc`,
         baseSha: review.baseHead,
         exportFormat: 'bundle',
         exportRef: expect.stringMatching(/^safe-publish-.*\.bundle$/u),
@@ -64,10 +65,10 @@ describe('PublicBlogAdapter', () => {
       await git(consumer, 'fetch', bundle, 'content/safe-publish:content/safe-publish');
       await git(consumer, 'switch', 'content/safe-publish');
       await expect(
-        readFile(path.join(consumer, 'src/content/posts/safe-publish.mdoc'), 'utf8'),
+        readFile(path.join(consumer, BLOG_LAYOUT.postsDir, 'safe-publish.mdoc'), 'utf8'),
       ).resolves.toContain('![diagram](/assets/posts/safe-publish/images/flow.png)');
       await expect(
-        readFile(path.join(consumer, 'public/assets/posts/safe-publish/images/flow.png'), 'utf8'),
+        readFile(path.join(consumer, BLOG_LAYOUT.publicDir, 'assets/posts/safe-publish/images/flow.png'), 'utf8'),
       ).resolves.toBe('approved-image');
       await expect(git(consumer, 'log', '-1', '--format=%an <%ae>|%cn <%ce>')).resolves.toBe(
         'Publish Bot <publish@example.test>|Publish Bot <publish@example.test>',
@@ -100,7 +101,7 @@ describe('PublicBlogAdapter', () => {
       await git(consumer, 'switch', '-c', 'content/safe-publish', result.baseSha);
       await git(consumer, 'am', path.join(fixture.outboxRoot, result.exportRef));
       await expect(
-        readFile(path.join(consumer, 'src/content/posts/safe-publish.mdoc'), 'utf8'),
+        readFile(path.join(consumer, BLOG_LAYOUT.postsDir, 'safe-publish.mdoc'), 'utf8'),
       ).resolves.toContain('slug: safe-publish');
     } finally {
       await fixture.close();
@@ -182,7 +183,7 @@ async function createFixture(seedPosts: Readonly<Record<string, string>> = {}) {
   const privateRoot = path.join(root, 'workspace');
   const workBase = path.join(root, 'work');
   const outboxRoot = path.join(root, 'outbox');
-  await mkdir(path.join(sourceRoot, 'src/content/posts'), { recursive: true });
+  await mkdir(path.join(sourceRoot, BLOG_LAYOUT.postsDir), { recursive: true });
   await mkdir(path.join(privateRoot, 'assets/public', documentId, 'images'), { recursive: true });
   await mkdir(workBase);
   await mkdir(outboxRoot);
@@ -251,10 +252,10 @@ async function onlyAsset(adapter: PublicBlogAdapter) {
 describe('PublicBlogAdapter 가져오기', { timeout: 30_000 }, () => {
   it('글과 그 시점의 커밋을 함께 읽고, 임시 clone 을 남기지 않는다', async () => {
     const fixture = await createFixture({
-      'src/content/posts/alpha.mdoc': `---\ntitle: 알파\nslug: alpha\ncategory: Programming\nupdatedAt: 2026-08-01\ndraft: false\n---\n\n본문\n`,
-      'src/content/posts/beta.mdoc': `---\ntitle: 베타\nslug: beta\ncategory: Programming\nupdatedAt: 2026-08-02\ndraft: true\n---\n\n본문\n`,
+      [`${BLOG_LAYOUT.postsDir}/alpha.mdoc`]: `---\ntitle: 알파\nslug: alpha\ncategory: Programming\nupdatedAt: 2026-08-01\ndraft: false\n---\n\n본문\n`,
+      [`${BLOG_LAYOUT.postsDir}/beta.mdoc`]: `---\ntitle: 베타\nslug: beta\ncategory: Programming\nupdatedAt: 2026-08-02\ndraft: true\n---\n\n본문\n`,
       // 프론트매터가 깨진 글도 목록에서 빼지 않는다 — 사라지면 블로그에 없는 글로 오해한다.
-      'src/content/posts/broken.mdoc': `---\ntitle: [깨진\n---\n\n본문\n`,
+      [`${BLOG_LAYOUT.postsDir}/broken.mdoc`]: `---\ntitle: [깨진\n---\n\n본문\n`,
     });
 
     const result = await fixture.adapter().listImportablePosts();
@@ -263,7 +264,7 @@ describe('PublicBlogAdapter 가져오기', { timeout: 30_000 }, () => {
     expect(result.posts.map((post) => post.slug)).toEqual(['alpha', 'beta', 'broken']);
     // draft 상태를 그대로 보여 줘야 무엇을 가져올지 판단할 수 있다.
     expect(result.posts.map((post) => post.draft)).toEqual([false, true, false]);
-    expect(result.posts[0]?.repoPath).toBe('src/content/posts/alpha.mdoc');
+    expect(result.posts[0]?.repoPath).toBe(`${BLOG_LAYOUT.postsDir}/alpha.mdoc`);
     // 읽기만 했으므로 세션으로 남길 이유가 없다.
     expect(await readdir(fixture.workBase)).toEqual([]);
   });

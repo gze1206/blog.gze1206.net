@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { BLOG_LAYOUT } from '@gze1206/content-contract';
 
 import { loadConfig } from './config.js';
 
@@ -82,11 +83,11 @@ describe('loadConfig', () => {
     });
   });
 
-  it('발행 대상 브랜치의 기본값은 main 이다', async () => {
+  it('NOR-195 AC-7: 발행 대상 브랜치의 기본값은 v4 다', async () => {
     const { env } = await environment();
 
-    expect(loadConfig(env).publicBlogBranch).toBe('main');
-    expect(loadConfig({ ...env, PUBLISH_BRANCH: 'x' }).publicBlogBranch).toBe('main');
+    expect(loadConfig(env).publicBlogBranch).toBe(BLOG_LAYOUT.publishBranch);
+    expect(loadConfig({ ...env, PUBLISH_BRANCH: 'x' }).publicBlogBranch).toBe(BLOG_LAYOUT.publishBranch);
     expect(loadConfig({ ...env, PUBLIC_BLOG_BRANCH: 'release' }).publicBlogBranch).toBe('release');
   });
 
@@ -165,7 +166,7 @@ describe('loadConfig', () => {
       workspaceRoot: await realpath(workspace),
       appTimeZone: 'Asia/Seoul',
       publicBlogRemote: 'https://github.com/gze1206/blog.gze1206.net',
-      publicBlogBranch: 'main',
+      publicBlogBranch: BLOG_LAYOUT.publishBranch,
       publishWorkBase: await realpath(workBase),
       publishOutboxRoot: path.join(await realpath(workspace), '.workbench/publish-outbox'),
       publishAuthorName: '김명식',
