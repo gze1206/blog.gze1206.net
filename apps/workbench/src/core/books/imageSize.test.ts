@@ -62,3 +62,13 @@ it('NOR-196 AC-13: readImageSize 는 PNG·JPEG·WebP 헤더에서 크기를 읽�
   }
   expect(readImageSize(Uint8Array.from([1, 2, 3]))).toBeNull();
 });
+
+it('NOR-196 AC-13: 표지의 가로 또는 세로가 10000px을 넘으면 거부한다', () => {
+  const bytes = Buffer.from('89504e470d0a1a0a0000000d494844520000271100000001', 'hex');
+  expect(readImageSize(bytes)).toBeNull();
+  bytes.writeUInt32BE(10000, 16);
+  bytes.writeUInt32BE(10001, 20);
+  expect(readImageSize(bytes)).toBeNull();
+  bytes.writeUInt32BE(10000, 20);
+  expect(readImageSize(bytes)).toEqual({ width: 10000, height: 10000, type: 'png' });
+});

@@ -194,3 +194,17 @@ it('NOR-196 AC-13: 작업 공간의 정규 파일이 아니면 읽지 않는다'
     await f.close();
   }
 });
+
+it('NOR-196 AC-13: 5 MiB를 넘는 표지를 거부한다', { timeout: 30000 }, async () => {
+  const f = await fixture();
+  try {
+    await writeFile(path.join(f.workspace, 'books/책.md'), document('cover: assets/books/new.png'));
+    await writeFile(
+      path.join(f.workspace, 'assets/books/new.png'),
+      Buffer.concat([png, Buffer.alloc(5 * 1024 * 1024)]),
+    );
+    await expect(f.adapter.reviewBook('책')).rejects.toThrow('book cover is too large');
+  } finally {
+    await f.close();
+  }
+});
