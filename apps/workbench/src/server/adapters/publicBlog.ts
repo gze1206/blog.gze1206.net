@@ -401,9 +401,9 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     if (!isBookId(id)) throw new Error('invalid book id');
     const documentPath = `books/${id}.md`;
     await assertNoSymlinkAncestors(this.options.privateRoot, documentPath);
-    const record = parseDocument(
-      await readFile(await resolveWorkspacePath(this.options.privateRoot, documentPath), 'utf8'),
-    );
+    const documentFile = await resolveWorkspacePath(this.options.privateRoot, documentPath);
+    await assertRegularFile(documentFile);
+    const record = parseDocument(await readFile(documentFile, 'utf8'));
     if (record.kind !== 'book' || bookIdOf(record) !== id)
       throw new Error('book id does not match document');
     const targetPath = `${BLOG_LAYOUT.booksDir}/${id}.json`;
@@ -430,9 +430,9 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       if (!/^assets\/books\/[^/]+\.(?:jpe?g|png|webp)$/iu.test(record.cover))
         throw new Error('invalid book cover path');
       await assertNoSymlinkAncestors(this.options.privateRoot, record.cover);
-      coverBytes = await readFile(
-        await resolveWorkspacePath(this.options.privateRoot, record.cover),
-      );
+      const coverFile = await resolveWorkspacePath(this.options.privateRoot, record.cover);
+      await assertRegularFile(coverFile);
+      coverBytes = await readFile(coverFile);
       const size = readImageSize(coverBytes);
       if (!size) throw new Error('unsupported book cover image');
       const ext = path.extname(record.cover).toLowerCase();
@@ -550,10 +550,9 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       const relativePath = `books/${id}.md`;
       await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
       try {
-        books.set(
-          id,
-          parseDocument(await readFile(path.join(this.options.privateRoot, relativePath), 'utf8')),
-        );
+        const bookFile = await resolveWorkspacePath(this.options.privateRoot, relativePath);
+        await assertRegularFile(bookFile);
+        books.set(id, parseDocument(await readFile(bookFile, 'utf8')));
       } catch (error) {
         if (!isNodeError(error) || error.code !== 'ENOENT') throw error;
       }
@@ -840,4 +839,8 @@ async function assertNoSymlinkAncestors(root: string, relativePath: string): Pro
 
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && 'code' in error;
+}
+
+async function assertRegularFile(file: string): Promise<void> {
+  if (!(await lstat(file)).isFile()) throw new Error('not a regular file');
 }
