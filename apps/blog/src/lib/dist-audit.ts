@@ -14,7 +14,10 @@ export interface AuditFinding {
   path: string;
   detail: string;
 }
-export function isSmokeEnabled(env: { DEV?: boolean; BLOG_SMOKE?: string }): boolean {
+export function isSmokeEnabled(env: {
+  DEV?: boolean | undefined;
+  BLOG_SMOKE?: string | undefined;
+}): boolean {
   return env.DEV === true || env.BLOG_SMOKE === '1';
 }
 export const SMOKE_ENABLED = isSmokeEnabled({
@@ -49,7 +52,9 @@ export function auditDist(input: AuditInput): AuditFinding[] {
       /<meta\b[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/gi,
     )) {
       try {
-        const url = new URL(match[1], 'https://gze1206.net');
+        const value = match[1];
+        if (value === undefined) continue;
+        const url = new URL(value, 'https://gze1206.net');
         if (
           url.origin !== 'https://gze1206.net' ||
           !url.pathname.startsWith('/og/') ||
@@ -89,7 +94,7 @@ export function auditDist(input: AuditInput): AuditFinding[] {
       ...file.html.matchAll(
         /<(?:script|link)\b[^>]*(?:src|href)=["']\/([^"'?#]+)[^"']*["'][^>]*>/gi,
       ),
-    ].map((match) => match[1]);
+    ].flatMap((match) => (match[1] === undefined ? [] : [match[1]]));
     const hasMath = /class=["'][^"']*\bkatex\b[^"']*["']/i.test(file.html);
     const hasKatexCss = refs.some((ref) => katexAssets.has(ref));
     if (hasMath !== hasKatexCss)

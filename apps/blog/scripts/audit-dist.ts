@@ -20,7 +20,7 @@ const drafts = [];
 for (const path of posts.filter((path) => /\.(?:md|mdoc)$/.test(path))) {
   const text = await readFile(path, 'utf8');
   const frontmatter = text.match(/^---\s*\n([\s\S]*?)\n---(?:\s*\n|$)/);
-  if (!frontmatter) throw new Error(`Missing frontmatter: ${path}`);
+  if (!frontmatter || frontmatter[1] === undefined) throw new Error(`Missing frontmatter: ${path}`);
   const post = postSchema.parse(parse(frontmatter[1]));
   if (post.draft) drafts.push(post);
 }

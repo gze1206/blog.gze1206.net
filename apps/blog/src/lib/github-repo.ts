@@ -18,10 +18,10 @@ export interface RepoSlug {
 
 export interface GitHubRepoMeta {
   fullName: string;
-  description?: string;
+  description?: string | undefined;
   stars: number;
   forks: number;
-  language?: string;
+  language?: string | undefined;
   url: string;
 }
 
