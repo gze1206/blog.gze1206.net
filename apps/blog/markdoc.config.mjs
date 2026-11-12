@@ -1,3 +1,4 @@
+import { bookquoteTag } from '@gze1206/content-contract';
 import { defineMarkdocConfig, component, nodes } from '@astrojs/markdoc/config';
 import { createHighlighter } from 'shiki';
 import Markdoc from '@markdoc/markdoc';
@@ -154,6 +155,7 @@ export default defineMarkdocConfig({
     },
   },
   tags: {
+    bookquote: { ...bookquoteTag, render: component('./src/components/markdoc/BookQuote.astro') },
     // 커스텀 블럭(NOR-15). 속성 스키마는 작성 도구가 그대로 매핑한다.
     // 의미·동작은 docs/spec/NOR-15-custom-blocks.md, 데이터 취득 전략은 ADR 0008 참고.
     bookmark: {

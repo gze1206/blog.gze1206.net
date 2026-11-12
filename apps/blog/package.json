@@ -12,7 +12,7 @@
     "postbuild": "pagefind --site dist",
     "preview": "astro preview",
     "lint": "eslint .",
-    "test": "vitest run --exclude e2e/**",
+    "test": "vitest run --exclude 'e2e/**'",
     "astro": "astro",
     "typecheck": "astro check",
     "coverage": "vitest run --coverage",
