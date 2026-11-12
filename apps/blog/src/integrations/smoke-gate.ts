@@ -1,6 +1,5 @@
-import { readdir, readFile, rm } from 'node:fs/promises';
-import { parse } from 'yaml';
-import { postSchema } from '@gze1206/content-contract';
+import { rm } from 'node:fs/promises';
+import { collectPosts } from '../lib/draft-list.ts';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AstroIntegration } from 'astro';
@@ -18,21 +17,6 @@ export async function removeSmokeOutput(distDir: string, smoke: boolean, draftSl
   }
 }
 
-async function draftSlugs(dir: string): Promise<string[]> {
-  const entries = await readdir(dir, { withFileTypes: true });
-  const slugs = await Promise.all(entries.map(async (entry): Promise<string[]> => {
-    const name = path.join(dir, entry.name);
-    if (entry.isDirectory()) return draftSlugs(name);
-    if (!/\.(?:md|mdoc)$/.test(name)) return [];
-    const text = await readFile(name, 'utf8');
-    const frontmatter = text.match(/^---\s*\n([\s\S]*?)\n---(?:\s*\n|$)/);
-    if (!frontmatter?.[1]) throw new Error(`Missing frontmatter: ${name}`);
-    const post = postSchema.parse(parse(frontmatter[1]));
-    return post.draft ? [post.slug] : [];
-  }));
-  return slugs.flat();
-}
-
 export function smokeGate(): AstroIntegration {
   return {
     name: 'smoke-gate',
@@ -41,7 +25,7 @@ export function smokeGate(): AstroIntegration {
         await removeSmokeOutput(
           fileURLToPath(dir),
           isSmokeEnabled({ DEV: false, BLOG_SMOKE: process.env.BLOG_SMOKE }),
-          await draftSlugs('src/content/posts'),
+          (await collectPosts('src/content/posts')).filter((post) => post.draft).map((post) => post.slug),
         );
       },
     },

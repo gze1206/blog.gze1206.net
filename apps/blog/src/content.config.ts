@@ -1,5 +1,6 @@
 import { defineCollection } from 'astro:content';
 import { file, glob } from 'astro/loaders';
+import { POST_GLOB } from './lib/post-glob.ts';
 import {
   bookSchema,
   experienceSchema,
@@ -10,7 +11,7 @@ import {
 } from './content/schemas';
 
 const posts = defineCollection({
-  loader: glob({ base: './src/content/posts', pattern: '**/*.{md,mdx,mdoc}' }),
+  loader: glob({ base: './src/content/posts', pattern: POST_GLOB }),
   schema: postSchema,
 });
 
