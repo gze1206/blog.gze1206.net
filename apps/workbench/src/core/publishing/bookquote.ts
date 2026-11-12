@@ -14,6 +14,15 @@ export function expandBookquotes(
   body: string,
   lookup: BookLookup,
 ): { body: string; quotes: ExpandedQuote[] } {
+  for (const match of body.matchAll(/\{%\s*(\/?[^\s/%}]+)/gu)) {
+    const name = match[1];
+    if (
+      name &&
+      ['/bookquote', 'bookquote'].includes(name.replace(/\p{Cf}/gu, '').toLowerCase()) &&
+      name !== 'bookquote'
+    )
+      throw new PublicDraftValidationError('invalid bookquote source');
+  }
   const quotes: ExpandedQuote[] = [];
   const expanded = body.replace(/\{%\s*bookquote\b[\s\S]*?%\}/gu, (tag) => {
     const match = /^\{%\s*bookquote\s+book="([^"\r\n]+)"\s+excerpt="([^"\r\n]+)"\s*\/%\}$/u.exec(
