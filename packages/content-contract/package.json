@@ -17,7 +17,7 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@gze1206/config": "workspace:*",
-    "@markdoc/markdoc": "^0.5.8",
+    "@markdoc/markdoc": "catalog:",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "eslint-config-prettier": "catalog:",

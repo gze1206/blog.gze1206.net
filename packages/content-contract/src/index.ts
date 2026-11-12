@@ -24,3 +24,4 @@ export {
   isBookId,
   type PublicBook,
 } from './book.js';
+export { bookquoteTag, renderBookquote, type BookquoteSource } from './bookquote.js';
