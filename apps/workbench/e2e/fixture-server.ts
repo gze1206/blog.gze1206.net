@@ -42,6 +42,43 @@ date: 2026-08-11
 - □ 두 번째 남은 일 <!-- wb:id=01J5AR7W6M3Q9N8K2T4V1X0ZBD -->
 `,
 );
+await mkdir(path.join(workspaceRoot, 'books'));
+await writeFile(
+  path.join(workspaceRoot, 'books/9788934972464.md'),
+  `---
+title: 인용 테스트
+kind: book
+createdAt: 2026-08-12
+updatedAt: 2026-08-12
+authors: [저자]
+isbn13: '9788934972464'
+status: reading
+format: paper
+source: purchase
+visible: true
+excerpts:
+  - id: quote1
+    text: 공개할 문장
+---
+`,
+);
+await writeFile(
+  path.join(workspaceRoot, 'drafts/quote-test.md'),
+  `---
+title: Quote test
+kind: public-draft
+createdAt: 2026-08-12
+updatedAt: 2026-08-12
+publicEligible: true
+description: quote test
+slug: quote-test
+category: engineering
+tags: [git]
+publishedAt: 2026-08-12
+---
+{% bookquote book="9788934972464" excerpt="quote1" /%}
+`,
+);
 const seededDraftPath = 'drafts/asset-publish.md';
 const seededDraftId = createHash('sha256').update(seededDraftPath, 'utf8').digest('base64url');
 await writeFile(

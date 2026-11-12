@@ -197,3 +197,24 @@ test('reviews a public draft before explicitly creating an outbox publish artifa
   expect(confirmPayload).not.toHaveProperty('source');
   expect(confirmPayload).not.toHaveProperty('assets');
 });
+
+test('NOR-196 AC-16: 공개 구절을 글 발행 검토에서 펼친다', async ({ page }) => {
+  const patches: unknown[] = [];
+  page.on('request', (request) => {
+    if (request.method() === 'PUT' && request.url().includes('/excerpts/0'))
+      patches.push(request.postDataJSON());
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: /인용 테스트 book/u }).click();
+  await page.getByLabel('공개', { exact: true }).check();
+  await expect.poll(() => patches.length).toBe(1);
+  expect(patches[0]).toMatchObject({ text: '공개할 문장', public: true });
+  await page.getByLabel('공개', { exact: true }).uncheck();
+  await expect.poll(() => patches.length).toBe(2);
+  expect(patches[1]).toMatchObject({ text: '공개할 문장', public: false });
+  await page.getByLabel('공개', { exact: true }).check();
+  await expect.poll(() => patches.length).toBe(3);
+  await page.getByRole('button', { name: /Quote test public-draft/u }).click();
+  await page.getByRole('button', { name: '발행 검토' }).click();
+  await expect(page.getByLabel('통합 diff')).toContainText('{% bookquote book=');
+});
