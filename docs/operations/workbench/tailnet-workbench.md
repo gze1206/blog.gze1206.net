@@ -5,7 +5,8 @@
 Serve/ACL 변경, DNS 공개, GHCR 패키지 발행은 외부 최종 단계로 남겨 두며 사용자 승인 전에는
 실행하지 않는다.
 
-> 호스트를 새로 만든다면 [proxmox-lxc.md](./proxmox-lxc.md) 에 사양이 정리되어 있다.
+> 지금 운영하는 호스트(OCI arm64)의 실제 형상은 [oci.md](./oci.md) 에 있다. Proxmox LXC 로 새로 만든다면
+> [proxmox-lxc.md](./proxmox-lxc.md) 를 본다.
 >
 > 같은 호스트에서 공개 댓글 서버도 돌린다면 [waline-comments.md](./waline-comments.md) 를
 > 함께 본다. 그 서비스는 이 문서의 Tailnet 경계 **밖**이며, 네트워크를 분리해 둔다.
@@ -73,9 +74,9 @@ SSH 키가 필요한 호스트 측 수동 Git 작업은 별도 deploy key를 사
 
 ## 이미지는 CI 가 만든다
 
-`.github/workflows/publish-image.yml` 가 GHCR 에 이미지를 올린다. 호스트에서 빌드하지 않는다.
+`.github/workflows/workbench-image.yml` 가 GHCR 에 linux/arm64 이미지를 올린다. 호스트에서 빌드하지 않는다.
 
-- **언제**: `v*` 태그, 그리고 런타임에 들어가는 파일이 바뀐 `main` 푸시. 문서만 고친 커밋으로는
+- **언제**: `workbench-v*` 태그, 그리고 워크벤치·계약·설정·lockfile 이 바뀐 `main` 푸시. 문서만 고친 커밋으로는
   새 digest 를 만들지 않는다 — 그러면 digest 로 "무엇이 바뀌었나"를 알 수 없다. 수동 실행도 된다
 - **무엇을 먼저**: lint · format · typecheck · test · build · e2e 를 통과해야 게시한다.
   검증하지 않은 이미지는 digest 로 고정해도 안전하지 않다
@@ -83,7 +84,7 @@ SSH 키가 필요한 호스트 측 수동 Git 작업은 별도 deploy key를 사
   배포에 쓰는 것은 digest 하나이며, 워크플로 요약에 `IMAGE_DIGEST=sha256:...` 형태로 찍힌다
 - **provenance**: buildx 가 이미지에 provenance·SBOM 을 붙인다.
   `docker buildx imagetools inspect <image>@<digest>` 로 확인한다.
-  GitHub build attestation 은 개인 소유 private 저장소에서 지원되지 않아 쓰지 않는다
+  GitHub build attestation 은 쓰지 않는다(provenance·SBOM 으로 갈음한다)
 
 한 번만 해 둘 것:
 

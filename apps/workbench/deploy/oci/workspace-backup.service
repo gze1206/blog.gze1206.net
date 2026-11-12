@@ -1,0 +1,15 @@
+[Unit]
+Description=Workbench workspace backup (push + bundle)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=workbench
+Group=workbench
+Environment=HOME=/home/workbench
+ExecStart=/usr/local/lib/workbench/workspace-backup.sh
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/srv/workbench/private-workspace /srv/workbench/backups
+PrivateTmp=yes
