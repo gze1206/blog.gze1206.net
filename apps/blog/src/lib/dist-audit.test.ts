@@ -54,3 +54,23 @@ it('NOR-197 AC-6: 감사는 meta refresh 를 찾는다', () => {
     }),
   ).toContainEqual(expect.objectContaining({ rule: 'meta-refresh' }));
 });
+
+it('NOR-197 AC-7: 수식과 Mermaid 블록이 있는 페이지만 무거운 자원을 참조한다', () => {
+  const assets = [
+    { path: '_astro/katex.min.hash.css', content: '.katex{font-family:KaTeX_Main}' },
+    { path: '_astro/chunk-big.js', content: 'langium mermaid parser' },
+  ];
+  const common = { assets, draftSlugs: [], draftTitles: [], smoke: false };
+  const css = '<link rel="stylesheet" href="/_astro/katex.min.hash.css">';
+  const js = '<link rel="modulepreload" href="/_astro/chunk-big.js">';
+  const audit = (html: string) => auditDist({ ...common, files: [{ path: 'index.html', html }] });
+  expect(audit(css).map((finding) => finding.rule)).toContain('heavy-asset');
+  expect(audit('<span class="katex">x</span>').map((finding) => finding.rule)).toContain(
+    'heavy-asset',
+  );
+  expect(audit(js).map((finding) => finding.rule)).toContain('heavy-asset');
+  expect(
+    audit(`<span class="katex">x</span>${css}<pre data-language="mermaid"></pre>${js}`),
+  ).toEqual([]);
+  expect(audit('<script type="module" src="/_astro/ordinary.js"></script>')).toEqual([]);
+});
