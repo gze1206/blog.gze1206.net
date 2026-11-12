@@ -102,3 +102,8 @@ it('NOR-197 AC-1: 경로에서 draft 를 찾고 접두 충돌과 빈 제목은 �
   expect(auditDist({ ...common, assets: [{ path: 'assets/draft-example/image.png', content: null }] })).toContainEqual(expect.objectContaining({ rule: 'draft-asset' }));
   expect(auditDist({ ...common, assets: [{ path: 'assets/draft-example-2/image.png', content: 'draft-example-2' }] })).toEqual([]);
 });
+
+it('NOR-197 AC-2: smoke 빌드도 smoke 경로 밖의 draft 누출을 검사한다', () => {
+  const input = { files: [{ path: 'index.html', html: 'draft-example' }, { path: 'smoke/index.html', html: 'draft-example' }], assets: [], draftSlugs: ['draft-example'], draftTitles: [], smoke: true };
+  expect(auditDist(input)).toEqual([expect.objectContaining({ path: 'index.html', rule: 'draft-leak' })]);
+});
