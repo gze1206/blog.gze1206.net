@@ -20,7 +20,7 @@ const document = (extra: string) =>
 async function git(root: string, ...args: string[]) {
   return (await exec('git', ['-C', root, ...args])).stdout.trim();
 }
-async function fixture(initial = '{}\n') {
+async function fixture(initial = '{}\n', { staleCovers = true } = {}) {
   const root = await mkdtemp(path.join(tmpdir(), 'book-export-'));
   const source = path.join(root, 'source');
   const workspace = path.join(root, 'workspace');
@@ -35,8 +35,10 @@ async function fixture(initial = '{}\n') {
     mkdir(outbox),
   ]);
   await writeFile(path.join(source, BLOG_LAYOUT.booksDir, '책.json'), initial);
-  for (const ext of ['jpg', 'jpeg', 'png', 'webp'])
-    await writeFile(path.join(source, BLOG_LAYOUT.bookCoversDir, `책.${ext}`), 'old');
+  await writeFile(path.join(source, BLOG_LAYOUT.bookCoversDir, '.gitkeep'), '');
+  if (staleCovers)
+    for (const ext of ['jpg', 'jpeg', 'png', 'webp'])
+      await writeFile(path.join(source, BLOG_LAYOUT.bookCoversDir, `책.${ext}`), 'old');
   await writeFile(path.join(workspace, 'assets/books/new.png'), png);
   await git(source, 'init', '-b', 'main');
   await git(source, 'config', 'user.name', 'Fixture');
@@ -108,7 +110,9 @@ it.each([
 
 it('NOR-196 AC-13: 바뀐 것이 없으면 확정을 거부한다', { timeout: 30000 }, async () => {
   const source = document('');
-  const f = await fixture(serializePublicBook(toPublicBook(parseDocument(source))));
+  const f = await fixture(serializePublicBook(toPublicBook(parseDocument(source))), {
+    staleCovers: false,
+  });
   try {
     await writeFile(path.join(f.workspace, 'books/책.md'), source);
     expect(f.adapter).toHaveProperty('reviewBook');

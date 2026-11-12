@@ -451,7 +451,32 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         },
       };
     }
-    const plan = planBookExport({ record, current, ...(cover === undefined ? {} : { cover }) });
+    let plan = planBookExport({ record, current, ...(cover === undefined ? {} : { cover }) });
+    // 책 JSON 이 같아도 표지 파일이 다르거나(같은 확장자·크기의 새 이미지) 옛 표지가 남아 있으면 내보낸다.
+    if (plan.kind === 'noop' && record.visible !== false && current !== null) {
+      const desiredCover =
+        cover === undefined
+          ? undefined
+          : `${BLOG_LAYOUT.bookCoversDir}/${id}${path.extname(cover.workspacePath).toLowerCase()}`;
+      const desiredHash =
+        coverBytes === undefined ? null : createHash('sha256').update(coverBytes).digest('hex');
+      const coverChanged =
+        desiredCover !== undefined &&
+        coverStates.find((state) => state.relativePath === desiredCover)?.contentHash !==
+          desiredHash;
+      const staleCover = coverStates.some(
+        (state) => state.exists && state.relativePath !== desiredCover,
+      );
+      if (coverChanged || staleCover)
+        plan = {
+          kind: 'write',
+          path: targetPath,
+          content: current,
+          ...(desiredCover === undefined || cover === undefined
+            ? {}
+            : { cover: { from: cover.workspacePath, to: desiredCover } }),
+        };
+    }
     let diff =
       plan.kind === 'noop'
         ? ''
