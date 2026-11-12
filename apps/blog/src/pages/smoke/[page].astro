@@ -1,0 +1,28 @@
+---
+import { SMOKE_ENABLED } from '../../lib/dist-audit';
+import Blocks from '../../components/smoke/blocks.astro';
+import Cil from '../../components/smoke/cil.astro';
+import Codeblock from '../../components/smoke/codeblock.astro';
+import Markdoc from '../../components/smoke/markdoc.astro';
+import MathMermaid from '../../components/smoke/math-mermaid.astro';
+import Media from '../../components/smoke/media.astro';
+
+const pages = {
+  blocks: Blocks,
+  cil: Cil,
+  codeblock: Codeblock,
+  markdoc: Markdoc,
+  'math-mermaid': MathMermaid,
+  media: Media,
+};
+export function getStaticPaths() {
+  return SMOKE_ENABLED
+    ? ['blocks', 'cil', 'codeblock', 'markdoc', 'math-mermaid', 'media'].map((page) => ({
+        params: { page },
+      }))
+    : [];
+}
+const Component = pages[Astro.params.page as keyof typeof pages];
+---
+
+<Component />
