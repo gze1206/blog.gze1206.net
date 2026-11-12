@@ -39,7 +39,7 @@ docs/                   # 저장소 공통 계획·규약·ADR·spec (루트에 
 ```
 
 - 공용 의존성(typescript, zod, vitest, react, tailwindcss, eslint 등)의 버전은 `pnpm-workspace.yaml` 의 `catalog` 에서 한 곳에 관리하고, 각 패키지는 `"catalog:"` 로 참조한다.
-- Node·pnpm 버전은 루트 `mise.toml`(Node 26, pnpm 11.15.0)과 `packageManager` 필드가 단일 출처다.
+- Node·pnpm 버전은 루트 `mise.toml`(Node 26, pnpm 12.18.0)과 `packageManager` 필드가 단일 출처다.
 - **인터랙티브 요소는 `islands/` 로 격리**하고 `client:visible` / `client:idle` 등으로 지연 로드. 정적 컴포넌트에 클라이언트 JS를 섞지 않는다.
 - 라우트별 로직은 `pages/` 최소화, 재사용 로직은 `components/`·유틸로.
 
@@ -47,6 +47,7 @@ docs/                   # 저장소 공통 계획·규약·ADR·spec (루트에 
 
 - `apps/*` 는 `packages/*` 만 import 한다. 앱끼리 import 하지 않는다.
 - `packages/*` 는 `apps/*` 를 import 하지 않는다. 패키지끼리는 import 할 수 있다.
+- `pnpm dead-exports` 는 블로그의 미사용 export 와 미사용 모듈을 검사한다.
 - `pnpm boundaries` 가 이 규칙을 검사한다. 각 패키지의 `.ts`·`.tsx`·`.mts`·`.mjs`·`.js`·`.astro` 파일에서 import·export·`import()` 문자열을 읽고(`node_modules`·`dist`·`.astro`·`test-results`·`playwright-report` 디렉터리는 건너뛴다) 두 경우를 위반으로 보고한다.
   - 상대 경로 import 를 풀었을 때 자기 패키지 디렉터리를 벗어난다(예: `../../workbench/src/…`).
   - 다른 앱의 패키지 이름(`@gze1206/blog`, `@gze1206/workbench`, 하위 경로 포함)을 import 한다.
@@ -65,8 +66,8 @@ docs/                   # 저장소 공통 계획·규약·ADR·spec (루트에 
 
 ## 테스트
 
-- 단위·통합 테스트는 Vitest 4 다. 루트 `pnpm test` 는 `pnpm -r --if-present test` 로 패키지마다 **자기 디렉터리에서** 돈다. 블로그 코드가 `process.cwd()` 기준 경로를 쓰기 때문이다.
-- 블로그 Vitest 는 `e2e/**` 를 제외한다(`vitest run --exclude e2e/**`). 블로그 e2e 는 Playwright(`pnpm e2e`)로 따로 돌며, `playwright.config.ts` 의 `webServer` 가 `pnpm build && pnpm preview` 로 빌드 산출물을 띄운다. dev 서버는 draft 를 보여 주므로 쓰지 않는다.
+- 단위·통합 테스트는 Vitest 5 다. 루트 `pnpm test` 는 `pnpm -r --if-present test` 로 패키지마다 **자기 디렉터리에서** 돈다. 블로그 코드가 `process.cwd()` 기준 경로를 쓰기 때문이다.
+- 블로그 Vitest 는 `e2e/**` 를 제외한다(`vitest run --exclude e2e/**`). 블로그 e2e 는 Playwright(`pnpm e2e`)의 두 프로젝트로 돌며, 프로덕션 빌드와 `BLOG_SMOKE=1` 빌드를 각각 별도 preview 서버로 검사한다. smoke 페이지는 개발 서버와 `BLOG_SMOKE=1` 빌드에서만 생성된다.
 - 워크벤치 Vitest 는 `src/**/*.test.{ts,tsx}` 만 돈다. 워크벤치 e2e 는 빌드된 `dist/web` 을 띄우므로 먼저 워크벤치를 빌드한다.
 - 커버리지는 `pnpm coverage`(v8 provider). 지금은 리포트만 남긴다.
 - 수용 기준과의 연결(테스트 이름 `NOR-N AC-n:`)과 red→green 규칙은 [workflow.md](./workflow.md#tdd).
@@ -98,7 +99,7 @@ GitHub Actions 두 개가 있다.
 
 ## 커밋 전 체크
 
-1. `pnpm verify` 통과: `typecheck` → `lint` → `format:check` → `test` → `build` → `boundaries` → `spec:check` 순서로 돈다.
+1. `pnpm verify` 통과: `typecheck` → `lint` → `format:check` → `test` → `build` → `boundaries` → `dead-exports` → `spec:check` 순서로 돈다.
 2. 화면이나 서버 동작을 바꿨다면 `pnpm e2e` 통과.
 3. 관련 일감 완료 조건 충족.
 
