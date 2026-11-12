@@ -41,3 +41,10 @@ it('NOR-197 AC-2: 공개 Cloudflare 배포에서 smoke 빌드를 거부한다', 
   expect(() => setup?.({} as never)).not.toThrow();
   vi.unstubAllEnvs();
 });
+
+it('NOR-199 AC-2: publishBranch 의 Pages 배포만 프로덕션이다', async () => {
+  const { isProductionDeploy } = await import('./smoke-gate.ts');
+  expect(isProductionDeploy({ CF_PAGES: '1', CF_PAGES_BRANCH: 'main' })).toBe(true);
+  expect(isProductionDeploy({ CF_PAGES: '1', CF_PAGES_BRANCH: 'v4' })).toBe(false);
+  expect(isProductionDeploy({ CF_PAGES_BRANCH: 'main' })).toBe(false);
+});
