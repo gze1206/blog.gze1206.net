@@ -208,3 +208,21 @@ it('NOR-196 AC-13: 5 MiB를 넘는 표지를 거부한다', { timeout: 30000 }, 
     await f.close();
   }
 });
+
+it('NOR-196 AC-13: 표지 메타데이터는 경고하고 발행을 막지 않는다', { timeout: 30000 }, async () => {
+  const f = await fixture();
+  try {
+    await writeFile(path.join(f.workspace, 'books/책.md'), document('cover: assets/books/new.png'));
+    await writeFile(
+      path.join(f.workspace, 'assets/books/new.png'),
+      Buffer.concat([png, Buffer.from('000000007445587400000000', 'hex')]),
+    );
+    const review = await f.adapter.reviewBook('책');
+    expect(review.warnings).toEqual(['표지에 메타데이터(EXIF 등)가 있습니다: tEXt']);
+    await expect(
+      f.adapter.publishBook('책', { confirmPublish: true, reviewId: review.reviewId }),
+    ).resolves.toHaveProperty('commit');
+  } finally {
+    await f.close();
+  }
+});
