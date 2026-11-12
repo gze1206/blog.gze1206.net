@@ -339,3 +339,31 @@ describe('NOR-196 책 내보내기', { timeout: 30_000 }, () => {
     }
   });
 });
+
+it('NOR-196 AC-12: 발행 검토 응답에 인용 길이와 경고가 있다', { timeout: 30_000 }, async () => {
+  const fixture = await createFixture();
+  try {
+    await mkdir(path.join(fixture.privateRoot, 'books'), { recursive: true });
+    const text = '가'.repeat(501);
+    const id = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
+    const source = `---\ntitle: 책\nkind: book\ncreatedAt: 2026-01-01\nupdatedAt: 2026-01-01\nauthors: [저자]\nstatus: reading\nexcerpts:\n  - id: ${id}\n    text: ${text}\n    public: true\n---\n`;
+    await writeFile(path.join(fixture.privateRoot, 'books/책.md'), source);
+    const quoteDraft = draft.replace(
+      '![diagram](images/flow.png)',
+      `{% bookquote book="책" excerpt="${id}" /%}`,
+    );
+    const review = await fixture.adapter().review({ documentId, source: quoteDraft, assetIds: [] });
+    expect(review.quotes).toMatchObject([{ book: '책', length: 501, bookPublicTotal: 501 }]);
+    expect(review.warnings).toHaveLength(1);
+    expect(review.diff).toContain(text);
+    await writeFile(
+      path.join(fixture.privateRoot, 'books/책.md'),
+      source.replace(text, 'file://private'),
+    );
+    await expect(
+      fixture.adapter().review({ documentId, source: quoteDraft, assetIds: [] }),
+    ).rejects.toThrow('private leak');
+  } finally {
+    await fixture.close();
+  }
+});
