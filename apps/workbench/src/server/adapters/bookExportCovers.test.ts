@@ -184,3 +184,13 @@ it(
     }
   },
 );
+
+it('NOR-196 AC-13: 작업 공간의 정규 파일이 아니면 읽지 않는다', { timeout: 30000 }, async () => {
+  const f = await fixture();
+  try {
+    await mkdir(path.join(f.workspace, 'books/책.md'));
+    await expect(f.adapter.reviewBook('책')).rejects.toThrow('not a regular file');
+  } finally {
+    await f.close();
+  }
+});
