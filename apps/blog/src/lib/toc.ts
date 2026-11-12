@@ -76,10 +76,10 @@ export function buildToc(headings: readonly HeadingRef[]): TocEntry[] {
 }
 
 /** 글 frontmatter 의 `toc` 값. `false` 는 목차를 아예 만들지 않는다는 뜻이다. */
-export type TocMode = 'auto' | 'inline' | 'floating' | false;
+type TocMode = 'auto' | 'inline' | 'floating' | false;
 
 /** 목차를 어디에 그릴지. 둘 다 false 면 목차 마크업 자체를 내지 않는다. */
-export interface TocPlacement {
+interface TocPlacement {
   /** 글 머리의 접이식 목차. */
   readonly inline: boolean;
   /** 화면에 떠 있는 목차. `auto` 에서는 상단 목차가 보이지 않을 때만 나타난다. */

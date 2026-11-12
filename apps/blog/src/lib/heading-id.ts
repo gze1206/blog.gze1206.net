@@ -33,7 +33,7 @@ export function toHeadingId(text: string): string {
 }
 
 /** 문서 하나에 대한 id 발급기. 호출 순서가 곧 문서 안의 헤딩 순서다. */
-export type HeadingIdFactory = (text: string) => string;
+type HeadingIdFactory = (text: string) => string;
 
 /**
  * 한 문서 안에서 **중복 없는** 헤딩 id 를 발급하는 팩토리를 만든다.

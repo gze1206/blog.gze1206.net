@@ -32,7 +32,7 @@
 ### 코드 정리
 
 - **AC-8** 블로그 `tsconfig.json` 이 `noUncheckedIndexedAccess`·`exactOptionalPropertyTypes` 를 켜고 `baseUrl` 이 없으며, `pnpm --filter @gze1206/blog typecheck`(astro check)와 `tsc --noEmit` 이 오류 0이다. `coverage/` 는 검사 대상이 아니다.
-- **AC-9** `src/lib` 에 다른 파일(테스트 제외)이 import 하지 않는 export 가 없다. 이를 `repo-tools` 의 검사(`pnpm dead-exports`)가 지킨다. `legacy-post-migration.ts` 와 `findPostBySlug` 를 지운다.
+- **AC-9** `src/lib` 에 어떤 파일도 import 하지 않는 export 와, 자기 테스트만 import 하는 모듈이 없다. 이를 `repo-tools` 의 검사(`pnpm dead-exports`)가 지킨다. `legacy-post-migration.ts` 와 `findPostBySlug` 를 지운다.
 - **AC-10** `topics.astro` 의 분류 목록 생성, `portfolio.astro` 의 컬렉션 조회·정렬, `books.astro` 의 상태·형식 라벨이 `src/lib` 의 테스트된 함수로 옮겨진다.
 
 ### e2e

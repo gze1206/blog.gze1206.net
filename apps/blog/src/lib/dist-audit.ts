@@ -2,14 +2,14 @@ export interface DistFile {
   path: string;
   html: string;
 }
-export interface AuditInput {
+interface AuditInput {
   files: readonly DistFile[];
   assets: readonly { path: string; content: string | null }[];
   draftSlugs: readonly string[];
   draftTitles: readonly string[];
   smoke: boolean;
 }
-export interface AuditFinding {
+interface AuditFinding {
   rule: string;
   path: string;
   detail: string;

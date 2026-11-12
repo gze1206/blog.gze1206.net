@@ -9,11 +9,11 @@
  * 주소가 없지만 실제로 한 일 중 가장 큰 덩어리다. 링크가 없는 자리는 이미지와 담당 업무가
  * 대신 채운다.
  */
-import { getCollection } from 'astro:content';
+import { getPortfolio } from '../lib/portfolio';
 import ListLayout from '../layouts/ListLayout.astro';
 import EmptyState from '../components/EmptyState.astro';
 
-const entries = await getCollection('portfolio');
+const entries = await getPortfolio();
 
 /** 링크 종류를 화면 문구로 바꾼다. 키 이름(`repo`)을 그대로 내보내면 방문자에게는 은어다. */
 const LINK_LABELS: Record<string, string> = {

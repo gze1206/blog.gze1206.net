@@ -18,7 +18,7 @@ import { join } from 'node:path';
 
 const DEFAULT_DIR = 'node_modules/.cache/og-images';
 
-export interface BinaryCacheOptions {
+interface BinaryCacheOptions {
   /** 캐시 항목 그룹(파일명 접두사). 예: `card` */
   readonly namespace: string;
   /** 그룹 내 고유 키. **입력 전체**를 담아야 캐시가 낡지 않는다. */

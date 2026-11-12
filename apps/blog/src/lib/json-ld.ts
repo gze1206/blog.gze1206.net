@@ -1,4 +1,4 @@
-export interface ArticleJsonLdInput {
+interface ArticleJsonLdInput {
   readonly title: string;
   readonly description: string;
   readonly url: string;

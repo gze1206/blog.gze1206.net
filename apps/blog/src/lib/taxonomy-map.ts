@@ -18,7 +18,7 @@
  */
 import type { TaxonomyGraph, TaxonomyGraphNode, TaxonomyKind } from './taxonomy-graph';
 
-export interface TaxonomyMapNode extends TaxonomyGraphNode {
+interface TaxonomyMapNode extends TaxonomyGraphNode {
   readonly x: number;
   readonly y: number;
   /** 노드 반지름. 카테고리는 고정, 태그는 글 수에 따라 커진다. */

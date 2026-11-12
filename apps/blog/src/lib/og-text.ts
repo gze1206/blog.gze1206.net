@@ -145,7 +145,7 @@ export function truncateChars(text: string, maxChars: number): string {
 }
 
 /** {@link fitTitle} 결과. 그대로 카드 스타일에 넣는다. */
-export interface TitleFit {
+interface TitleFit {
   /** 하드 상한까지 자른 제목. 실제 줄바꿈은 렌더러가 한다. */
   readonly text: string;
   readonly fontSize: number;
@@ -156,7 +156,7 @@ export interface TitleFit {
   readonly estimatedLines: number;
 }
 
-export interface FitTitleOptions {
+interface FitTitleOptions {
   /** 제목이 쓸 수 있는 가로 폭(px). */
   readonly contentWidth?: number;
   /** 시도할 글자 크기(px), 큰 것부터. */
@@ -168,7 +168,7 @@ export interface FitTitleOptions {
 }
 
 /** 제목 영역 기본 가로 폭(px) — 1200 − 좌우 패딩 72×2. */
-export const TITLE_CONTENT_WIDTH = 1056;
+const TITLE_CONTENT_WIDTH = 1056;
 const DEFAULT_SIZES = [66, 58, 50, 44] as const;
 const DEFAULT_MAX_LINES = 3;
 /** 4줄 × 44px 로도 못 담는 길이. 여기서 잘라야 렌더러 clamp 가 "…" 만 남기는 일이 없다. */

@@ -13,7 +13,7 @@
  */
 import type { TaxonomyMap, TaxonomyMapEdge } from './taxonomy-map';
 
-export interface TaxonomySelection {
+interface TaxonomySelection {
   /** 선택한 노드 id. `null` 이면 전체 보기다. */
   readonly nodeId: string | null;
   /** 흐리게 처리하지 않을 노드. 전체 보기에서는 비어 있다(= 모두 또렷하다). */

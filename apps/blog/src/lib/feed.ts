@@ -1,5 +1,5 @@
 /** RSS 항목으로 내보낼 공개 글의 최소 계약 (NOR-30). */
-export interface FeedPost {
+interface FeedPost {
   readonly data: {
     readonly title: string;
     readonly description: string;
@@ -11,7 +11,7 @@ export interface FeedPost {
   };
 }
 
-export interface FeedItem {
+interface FeedItem {
   readonly title: string;
   readonly description: string;
   readonly link: string;

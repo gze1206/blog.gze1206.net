@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { findDeadExports, findDeadModules } from './find';
+import { findDeadExports, findDeadModules } from './find.ts';
 
 it('NOR-197 AC-9: Astro, 별칭, namespace와 테스트 import를 해석한다', () => {
   const files = new Map([
