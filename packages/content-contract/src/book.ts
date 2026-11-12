@@ -38,7 +38,7 @@ export const strictBookSchema = bookObject.strict();
 export const PUBLIC_BOOK_FIELDS: readonly (keyof typeof bookObject.shape)[] = Object.keys(
   bookObject.shape,
 ) as (keyof typeof bookObject.shape)[];
-export const BOOK_ID_PATTERN = /^[^\s/\\?%*:|"<>.]{1,60}$/u;
+export const BOOK_ID_PATTERN = /^[^\s\p{Cc}\p{Cf}/\\?%*:|"<>.]{1,60}$/u;
 export function isBookId(id: string): boolean {
   return BOOK_ID_PATTERN.test(id);
 }

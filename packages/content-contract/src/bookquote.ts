@@ -30,11 +30,17 @@ const BOOKQUOTE_ATTRIBUTE_ORDER = [
 ] as const satisfies readonly (keyof BookquoteSource)[];
 
 export function renderBookquote(source: BookquoteSource, text: string): string {
+  const hasControl = (value: unknown): boolean =>
+    typeof value === 'string'
+      ? /\p{Cc}/u.test(value)
+      : Array.isArray(value) && value.some(hasControl);
   if (
-    text.includes('\0') ||
-    Object.values(source).some((value) => JSON.stringify(value)?.includes('\\u0000'))
+    [...text].some(
+      (character) => character !== '\n' && character !== '\t' && /\p{Cc}/u.test(character),
+    ) ||
+    Object.values(source).some(hasControl)
   ) {
-    throw new Error('NUL is not supported');
+    throw new Error('control character is not supported');
   }
   const attributes = BOOKQUOTE_ATTRIBUTE_ORDER.filter((key) => source[key] !== undefined)
     .map((key) => `${key}=${JSON.stringify(source[key])}`)
