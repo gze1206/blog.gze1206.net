@@ -33,7 +33,7 @@
 | NOR-19  | [Keystatic 설치·구성 (Content Collections 매핑)](./blog/NOR-19-keystatic.md)      | done        |
 | NOR-27  | [메타 위생 — title/description/canonical/robots/OG](./blog/NOR-27-meta.md)        | done        |
 | NOR-28  | [OG 이미지 자동생성 (Satori)](./blog/NOR-28-og-images.md)                         | done        |
-| NOR-199 | [블로그 공개 배포와 도메인 (하위 프로젝트 4)](./blog/NOR-199-blog-launch.md) | in-progress |
+| NOR-199 | [블로그 공개 배포와 도메인 (하위 프로젝트 4)](./blog/NOR-199-blog-launch.md)      | in-progress |
 
 ### 워크벤치 (`workbench/`)
 
