@@ -34,6 +34,14 @@ it('NOR-197 AC-1: 정규화 후 공개 글과 같은 draft 제목은 경고하�
   const module = await import('./draft-list.ts');
   expect(module).toHaveProperty('selectDraftTitles');
   const warn = vi.fn();
-  expect(module.selectDraftTitles([{ title: 'Hello &amp; WORLD', draft: true }, { title: 'hello & world', draft: false }], warn)).toEqual([]);
+  expect(
+    module.selectDraftTitles(
+      [
+        { title: 'Hello &amp; WORLD', draft: true },
+        { title: 'hello & world', draft: false },
+      ],
+      warn,
+    ),
+  ).toEqual([]);
   expect(warn).toHaveBeenCalledOnce();
 });

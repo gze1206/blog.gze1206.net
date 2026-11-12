@@ -26,6 +26,14 @@ export const SMOKE_ENABLED = isSmokeEnabled({
   DEV: import.meta.env?.DEV,
   BLOG_SMOKE: process.env.BLOG_SMOKE,
 });
+export function normalizeAuditText(value: string): string {
+  try {
+    value = decodeURIComponent(value);
+  } catch {
+    // 원문을 검사한다.
+  }
+  return decodeHTML(value).toLowerCase();
+}
 export function auditDist(input: AuditInput): AuditFinding[] {
   const findings: AuditFinding[] = [];
   for (const item of [
@@ -36,29 +44,21 @@ export function auditDist(input: AuditInput): AuditFinding[] {
     if (smokePath && !input.smoke)
       findings.push({ rule: 'smoke-in-production', path: item.path, detail: 'smoke output' });
     if (smokePath && input.smoke) continue;
-    const normalize = (value: string): string => {
-      try {
-        value = decodeURIComponent(value);
-      } catch {
-        /* 원문을 검사한다. */
-      }
-      return decodeHTML(value).toLowerCase();
-    };
     const boundaryMatch = (value: string, slug: string): boolean => {
       const escaped = slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       return new RegExp(`(?:^|[^a-z0-9-])${escaped}(?=$|[^a-z0-9-])`).test(value);
     };
-    const normalizedPath = normalize(item.path);
-    const content = item.content === null ? null : normalize(item.content);
+    const normalizedPath = normalizeAuditText(item.path);
+    const content = item.content === null ? null : normalizeAuditText(item.content);
     for (const slug of input.draftSlugs) {
-      const normalizedSlug = normalize(slug);
+      const normalizedSlug = normalizeAuditText(slug);
       if (boundaryMatch(normalizedPath, normalizedSlug))
         findings.push({ rule: 'draft-asset', path: item.path, detail: slug });
       if (content !== null && boundaryMatch(content, normalizedSlug))
         findings.push({ rule: 'draft-leak', path: item.path, detail: slug });
     }
     for (const title of input.draftTitles) {
-      const normalizedTitle = normalize(title).trim();
+      const normalizedTitle = normalizeAuditText(title).trim();
       if (normalizedTitle && content?.includes(normalizedTitle))
         findings.push({ rule: 'draft-leak', path: item.path, detail: title });
     }

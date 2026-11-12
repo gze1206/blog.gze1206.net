@@ -3,6 +3,7 @@ import path from 'node:path';
 import { postSchema, type Post } from '@gze1206/content-contract';
 import { parse } from 'yaml';
 import { POST_EXTENSION } from './post-glob.ts';
+import { normalizeAuditText } from './dist-audit.ts';
 
 export async function collectPosts(dir: string): Promise<Post[]> {
   async function walk(base: string): Promise<Post[]> {
@@ -24,4 +25,21 @@ export async function collectPosts(dir: string): Promise<Post[]> {
   const posts = await walk(dir);
   if (!posts.length) throw new Error(`No posts found: ${dir}`);
   return posts;
+}
+
+export function selectDraftTitles(
+  posts: readonly { title: string; draft: boolean }[],
+  warn: (message: string) => void,
+): string[] {
+  const publicTitles = new Set(
+    posts.filter((post) => !post.draft).map((post) => normalizeAuditText(post.title).trim()),
+  );
+  return posts
+    .filter((post) => post.draft)
+    .map((post) => post.title)
+    .filter((title) => {
+      if (!publicTitles.has(normalizeAuditText(title).trim())) return true;
+      warn(`draft title matches public post; skipping title audit: ${title}`);
+      return false;
+    });
 }
