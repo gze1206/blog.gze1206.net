@@ -53,3 +53,11 @@ describe('구절 인용', () => {
     ).toHaveLength(0);
   });
 });
+
+it('NOR-196 AC-11: 제목이 빈 책의 인용을 거부한다', () => {
+  expect(() => expandBookquotes(tag, () => ({ ...book, title: '' }))).toThrow();
+});
+
+it('NOR-196 AC-11: 저자 이름이 빈 책의 인용을 거부한다', () => {
+  expect(() => expandBookquotes(tag, () => ({ ...book, authors: [''] }))).toThrow();
+});

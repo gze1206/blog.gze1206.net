@@ -124,3 +124,15 @@ it('NOR-196 AC-13: 바뀐 것이 없으면 확정을 거부한다', { timeout: 3
     await f.close();
   }
 });
+
+it('NOR-196 AC-13: 책 삭제 검토 diff 는 삭제 대상임을 표시한다', { timeout: 30_000 }, async () => {
+  const f = await fixture();
+  try {
+    await writeFile(path.join(f.workspace, 'books/책.md'), document('visible: false'));
+    const review = await f.adapter.reviewBook('책');
+    expect(review.diff).toContain('+++ /dev/null');
+    expect(review.diff).toContain('+0,0');
+  } finally {
+    await f.close();
+  }
+});
