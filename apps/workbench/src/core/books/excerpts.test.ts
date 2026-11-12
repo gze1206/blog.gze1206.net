@@ -11,12 +11,12 @@ describe('구절 식별', () => {
     const input = [
       { id: 'a', text: 'one' },
       { id: 'b', text: 'two' },
-    ];
-    expect(ensureExcerptIds([input[1]!, input[0]!], () => 'new').map((x) => x.id)).toEqual([
+    ] as const;
+    expect(ensureExcerptIds([input[1], input[0]], () => 'new').map((x) => x.id)).toEqual([
       'b',
       'a',
     ]);
-    expect(ensureExcerptIds([input[1]!], () => 'new')[0]?.id).toBe('b');
+    expect(ensureExcerptIds([input[1]], () => 'new')[0]?.id).toBe('b');
   });
   it('NOR-196 AC-9: 구절을 고쳐도 id 와 public 이 남는다', () => {
     const input = [{ id: 'a', text: 'one', addedAt: '2026-01-01', public: true }];

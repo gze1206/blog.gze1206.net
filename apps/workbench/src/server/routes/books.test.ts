@@ -413,6 +413,7 @@ describe('POST /api/books/:id/excerpts', () => {
     );
     expect(document.excerpts).toEqual([
       {
+        id: expect.any(String),
         page: 42,
         text: '인지혁명이 가능했던 것은\n허구를 믿는 능력 때문이다',
         memo: '여기서 말하는 허구는 제도 전반',
@@ -658,6 +659,7 @@ describe('구절 고치기와 지우기', () => {
 
     expect(response.status).toBe(200);
     expect((await read()).excerpts?.[0]).toEqual({
+      id: expect.any(String),
       text: '첫 번째 (고침)',
       page: 12,
       addedAt: '2026-08-19',
