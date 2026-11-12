@@ -28,11 +28,12 @@ jobs:
         run: |
           # 브랜치를 새로 만든 push 는 before 가 0 SHA 다. 비교 대상이 없으므로 전체를 돈다.
           if [ -z "${BASE//0/}" ]; then F="./**"; else F="...[${BASE}]"; fi
-          pnpm --filter "$F" --if-present typecheck
-          pnpm --filter "$F" --if-present lint
+          # 루트 패키지는 뺀다. 루트 스크립트가 다시 `pnpm -r` 로 같은 앱을 돌려 빌드가 겹치기 때문이다.
+          pnpm --filter "$F" --filter '!{.}' --if-present typecheck
+          pnpm --filter "$F" --filter '!{.}' --if-present lint
           pnpm format:check
-          pnpm --filter "$F" --if-present test
-          pnpm --filter "$F" --if-present build
+          pnpm --filter "$F" --filter '!{.}' --if-present test
+          pnpm --filter "$F" --filter '!{.}' --if-present build
           pnpm boundaries
       # 계약 테스트는 영향 범위와 무관하게 항상 돈다.
       - run: pnpm --filter @gze1206/content-contract test
