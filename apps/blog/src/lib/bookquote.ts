@@ -24,3 +24,15 @@ export function formatBookquoteCaption(
     ...(shelfIds.has(source.book) ? { href: booksPath(source.book) } : {}),
   };
 }
+
+/** figcaption 에 쓰는 순서: 저자, 『제목』, 역자, 출판사, 연도, 쪽수. 빈 항목은 뺀다. */
+export function captionSegments(caption: BookquoteCaption): string[] {
+  return [
+    caption.authors,
+    caption.title,
+    caption.translators,
+    caption.publisher,
+    caption.year,
+    caption.page,
+  ].filter((part): part is string => Boolean(part));
+}
