@@ -1,0 +1,40 @@
+[Unit]
+Description=Workbench workspace backup (bundle + push)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+# 컨테이너(workbench 계정)와 다른 계정이다. git 메타데이터와 deploy key 는 이 계정만 가진다.
+User=workbench-backup
+Group=workbench-backup
+Environment=HOME=/var/lib/workbench-backup
+ExecStart=/usr/local/lib/workbench/workspace-backup.sh
+TimeoutStartSec=30min
+UMask=0077
+
+# 작업 트리는 workbench 소유 0700 이다. 읽기 권한만 우회하고 쓰지는 않는다.
+AmbientCapabilities=CAP_DAC_READ_SEARCH
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadOnlyPaths=/srv/workbench/private-workspace
+# 읽기 우회 권한이 닿을 필요가 없는 비밀 위치는 가린다.
+InaccessiblePaths=/srv/workbench/deploy -/etc/shadow -/etc/gshadow -/etc/ssh -/var/lib/docker -/var/lib/tailscale -/etc/docker
+ReadWritePaths=/srv/workbench/workspace.git /srv/workbench/backups
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service

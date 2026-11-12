@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/personal-workbench
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/workbench
 
 jobs:
   publish:
@@ -52,6 +52,10 @@ jobs:
             type=match,pattern=workbench-v(.*),group=1
             type=sha,format=long
             type=raw,value=edge,enable={{is_default_branch}}
+          # 저장소 이름·설명 대신 이미지 자체를 설명한다.
+          labels: |
+            org.opencontainers.image.title=workbench
+            org.opencontainers.image.description=개인 작성 도구(워크벤치) 서버
       - id: build
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
