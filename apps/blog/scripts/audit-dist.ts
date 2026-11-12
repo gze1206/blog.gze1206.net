@@ -1,5 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import { gunzipSync } from 'node:zlib';
 import { parse } from 'yaml';
 import { postSchema } from '@gze1206/content-contract';
 import { auditDist, isSmokeEnabled, type DistFile } from '../src/lib/dist-audit.ts';
@@ -32,7 +33,11 @@ for (const path of await walk('dist')) {
   else
     assets.push({
       path: name,
-      content: /\.(?:js|css)$/.test(name) ? await readFile(path, 'utf8') : null,
+      content: /\.(?:html|xml|json|js|css|txt|svg|webmanifest)$/i.test(name)
+        ? await readFile(path, 'utf8')
+        : /^pagefind\/.*\.pf_[^/]+$/.test(name)
+          ? gunzipSync(await readFile(path)).toString('utf8')
+          : null,
     });
 }
 const findings = auditDist({

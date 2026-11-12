@@ -1,3 +1,5 @@
+import { decodeHTML } from 'entities';
+
 export interface DistFile {
   path: string;
   html: string;
@@ -26,22 +28,32 @@ export const SMOKE_ENABLED = isSmokeEnabled({
 });
 export function auditDist(input: AuditInput): AuditFinding[] {
   const findings: AuditFinding[] = [];
-  if (!input.smoke) {
-    for (const asset of input.assets) {
-      if (asset.path.startsWith('smoke/'))
-        findings.push({ rule: 'smoke-in-production', path: asset.path, detail: 'smoke asset' });
+  for (const item of [...input.files.map((file) => ({ path: file.path, content: file.html })), ...input.assets]) {
+    const smokePath = item.path.startsWith('smoke/');
+    if (smokePath && !input.smoke)
+      findings.push({ rule: 'smoke-in-production', path: item.path, detail: 'smoke output' });
+    if (smokePath && input.smoke) continue;
+    const normalize = (value: string): string => {
+      try { value = decodeURIComponent(value); } catch { /* 원문을 검사한다. */ }
+      return decodeHTML(value).toLowerCase();
+    };
+    const boundaryMatch = (value: string, slug: string): boolean => {
+      const escaped = slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return new RegExp(`(?:^|[^a-z0-9-])${escaped}(?=$|[^a-z0-9-])`).test(value);
+    };
+    const normalizedPath = normalize(item.path);
+    const content = item.content === null ? null : normalize(item.content);
+    for (const slug of input.draftSlugs) {
+      const normalizedSlug = normalize(slug);
+      if (boundaryMatch(normalizedPath, normalizedSlug))
+        findings.push({ rule: 'draft-asset', path: item.path, detail: slug });
+      if (content !== null && boundaryMatch(content, normalizedSlug))
+        findings.push({ rule: 'draft-leak', path: item.path, detail: slug });
     }
-    for (const file of input.files) {
-      if (file.path.startsWith('smoke/'))
-        findings.push({ rule: 'smoke-in-production', path: file.path, detail: 'smoke page' });
-      for (const slug of input.draftSlugs) {
-        if (file.html.includes(`/blog/${slug}`))
-          findings.push({ rule: 'draft-leak', path: file.path, detail: slug });
-      }
-      for (const title of input.draftTitles) {
-        if (file.html.includes(title))
-          findings.push({ rule: 'draft-leak', path: file.path, detail: title });
-      }
+    for (const title of input.draftTitles) {
+      const normalizedTitle = normalize(title).trim();
+      if (normalizedTitle && content?.includes(normalizedTitle))
+        findings.push({ rule: 'draft-leak', path: item.path, detail: title });
     }
   }
   const assetPaths = new Set(input.assets.map((asset) => asset.path));
