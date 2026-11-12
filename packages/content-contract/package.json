@@ -15,8 +15,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@gze1206/config": "workspace:*",
     "@eslint/js": "catalog:",
+    "@gze1206/config": "workspace:*",
+    "@markdoc/markdoc": "^0.5.8",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "eslint-config-prettier": "catalog:",
