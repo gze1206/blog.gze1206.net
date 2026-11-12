@@ -69,3 +69,14 @@ it('NOR-196 AC-11: 대소문자나 서식 문자를 바꾼 인용 태그를 거�
     );
   }
 });
+
+it('NOR-196 AC-11: 태그 이름 앞이나 슬래시 앞에 서식 문자를 끼운 인용 태그를 거부한다', () => {
+  for (const tag of [
+    `{%​bookquote book="책" excerpt="${id}" /%}`,
+    '{% ​/bookquote %}',
+    '{%⁠/bookquote%}',
+    `{% ​BookQuote book="책" excerpt="${id}" /%}`,
+  ]) {
+    expect(() => expandBookquotes(tag, () => book)).toThrow('invalid bookquote source');
+  }
+});
