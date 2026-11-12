@@ -42,7 +42,8 @@ D1·D5 의 대안은 아래 결정의 개정 내용과 ADR 0017 을 따른다.
   커밋과 자동 push 는 없다.
 - **D5: 발행 계약은 공개 블로그의 실제 `postSchema` 에 고정한다.** 1a 부터 워크벤치는 규칙을 복제하지 않고
   `@gze1206/content-contract` 의 `strictPostSchema`(블로그 `postSchema` 와 같은 규칙에 모르는 키 거부를 더한
-  것)를 쓴다. 드라이런은 워크트리를 바꾸지 않고, 확정한 뒤에도 push 하지 않는다.
+  것)를 쓴다. 1b(NOR-196) 부터 책장 항목도 같은 방식으로 `strictBookSchema`·`PUBLIC_BOOK_FIELDS` 에 고정하고,
+  글 본문의 구절 인용은 계약의 `renderBookquote` 로 펼친다. 드라이런은 워크트리를 바꾸지 않고, 확정한 뒤에도 push 하지 않는다.
 - **D6: 앱이 해석하지 않는 frontmatter 는 라운드트립으로 보존한다.** 앱이 모르는 필드를 지우지 않는다.
   파일 소유권은 사용자에게 있다.
 

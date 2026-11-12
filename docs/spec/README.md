@@ -7,7 +7,7 @@
 - 위치: 영역별 하위 디렉터리 `docs/spec/<영역>/`.
   - [`blog/`](./blog/): 블로그(`apps/blog`)
   - [`workbench/`](./workbench/): 워크벤치(`apps/workbench`)
-  - `contract/`: 공유 계약(`packages/content-contract`). 첫 spec 을 쓸 때 만든다.
+  - [`contract/`](./contract/): 공유 계약(`packages/content-contract`)과 두 앱에 걸친 기능
   - [`repo/`](./repo/): 저장소 공통(툴체인·CI·`packages/repo-tools`)
 - 파일명: `NOR-N-제목-slug.md` (예: `blog/NOR-9-content-schema.md`). `pnpm spec:check` 는 이 파일명에서 일감 번호를 읽는다.
 - 수용 기준은 `- **AC-n**` 목록 항목으로 쓰고, 자동화할 수 없으면 `(manual)` 을 붙인다. 테스트 이름에 `NOR-N AC-n:` 을 넣어 잇는다([workflow.md](../conventions/workflow.md#tdd)).
@@ -45,6 +45,12 @@
 
 ### 저장소 공통 (`repo/`)
 
-| 일감    | 제목                                                                      | 상태        |
-| ------- | ------------------------------------------------------------------------- | ----------- |
-| NOR-195 | [모노레포 기반 (하위 프로젝트 1a)](./repo/NOR-195-monorepo-foundation.md) | in-progress |
+| 일감    | 제목                                                                      | 상태 |
+| ------- | ------------------------------------------------------------------------- | ---- |
+| NOR-195 | [모노레포 기반 (하위 프로젝트 1a)](./repo/NOR-195-monorepo-foundation.md) | done |
+
+### 공유 계약 (`contract/`)
+
+| 일감    | 제목                                                                                | 상태 |
+| ------- | ----------------------------------------------------------------------------------- | ---- |
+| NOR-196 | [책 공개와 구절 인용 (하위 프로젝트 1b)](./contract/NOR-196-books-and-bookquote.md) | done |
