@@ -47,3 +47,47 @@ export function readImageSize(
   }
   return null;
 }
+
+export function findImageMetadata(bytes: Uint8Array): string[] {
+  const result = new Set<string>();
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const ascii = (offset: number, text: string) =>
+    offset + text.length <= bytes.length &&
+    [...text].every((c, i) => bytes[offset + i] === c.charCodeAt(0));
+  const name = (offset: number) => String.fromCharCode(...bytes.subarray(offset, offset + 4));
+  if (ascii(0, '\x89PNG\r\n\x1a\n')) {
+    for (let i = 8; i + 12 <= bytes.length;) {
+      const size = view.getUint32(i);
+      if (size > bytes.length - i - 12) break;
+      const type = name(i + 4);
+      if (['tEXt', 'iTXt', 'zTXt', 'eXIf'].includes(type)) result.add(type);
+      i += size + 12;
+    }
+  } else if (ascii(0, 'RIFF') && ascii(8, 'WEBP')) {
+    const end = Math.min(bytes.length, view.getUint32(4, true) + 8);
+    for (let i = 12; i + 8 <= end;) {
+      const size = view.getUint32(i + 4, true);
+      if (size > end - i - 8 || size + (size % 2) > end - i - 8) break;
+      const type = name(i);
+      if (type === 'EXIF' || type === 'XMP ') result.add(type);
+      i += 8 + size + (size % 2);
+    }
+  } else if (bytes[0] === 255 && bytes[1] === 216) {
+    let i = 2;
+    while (i + 1 < bytes.length && bytes[i] === 255) {
+      while (bytes[i] === 255) i++;
+      const marker = bytes[i++];
+      if (marker === undefined || marker === 217 || marker === 218) break;
+      if (marker === 1 || (marker >= 208 && marker <= 215)) continue;
+      if (i + 2 > bytes.length) break;
+      const size = view.getUint16(i);
+      if (size < 2 || size > bytes.length - i) break;
+      if (marker === 225) {
+        if (size >= 8 && ascii(i + 2, 'Exif\0\0')) result.add('Exif');
+        else if (size >= 31 && ascii(i + 2, 'http://ns.adobe.com/xap/1.0/\0')) result.add('XMP');
+      }
+      i += size;
+    }
+  }
+  return [...result];
+}

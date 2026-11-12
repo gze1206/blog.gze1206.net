@@ -24,6 +24,9 @@ export function BookPublishReview({
       <p>종류: {review.kind === 'noop' ? '바뀐 것 없음' : review.kind}</p>
       <p>표지: {cover}</p>
       <p>{review.targetPath}</p>
+      {review.warnings?.map((warning) => (
+        <p key={warning}>{warning}</p>
+      ))}
       <pre
         aria-label="책 통합 diff"
         className="mt-2 max-h-96 overflow-auto rounded-lg bg-stone-950 p-5 font-mono text-xs whitespace-pre text-stone-100"

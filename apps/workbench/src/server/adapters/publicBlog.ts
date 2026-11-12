@@ -6,7 +6,7 @@ import { BLOG_LAYOUT, isBookId } from '@gze1206/content-contract';
 import { parseDocument, type BookDocument } from '../../core/document/document.js';
 import { parseFrontmatter } from '../../core/document/frontmatter.js';
 import { bookIdOf, planBookExport, type BookExportPlan } from '../../core/books/publicBook.js';
-import { readImageSize } from '../../core/books/imageSize.js';
+import { findImageMetadata, readImageSize } from '../../core/books/imageSize.js';
 import { resolveWorkspacePath } from './paths.js';
 import type { BlogPost } from '../../core/import/blogImport.js';
 import type { PublicPost } from '../../core/publishing/contract.js';
@@ -51,6 +51,7 @@ export interface BookReview {
   readonly targetPath: string;
   readonly diff: string;
   readonly kind: BookExportPlan['kind'];
+  readonly warnings: readonly string[];
 }
 export interface BookConfirm {
   readonly confirmPublish: boolean;
@@ -498,7 +499,12 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         .normalize('NFC')
         .replace(/[^\p{L}\p{N}_-]/gu, '')
         .slice(0, 64) || 'book';
+    const metadata = coverBytes ? findImageMetadata(coverBytes) : [];
+    const warnings = metadata.length
+      ? [`표지에 메타데이터(EXIF 등)가 있습니다: ${metadata.join(', ')}`]
+      : [];
     const review = {
+      warnings,
       baseHead,
       branch: `content/book-${branchKey}`,
       targetPath,

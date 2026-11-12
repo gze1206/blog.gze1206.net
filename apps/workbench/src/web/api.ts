@@ -429,6 +429,7 @@ export async function createBook(input: BookInput): Promise<{ readonly relativeP
 }
 
 export interface BookPublishReviewData {
+  readonly warnings?: readonly string[];
   readonly reviewId: string;
   readonly kind: 'write' | 'delete' | 'noop';
   readonly targetPath: string;
