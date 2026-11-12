@@ -18,6 +18,17 @@ export const bookquoteTag = {
     page: { type: Number },
   },
 };
+/** 펼친 태그의 속성 순서. 같은 출처는 언제나 같은 문자열이 된다. */
+const BOOKQUOTE_ATTRIBUTE_ORDER = [
+  'book',
+  'title',
+  'authors',
+  'translators',
+  'publisher',
+  'year',
+  'page',
+] as const satisfies readonly (keyof BookquoteSource)[];
+
 export function renderBookquote(source: BookquoteSource, text: string): string {
   if (
     text.includes('\0') ||
@@ -25,15 +36,14 @@ export function renderBookquote(source: BookquoteSource, text: string): string {
   ) {
     throw new Error('NUL is not supported');
   }
-  const attributes = Object.entries(source)
-    .filter(([, value]) => value !== undefined)
-    .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
+  const attributes = BOOKQUOTE_ATTRIBUTE_ORDER.filter((key) => source[key] !== undefined)
+    .map((key) => `${key}=${JSON.stringify(source[key])}`)
     .join(' ');
   const escaped = text
     .replace(/\\/g, '\\\\')
     .replace(/\{%/g, '\\{%')
-    .replace(/([&*_`[<])/g, '\\$1')
-    .replace(/^(\s*)([#>-])/gm, '$1\\$2')
-    .replace(/^(\s*\d+)\./gm, '$1\\.');
+    .replace(/([&*_`[<~|])/g, '\\$1')
+    .replace(/^(\s*)([#>+=-])/gm, '$1\\$2')
+    .replace(/^(\s*\d+)([.)])/gm, '$1\\$2');
   return `{% bookquote ${attributes} %}\n${escaped}\n{% /bookquote %}\n`;
 }
