@@ -296,3 +296,46 @@ async function git(root: string, ...args: string[]): Promise<string> {
   const { stdout } = await run('git', gitArgs, { encoding: 'utf8', maxBuffer: 20_000_000 });
   return stdout.trim();
 }
+
+describe('NOR-196 책 내보내기', { timeout: 30_000 }, () => {
+  it('NOR-196 AC-13: 책 내보내기 검토는 diff 를 돌려주고 확정하면 책 JSON 과 표지를 커밋한다', async () => {
+    const fixture = await createFixture();
+    try {
+      await mkdir(path.join(fixture.privateRoot, 'books'), { recursive: true });
+      await mkdir(path.join(fixture.privateRoot, 'assets/books'), { recursive: true });
+      await writeFile(
+        path.join(fixture.privateRoot, 'books/책.md'),
+        '---\ntitle: 책\nkind: book\ncreatedAt: 2026-01-01\nupdatedAt: 2026-01-01\nauthors: [저자]\nstatus: reading\nformat: paper\nsource: purchase\ncover: assets/books/cover.png\n---\n',
+      );
+      const png = Buffer.from(
+        '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489',
+        'hex',
+      );
+      await writeFile(path.join(fixture.privateRoot, 'assets/books/cover.png'), png);
+      const adapter = fixture.adapter();
+      expect(adapter).toHaveProperty('reviewBook');
+      expect(adapter).toHaveProperty('publishBook');
+      const review = await Reflect.apply(Reflect.get(adapter, 'reviewBook'), adapter, ['책']);
+      expect(review.diff).toContain('"title": "책"');
+      const result = await Reflect.apply(Reflect.get(adapter, 'publishBook'), adapter, [
+        '책',
+        { confirmPublish: true, reviewId: review.reviewId },
+      ]);
+      const consumer = await cloneConsumer(fixture);
+      await git(
+        consumer,
+        'fetch',
+        path.join(fixture.outboxRoot, result.exportRef),
+        `${result.branch}:${result.branch}`,
+      );
+      await git(consumer, 'switch', result.branch);
+      expect(
+        JSON.parse(await readFile(path.join(consumer, BLOG_LAYOUT.booksDir, '책.json'), 'utf8'))
+          .title,
+      ).toBe('책');
+      expect(await readFile(path.join(consumer, BLOG_LAYOUT.bookCoversDir, '책.png'))).toEqual(png);
+    } finally {
+      await fixture.close();
+    }
+  });
+});
