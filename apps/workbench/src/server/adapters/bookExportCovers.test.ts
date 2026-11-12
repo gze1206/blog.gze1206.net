@@ -136,3 +136,47 @@ it('NOR-196 AC-13: 책 삭제 검토 diff 는 삭제 대상임을 표시한다',
     await f.close();
   }
 });
+
+it(
+  'NOR-196 AC-13: 책 JSON 이 같아도 표지 이미지가 바뀌었으면 내보낸다',
+  { timeout: 30_000 },
+  async () => {
+    const source = document('cover: assets/books/new.png');
+    const current = serializePublicBook(
+      toPublicBook(parseDocument(source), {
+        src: `${BLOG_LAYOUT.bookCoverUrlPrefix}/${encodeURIComponent('책')}.png`,
+        width: 1,
+        height: 1,
+      }),
+    );
+    const f = await fixture(current);
+    try {
+      await writeFile(path.join(f.workspace, 'books/책.md'), source);
+      const review = await f.adapter.reviewBook('책');
+      expect(review.kind).toBe('write');
+      const result = await f.adapter.publishBook('책', {
+        confirmPublish: true,
+        reviewId: review.reviewId,
+      });
+      const consumer = path.join(f.root, 'consumer');
+      await exec('git', ['clone', f.source, consumer]);
+      await git(
+        consumer,
+        'fetch',
+        path.join(f.outbox, result.exportRef),
+        `${result.branch}:${result.branch}`,
+      );
+      await git(consumer, 'switch', result.branch);
+      expect(await readFile(path.join(consumer, BLOG_LAYOUT.booksDir, '책.json'), 'utf8')).toBe(
+        current,
+      );
+      for (const ext of ['jpg', 'jpeg', 'png', 'webp']) {
+        const file = path.join(consumer, BLOG_LAYOUT.bookCoversDir, `책.${ext}`);
+        if (ext === 'png') expect(await readFile(file)).toEqual(png);
+        else await expect(readFile(file)).rejects.toMatchObject({ code: 'ENOENT' });
+      }
+    } finally {
+      await f.close();
+    }
+  },
+);
