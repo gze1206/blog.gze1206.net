@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { BLOG_LAYOUT } from './index.js';
+import { BLOG_LAYOUT } from './index.ts';
 
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 

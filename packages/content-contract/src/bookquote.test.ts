@@ -1,6 +1,6 @@
 import Markdoc, { type Node } from '@markdoc/markdoc';
 import { expect, it } from 'vitest';
-import { bookquoteTag, renderBookquote } from './index.js';
+import { bookquoteTag, renderBookquote } from './index.ts';
 
 const source = { book: '책', title: '제목', authors: ['저자'], translators: [] };
 const config = { tags: { bookquote: bookquoteTag } };

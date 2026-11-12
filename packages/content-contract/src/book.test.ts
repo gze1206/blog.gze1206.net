@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bookSchema, strictBookSchema, PUBLIC_BOOK_FIELDS, isBookId } from './index.js';
+import { bookSchema, strictBookSchema, PUBLIC_BOOK_FIELDS, isBookId } from './index.ts';
 
 describe('book contract', () => {
   it('NOR-196 AC-2: PUBLIC_BOOK_FIELDS 는 bookSchema 키와 같고 비공개 키를 담지 않는다', () => {

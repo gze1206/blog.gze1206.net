@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { expect, it } from 'vitest';
-import { strictBookSchema, isBookId } from './index.js';
+import { strictBookSchema, isBookId } from './index.ts';
 
 it('NOR-196 AC-4: 블로그의 모든 책이 strictBookSchema 를 통과하고 파일명이 책 id 다', () => {
   const dir = fileURLToPath(new URL('../../../apps/blog/src/content/books/', import.meta.url));

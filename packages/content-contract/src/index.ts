@@ -1,4 +1,4 @@
-export { SLUG_PATTERN, SLUG_PATTERN_MESSAGE } from './slug.js';
+export { SLUG_PATTERN, SLUG_PATTERN_MESSAGE } from './slug.ts';
 export {
   POST_FIELD_ORDER,
   TOC_MODES,
@@ -7,9 +7,9 @@ export {
   strictPostSchema,
   tocSchema,
   type Post,
-} from './post.js';
-export { seriesSchema, type Series } from './series.js';
-export { BLOG_LAYOUT } from './layout.js';
+} from './post.ts';
+export { seriesSchema, type Series } from './series.ts';
+export { BLOG_LAYOUT } from './layout.ts';
 
 export {
   BOOK_STATUSES,
@@ -23,5 +23,5 @@ export {
   BOOK_ID_PATTERN,
   isBookId,
   type PublicBook,
-} from './book.js';
-export { bookquoteTag, renderBookquote, type BookquoteSource } from './bookquote.js';
+} from './book.ts';
+export { bookquoteTag, renderBookquote, type BookquoteSource } from './bookquote.ts';

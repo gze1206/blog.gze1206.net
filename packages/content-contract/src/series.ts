@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SLUG_PATTERN } from './slug.js';
+import { SLUG_PATTERN } from './slug.ts';
 
 export const seriesSchema = z.object({
   name: z.string(),

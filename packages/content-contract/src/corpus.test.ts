@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
-import { BLOG_LAYOUT, strictPostSchema } from './index.js';
+import { BLOG_LAYOUT, strictPostSchema } from './index.ts';
 
 const postsDir = fileURLToPath(new URL(`../../../${BLOG_LAYOUT.postsDir}/`, import.meta.url));
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---/u;
