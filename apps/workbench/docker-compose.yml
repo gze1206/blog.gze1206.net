@@ -7,7 +7,7 @@
 # 발행 세션마다 tmpfs 위에 임시로 clone 한 뒤 파기한다.
 services:
   workbench:
-    image: 'ghcr.io/gze1206/personal-workbench@${IMAGE_DIGEST:?IMAGE_DIGEST is required}'
+    image: 'ghcr.io/gze1206/workbench@${IMAGE_DIGEST:?IMAGE_DIGEST is required}'
     user: '${WORKBENCH_UID:-10001}:${WORKBENCH_GID:-10001}'
     network_mode: host
     init: true

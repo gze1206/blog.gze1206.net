@@ -12,7 +12,7 @@
 | 작업 공간(②)   | `/srv/workbench/private-workspace` (0700). private 저장소의 작업 트리      |
 | 백업           | `/srv/workbench/backups` (0700)                                            |
 | compose·`.env` | `/srv/workbench/deploy` (0700). 원본은 `apps/workbench/docker-compose.yml` |
-| 이미지         | `ghcr.io/gze1206/personal-workbench@<digest>` (linux/arm64, CI 가 게시)    |
+| 이미지         | `ghcr.io/gze1206/workbench@<digest>` (linux/arm64, CI 가 게시)             |
 | 서버 바인딩    | `127.0.0.1:3000` (host network, 공개 포트 없음)                            |
 | Tailnet 진입점 | `tailscale serve --bg --https=8443 http://127.0.0.1:3000` (tailnet only)   |
 

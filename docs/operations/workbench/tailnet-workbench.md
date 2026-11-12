@@ -100,7 +100,7 @@ SSH 키가 필요한 호스트 측 수동 Git 작업은 별도 deploy key를 사
 
 ```sh
 # 1. 올릴 digest 를 확인한다(CI 가 발행한 값). 태그로 pull 하지 않는다.
-docker manifest inspect ghcr.io/gze1206/personal-workbench:<tag> | sed -n 's/.*"digest": "\(sha256:[a-f0-9]*\)".*/\1/p'
+docker manifest inspect ghcr.io/gze1206/workbench:<tag> | sed -n 's/.*"digest": "\(sha256:[a-f0-9]*\)".*/\1/p'
 
 # 2. .env 의 IMAGE_DIGEST 를 그 값으로 바꾼다. 이전 값은 롤백용으로 주석에 남긴다.
 sudo -u workbench sed -i 's|^IMAGE_DIGEST=.*|IMAGE_DIGEST=sha256:<new>|' .env
