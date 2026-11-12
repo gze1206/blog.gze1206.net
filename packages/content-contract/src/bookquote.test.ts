@@ -31,3 +31,40 @@ it('NOR-196 AC-5: NUL 문자가 있으면 거부한다', () => {
   expect(() => renderBookquote(source, 'a\0b')).toThrow();
   expect(() => renderBookquote({ ...source, title: 'a\0b' }, 'a')).toThrow();
 });
+
+it('NOR-196 AC-5: 목록·제목 밑줄·취소선·표 문법도 글자로 남는다', () => {
+  const text =
+    '+ 더하기 목록\n\n1) 괄호 목록\n\n밑줄 제목\n===\n\n~~취소~~\n\n| 칸 | 칸 |\n| --- | --- |';
+  const node = Markdoc.parse(renderBookquote(source, text)).children[0];
+  function content(n: Node): string {
+    if (n.type === 'softbreak') return '\n';
+    return n.type === 'text'
+      ? String(n.attributes.content)
+      : n.children.map(content).join(n.type === 'tag' ? '\n\n' : '');
+  }
+  if (!node) throw new Error('missing bookquote');
+  expect(content(node)).toBe(text);
+});
+
+it('NOR-196 AC-5: 속성 순서는 입력 객체의 키 순서와 무관하다', () => {
+  const shuffled = {
+    page: 3,
+    translators: ['역자'],
+    authors: ['저자'],
+    title: '제목',
+    book: '책',
+    year: 2020,
+  };
+  const ordered = {
+    book: '책',
+    title: '제목',
+    authors: ['저자'],
+    translators: ['역자'],
+    year: 2020,
+    page: 3,
+  };
+  expect(renderBookquote(shuffled, '인용')).toBe(renderBookquote(ordered, '인용'));
+  expect(renderBookquote(ordered, '인용')).toMatch(
+    /^\{% bookquote book=.* title=.* authors=.* translators=.* year=.* page=3 %\}/u,
+  );
+});
