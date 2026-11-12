@@ -71,3 +71,7 @@ describe('bookSchema', () => {
     expect(bookSchema.safeParse({ ...validBook, rating: 3.5 }).success).toBe(false);
   });
 });
+
+it('NOR-196 AC-4: 책 ID의 제어 문자와 서식 문자를 거부한다', () => {
+  for (const id of ['a\u0001b', 'a\u007fb', 'a\u200bb']) expect(isBookId(id)).toBe(false);
+});

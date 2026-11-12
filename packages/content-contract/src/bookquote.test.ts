@@ -68,3 +68,11 @@ it('NOR-196 AC-5: 속성 순서는 입력 객체의 키 순서와 무관하다',
     /^\{% bookquote book=.* title=.* authors=.* translators=.* year=.* page=3 %\}/u,
   );
 });
+
+it('NOR-196 AC-5: 속성의 제어 문자와 본문의 줄바꿈·탭 외 제어 문자를 거부한다', () => {
+  for (const character of ['\u0001', '\u007f', '\n', '\t'])
+    expect(() => renderBookquote({ ...source, authors: [`a${character}b`] }, 'text')).toThrow();
+  for (const character of ['\u0001', '\u007f', '\r'])
+    expect(() => renderBookquote(source, `a${character}b`)).toThrow();
+  expect(() => renderBookquote(source, 'a\nb\tc')).not.toThrow();
+});
