@@ -1,12 +1,14 @@
 {
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "baseUrl": ".",
+    // 저장소 기준(packages/config/tsconfig.base.json)과 같은 엄격 옵션
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
     "paths": {
-      "@/*": ["src/*"],
-      "/pagefind/pagefind.js": ["src/pagefind.d.ts"]
+      "@/*": ["./src/*"],
+      "/pagefind/pagefind.js": ["./src/pagefind.d.ts"]
     }
   },
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+  "exclude": ["dist", "coverage", ".astro"]
 }

@@ -11,17 +11,17 @@ const USER_AGENT = 'blog.gze1206.net github-card (+https://gze1206.net)';
 /** GitHub 사용자/레포 이름에 허용되는 문자. */
 const SEGMENT_RE = /^[A-Za-z0-9._-]+$/;
 
-export interface RepoSlug {
+interface RepoSlug {
   owner: string;
   name: string;
 }
 
 export interface GitHubRepoMeta {
   fullName: string;
-  description?: string;
+  description?: string | undefined;
   stars: number;
   forks: number;
-  language?: string;
+  language?: string | undefined;
   url: string;
 }
 

@@ -2,6 +2,8 @@ packages:
   - apps/*
   - packages/*
 
+minimumReleaseAge: 1440
+
 allowBuilds:
   esbuild: true
   sharp: true
@@ -11,7 +13,7 @@ catalog:
   '@markdoc/markdoc': ^0.5.8
   typescript: 6.0.3
   zod: ^4.4.3
-  vitest: ^4.1.10
+  vitest: ^5.1.0
   react: ^19.2.7
   react-dom: ^19.2.7
   '@types/react': ^19.2.17
@@ -24,4 +26,4 @@ catalog:
   eslint-config-prettier: ^10.1.8
   '@types/node': ^24.10.0
   yaml: ^2.8.1
-  '@vitest/coverage-v8': ^4.1.10
+  '@vitest/coverage-v8': ^5.1.0

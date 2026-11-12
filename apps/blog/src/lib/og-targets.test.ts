@@ -113,6 +113,17 @@ describe('buildOgTargets', () => {
       '/og/tags.png',
       '/og/topics.png',
       '/og/series.png',
+      '/og/about.png',
+      '/og/books.png',
+      '/og/portfolio.png',
     ]);
   });
+});
+
+it('NOR-197 AC-5: 소개·책·포트폴리오 OG 대상을 만든다', () => {
+  const targets = buildOgTargets(input());
+  expect(paths(targets)).toEqual(
+    expect.arrayContaining(['/og/about.png', '/og/books.png', '/og/portfolio.png']),
+  );
+  expect(targets.find((target) => target.path === '/og/about.png')?.card.kind).toBe('about');
 });

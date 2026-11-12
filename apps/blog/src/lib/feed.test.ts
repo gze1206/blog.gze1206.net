@@ -16,7 +16,7 @@ const publishedPost = {
 };
 
 describe('toRssItems', () => {
-  it('공개 글만 정규 URL·요약·분류 메타데이터로 변환한다', () => {
+  it('NOR-197 AC-3: feed 는 draft 를 따로 거르지 않고 받은 순서를 지킨다', () => {
     const items = toRssItems(
       [
         publishedPost,
@@ -34,6 +34,14 @@ describe('toRssItems', () => {
         title: 'Hello World',
         description: '첫 글 요약입니다.',
         link: 'https://gze1206.net/blog/hello-world',
+        pubDate: new Date('2026-08-01T00:00:00.000Z'),
+        customData:
+          '<category>개발</category><category>Astro</category><category>블로그</category>',
+      },
+      {
+        title: '초안',
+        description: '첫 글 요약입니다.',
+        link: 'https://gze1206.net/blog/draft',
         pubDate: new Date('2026-08-01T00:00:00.000Z'),
         customData:
           '<category>개발</category><category>Astro</category><category>블로그</category>',

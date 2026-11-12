@@ -20,9 +20,8 @@ describe('/topics 탐색 계약 (NOR-152)', () => {
   });
 
   it('선택 이후의 행동(글 목록)을 서버에서 만들어 넘긴다', () => {
-    expect(pageSource).toContain('details[`category:${group.slug}`]');
-    expect(pageSource).toContain('details[`tag:${group.slug}`]');
-    expect(pageSource).toContain('postPath(post.data.slug)');
+    expect(pageSource).toContain("import { buildTaxonomyDetails } from '../lib/taxonomy-list'");
+    expect(pageSource).toContain('buildTaxonomyDetails(categories, tags)');
   });
 
   it('좌표는 빌드타임에 고정한다', () => {

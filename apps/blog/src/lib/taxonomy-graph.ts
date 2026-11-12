@@ -11,14 +11,14 @@ export interface TaxonomyGraphNode {
   readonly count: number;
 }
 
-export interface TaxonomyGraphEdge {
+interface TaxonomyGraphEdge {
   readonly categorySlug: string;
   readonly tagSlug: string;
   readonly weight: number;
 }
 
 /** 같은 글에서 함께 쓰인 태그 쌍. `a` 가 항상 사전순으로 앞이라 같은 쌍이 두 번 생기지 않는다. */
-export interface TaxonomyCoOccurrence {
+interface TaxonomyCoOccurrence {
   readonly aSlug: string;
   readonly bSlug: string;
   readonly weight: number;

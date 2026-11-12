@@ -1,5 +1,6 @@
 ---
 import katex from 'katex';
+import katexCss from 'katex/dist/katex.min.css?url';
 
 interface Props {
   formula: string;
@@ -13,4 +14,5 @@ const html = katex.renderToString(formula, {
 });
 ---
 
+<link rel="stylesheet" href={katexCss} />
 <div class="katex-block" set:html={html} />

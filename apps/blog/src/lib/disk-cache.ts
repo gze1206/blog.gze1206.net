@@ -18,7 +18,7 @@ export const DAY_MS = 24 * HOUR_MS;
 
 const DEFAULT_DIR = 'node_modules/.cache/blocks';
 
-export interface CacheOptions {
+interface CacheOptions {
   /** 캐시 항목 그룹(파일명 접두사). 예: `og`, `gh` */
   namespace: string;
   /** 그룹 내 고유 키. 해시로 파일명에 반영된다 */

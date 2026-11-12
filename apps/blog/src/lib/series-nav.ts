@@ -32,7 +32,7 @@ export function shouldExpandSeriesList(total: number): boolean {
 }
 
 /** 시리즈 목록의 한 줄. `position` 은 `seriesOrder` 값이 아니라 노출 대상 목록에서의 순서다. */
-export interface SeriesNavigationItem<T> {
+interface SeriesNavigationItem<T> {
   readonly post: T;
   /** 노출 대상 목록에서 몇 번째인가 (1부터). */
   readonly position: number;

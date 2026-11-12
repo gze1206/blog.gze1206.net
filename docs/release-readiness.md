@@ -12,12 +12,12 @@ Cloudflare·DNS·Google·Waline 조작은 아직 실행하지 않았다. 현재 
 - `pnpm test`, `pnpm lint`, `pnpm build`, `pnpm format:check` 통과
 - 생성 HTML의 내부 링크, `404.html`, RSS, 사이트맵 XML, draft 제외 확인
 - 홈의 정적 About·기술 스택·포트폴리오·새 글·OG 이미지·다크 모드와 CSS 장식 레이어 확인
-- 고정 포트의 로컬 preview에서 `/`, `/topics/`, `/blog/`, `/blog/hello-world/`, `/rss.xml`,
+- 고정 포트의 로컬 preview에서 `/`, `/topics/`, `/blog/`, `/rss.xml`,
   `/sitemap-index.xml`, `/robots.txt`가 200으로 응답하는지 확인
 
 ### 알려진 비차단 항목
 
-- Vite가 500KB 초과 Mermaid 청크 경고를 낸다.
+- 프로덕션 빌드는 `dist audit`으로 draft 및 자산 참조를 검사하고, Mermaid 500 kB 청크 경고를 포함한 대상 빌드 경고가 없다. smoke 페이지는 개발 서버와 `BLOG_SMOKE=1` 빌드에서만 확인한다.
 - `pnpm peers check`는 `eslint-plugin-jsx-a11y@6.10.2`가 ESLint 10을 아직 피어 범위에
   포함하지 않는다고 보고한다. 실제 `pnpm lint`는 통과한다.
 
@@ -80,8 +80,8 @@ Cloudflare Web Analytics를 정적 배포에 연결한다. 별도 토큰을 저�
 
 정식 도메인 배포 후 아래 주소를 실제 HTTPS 응답으로 확인한다.
 
-- `/`, `/blog`, `/blog/hello-world`, `/topics`, 존재하지 않는 경로(404)
-- `/rss.xml`, `/sitemap-index.xml`, `/robots.txt`, `/og/blog/hello-world.png`
+- `/`, `/blog`, `/topics`, 존재하지 않는 경로(404)
+- `/rss.xml`, `/sitemap-index.xml`, `/robots.txt`
 - `www`와 `blog` 이전 호스트의 301 상태·path/query 보존·정본 canonical
 - 데스크톱/모바일, 라이트/다크, 키보드 탐색, 페이지 내 검색
 

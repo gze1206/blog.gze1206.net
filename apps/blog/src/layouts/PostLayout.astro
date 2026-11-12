@@ -20,6 +20,7 @@
  * `buildSeriesNav`(ADR 0011)가 판단하고, 레이아웃은 자리만 내준다.
  */
 import BaseLayout from './BaseLayout.astro';
+import katexCss from 'katex/dist/katex.min.css?url';
 import TableOfContents from '../components/TableOfContents.astro';
 import TocFab from '../components/TocFab.astro';
 import { formatKoreanDate } from '../lib/date';
@@ -42,6 +43,9 @@ interface Props {
 }
 
 const { post, detail, series } = Astro.props;
+// Markdown 의 rehype-katex 결과는 Markdoc 컴포넌트를 거치지 않는다.
+const renderedContent = await Astro.slots.render('default');
+const hasMath = /class=["'][^"']*\bkatex\b[^"']*["']/.test(renderedContent);
 const { title, description, category, tags, publishedAt, updatedAt, draft } = post.data;
 const { toc, readingTime, publishedISO, updatedISO, isUpdated } = detail;
 const tocPlacement = resolveTocPlacement(post.data.toc, toc.length);
@@ -63,6 +67,7 @@ const jsonLd = [
   article={{ publishedTime: publishedISO, modifiedTime: updatedISO }}
   jsonLd={jsonLd}
 >
+  {hasMath && <link rel="stylesheet" href={katexCss} />}
   <main id="main-content" class="article">
     <article data-pagefind-body>
       <header class="article__head">

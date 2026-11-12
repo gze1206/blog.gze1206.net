@@ -110,6 +110,14 @@ export function buildOgTargets(input: OgTargetsInput): OgTarget[] {
       description: '여러 편으로 이어지는 글 묶음입니다.',
       brand,
     }),
+    target('/about', { kind: 'about', title: brand, description: input.siteDescription, brand }),
+    target('/books', { kind: 'list', title: '책', description: '읽은 책을 모았습니다.', brand }),
+    target('/portfolio', {
+      kind: 'list',
+      title: '포트폴리오',
+      description: '만든 것들을 소개합니다.',
+      brand,
+    }),
   ];
 
   // 2페이지부터. `/blog/1` 은 존재하지 않는다(`blogPagePath` 규칙).

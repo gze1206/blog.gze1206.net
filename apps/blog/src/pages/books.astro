@@ -12,6 +12,7 @@
 import ListLayout from '../layouts/ListLayout.astro';
 import EmptyState from '../components/EmptyState.astro';
 import { getVisibleBooks, groupBooksByYear } from '../lib/books';
+import { bookStatusLabel, bookFormatLabel } from '../lib/book-labels';
 import { spineTitle, spineTone } from '../lib/book-shelf';
 import { getTagGroups } from '../lib/content';
 import { postPath, tagPath } from '../lib/routes';
@@ -25,15 +26,6 @@ const groups = groupBooksByYear(books);
  * 별도 일감으로 둔다.
  */
 const linkableTagSlugs = new Set(tagGroups.map((group) => group.slug));
-
-const STATUS_LABELS = {
-  reading: '읽는 중',
-  finished: '완독',
-  abandoned: '중단',
-  want: '읽고 싶은',
-} as const;
-
-const FORMAT_LABELS = { ebook: '전자책', paper: '종이책', audio: '오디오북' } as const;
 ---
 
 <ListLayout
@@ -88,9 +80,9 @@ const FORMAT_LABELS = { ebook: '전자책', paper: '종이책', audio: '오디�
                   </p>
                   <p class="book-card__meta">
                     {book.data.status !== 'reading' && (
-                      <span class="book-card__status">{STATUS_LABELS[book.data.status]}</span>
+                      <span class="book-card__status">{bookStatusLabel(book.data.status)}</span>
                     )}
-                    <span>{FORMAT_LABELS[book.data.format]}</span>
+                    <span>{bookFormatLabel(book.data.format)}</span>
                     {book.data.rating && <span>★ {book.data.rating}/5</span>}
                   </p>
                   {book.data.oneLiner && <p class="book-card__one-liner">{book.data.oneLiner}</p>}

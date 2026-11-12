@@ -5,7 +5,7 @@ import * as bookquote from './bookquote';
 import { formatBookquoteCaption } from './bookquote';
 
 it('NOR-196 AC-6: 블로그 bookquote 태그 속성은 계약의 bookquoteTag 와 같다', () => {
-  expect(config.tags?.bookquote.attributes).toBe(bookquoteTag.attributes);
+  expect(config.tags?.bookquote?.attributes).toBe(bookquoteTag.attributes);
 });
 describe('NOR-196 AC-7: 책 인용 출처', () => {
   it('저자·역자·쪽수와 책장 링크를 표시한다', () => {

@@ -52,17 +52,18 @@
 
 ## 빌드 / 검증
 
-저장소 루트에서 실행합니다. Node·pnpm 버전은 `mise.toml`(Node 26, pnpm 11.15.0)이 단일 출처입니다.
+저장소 루트에서 실행합니다. Node·pnpm 버전은 `mise.toml`(Node 26, pnpm 12.18.0)이 단일 출처입니다.
 
-| 명령                                 | 하는 일                                                                                                                                                                                   |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm install`                       | 워크스페이스 의존성 설치                                                                                                                                                                  |
-| `pnpm dev:blog`                      | 블로그 개발 서버(`astro dev`)                                                                                                                                                             |
-| `pnpm dev:workbench`                 | 워크벤치 개발 서버(Vite + Hono)                                                                                                                                                           |
-| `pnpm verify`                        | 커밋 전 로컬 게이트: `typecheck` → `lint` → `format:check` → `test` → `build` → `boundaries` → `spec:check`                                                                               |
-| `pnpm e2e`                           | Playwright e2e. 블로그는 빌드 산출물을 `astro preview` 로 띄워 검사하고, 워크벤치는 `dist/web` 을 쓰므로 먼저 `pnpm --filter @gze1206/workbench build` 한다. `verify` 에는 들어 있지 않다 |
-| `pnpm spec:check`                    | spec 의 수용 기준이 모두 테스트와 연결됐는지 검사                                                                                                                                         |
-| `pnpm tdd:evidence --base origin/v4` | 브랜치의 `TDD: red` 커밋이 실제로 실패하고 이어지는 `TDD: green` 커밋에서 통과하는지 검사. 임시 worktree 를 만들어 시간이 걸린다                                                          |
+| 명령                                 | 하는 일                                                                                                                                                                                                               |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm install`                       | 워크스페이스 의존성 설치                                                                                                                                                                                              |
+| `pnpm dev:blog`                      | 블로그 개발 서버(`astro dev`)                                                                                                                                                                                         |
+| `pnpm dev:workbench`                 | 워크벤치 개발 서버(Vite + Hono)                                                                                                                                                                                       |
+| `pnpm verify`                        | 커밋 전 로컬 게이트: `typecheck` → `lint` → `format:check` → `test` → `build` → `boundaries` → `dead-exports` → `spec:check`                                                                                          |
+| `pnpm e2e`                           | Playwright e2e. 블로그는 프로덕션 및 `BLOG_SMOKE=1` 빌드를 각각 별도 Playwright 프로젝트로 검사하고, 워크벤치는 `dist/web` 을 쓰므로 먼저 `pnpm --filter @gze1206/workbench build` 한다. `verify` 에는 들어 있지 않다 |
+| `pnpm dead-exports`                  | 블로그 미사용 export 와 미사용 모듈 검사                                                                                                                                                                              |
+| `pnpm spec:check`                    | spec 의 수용 기준이 모두 테스트와 연결됐는지 검사                                                                                                                                                                     |
+| `pnpm tdd:evidence --base origin/v4` | 브랜치의 `TDD: red` 커밋이 실제로 실패하고 이어지는 `TDD: green` 커밋에서 통과하는지 검사. 임시 worktree 를 만들어 시간이 걸린다                                                                                      |
 
 각 단계(`typecheck`·`lint`·`test`·`build`·`e2e`)는 `pnpm -r --if-present <단계>` 로 패키지마다 자기 디렉터리에서 돈다. CI 는 같은 단계를 GitHub Actions 에서 돌린다([conventions/coding.md](./docs/conventions/coding.md#ci)).
 

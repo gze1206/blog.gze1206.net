@@ -30,7 +30,7 @@ import { normalizePath, ogImagePath } from './routes';
 export const SITE_NAME = 'gze1206.net';
 /** `<html lang>` 값. `og:locale` 과 짝이다. */
 export const SITE_LANG = 'ko';
-export const SITE_LOCALE = 'ko_KR';
+const SITE_LOCALE = 'ko_KR';
 /** description 이 비었을 때의 마지막 방어선. 빈 description 을 내보내는 것보다 낫다. */
 export const DEFAULT_DESCRIPTION = 'gze1206의 개인 블로그';
 /**
@@ -93,10 +93,10 @@ export function isIndexablePath(pathname: string): boolean {
   return !NOINDEX_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 
-export type OgType = 'website' | 'article';
+type OgType = 'website' | 'article';
 
 /** 글의 발행/수정 시각. `derivePostDetail()` 의 ISO 값을 그대로 넘긴다(다시 계산하지 않는다). */
-export interface ArticleTimes {
+interface ArticleTimes {
   readonly publishedTime: string;
   readonly modifiedTime?: string | undefined;
 }
@@ -123,13 +123,13 @@ export interface SeoInput {
 }
 
 /** 렌더 시점 정보. `Astro.url.pathname` 과 `Astro.site` 를 그대로 넘긴다. */
-export interface SeoContext {
+interface SeoContext {
   readonly pathname: string;
   readonly site: URL | string | undefined;
 }
 
 /** `<head>` 에 그대로 펴 넣을 수 있는, 완성된 메타 값 묶음. */
-export interface SeoMeta {
+interface SeoMeta {
   readonly title: string;
   readonly description: string;
   readonly canonical: string;

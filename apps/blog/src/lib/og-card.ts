@@ -72,7 +72,7 @@ export interface OgNode {
 }
 export type OgChild = OgNode | string;
 
-export type OgCardKind = 'post' | 'list' | 'about';
+type OgCardKind = 'post' | 'list' | 'about';
 
 /** 카드 한 장을 그리는 데 필요한 전부. 직렬화 가능한 값만 담는다(캐시 키로 그대로 쓴다). */
 export interface OgCardInput {

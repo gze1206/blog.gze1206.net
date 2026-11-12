@@ -7,11 +7,10 @@
  */
 import TaxonomyCategoryList from '../components/TaxonomyCategoryList.astro';
 import TaxonomyTagList from '../components/TaxonomyTagList.astro';
-import TaxonomyMap, { type TaxonomyNodeDetail } from '../islands/TaxonomyMap';
+import TaxonomyMap from '../islands/TaxonomyMap';
 import ListLayout from '../layouts/ListLayout.astro';
 import { getCategoryGroups, getTagGroups, getVisiblePosts } from '../lib/content';
-import { formatKoreanDate } from '../lib/date';
-import { categoryPath, postPath, tagPath } from '../lib/routes';
+import { buildTaxonomyDetails } from '../lib/taxonomy-list';
 import { buildTaxonomyGraph } from '../lib/taxonomy-graph';
 import { buildTaxonomyMap } from '../lib/taxonomy-map';
 
@@ -22,37 +21,7 @@ const [categories, tags, posts] = await Promise.all([
 ]);
 const map = buildTaxonomyMap(buildTaxonomyGraph(posts));
 
-/** 지도에서 노드를 골랐을 때 보여 줄 것. 화면이 다시 계산하지 않도록 여기서 만들어 넘긴다. */
-const ARTICLE_LIMIT = 3;
-const details: Record<string, TaxonomyNodeDetail> = {};
-
-for (const group of categories) {
-  details[`category:${group.slug}`] = {
-    label: group.label,
-    kindLabel: '카테고리',
-    href: categoryPath(group.slug),
-    postCount: group.posts.length,
-    articles: group.posts.slice(0, ARTICLE_LIMIT).map((post) => ({
-      title: post.data.title,
-      href: postPath(post.data.slug),
-      meta: `${post.data.category} · ${formatKoreanDate(post.data.publishedAt)}`,
-    })),
-  };
-}
-
-for (const group of tags) {
-  details[`tag:${group.slug}`] = {
-    label: group.label,
-    kindLabel: '태그',
-    href: tagPath(group.slug),
-    postCount: group.posts.length,
-    articles: group.posts.slice(0, ARTICLE_LIMIT).map((post) => ({
-      title: post.data.title,
-      href: postPath(post.data.slug),
-      meta: `${post.data.category} · ${formatKoreanDate(post.data.publishedAt)}`,
-    })),
-  };
-}
+const details = buildTaxonomyDetails(categories, tags);
 ---
 
 <ListLayout

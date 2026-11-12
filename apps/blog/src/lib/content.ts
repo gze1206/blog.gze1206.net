@@ -27,7 +27,7 @@ import {
 
 export type Post = CollectionEntry<'posts'>;
 export type Series = CollectionEntry<'series'>;
-export type Profile = CollectionEntry<'profile'>;
+type Profile = CollectionEntry<'profile'>;
 
 /** 목록 한 페이지에 담는 글 수. 근거는 ADR 0009. */
 export const POSTS_PER_PAGE = 10;
@@ -92,12 +92,6 @@ export async function getSeriesById(): Promise<Map<string, Series>> {
   return new Map(allSeries.map((entry) => [entry.id, entry]));
 }
 
-/** 프론트매터 slug 로 글 하나를 찾는다. 노출 대상이 아니면 `undefined`. */
-export async function findPostBySlug(slug: string): Promise<Post | undefined> {
-  const posts = await getVisiblePosts();
-  return posts.find((post) => post.data.slug === slug);
-}
-
 /** 노출 대상 글 기준 카테고리 묶음 (라벨 가나다순). */
 export async function getCategoryGroups(): Promise<TaxonomyGroup<Post>[]> {
   return groupByCategory(await getVisiblePosts());
@@ -109,7 +103,7 @@ export async function getTagGroups(): Promise<TaxonomyGroup<Post>[]> {
 }
 
 /** 시리즈 정의 + 그 시리즈의 노출 대상 글(seriesOrder 오름차순). */
-export interface SeriesWithPosts {
+interface SeriesWithPosts {
   readonly series: Series;
   readonly posts: readonly Post[];
 }

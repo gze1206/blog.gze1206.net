@@ -161,7 +161,7 @@ export function formatBookquoteCaption(
 - `NOR-196 AC-7: …` `formatBookquoteCaption` 단위 테스트(저자 여럿, 역자 유무, 쪽수 유무, 책장에 있을 때만 href)
 - `e2e/books.spec.ts`: `NOR-196 AC-8: 책장 항목은 책 id 앵커를 가진다`
 
-**Verify (AC-17, manual):** `pnpm --filter @gze1206/blog build` 후 `dist/smoke/markdoc/index.html`(또는 스모크 글이 렌더링되는 페이지)에 `class="bookquote"`, `<figcaption>`, `/books#` 링크가 있는지 grep 한다. 공개 글(draft 아님) 산출물은 바뀌지 않아야 한다.
+**Verify (AC-17, manual):** `BLOG_SMOKE=1` 빌드에서 확인한다. `pnpm --filter @gze1206/blog build` 후 `dist/smoke/markdoc/index.html`(또는 스모크 글이 렌더링되는 페이지)에 `class="bookquote"`, `<figcaption>`, `/books#` 링크가 있는지 grep 한다. 공개 글(draft 아님) 산출물은 바뀌지 않아야 한다.
 
 ### Task 4: 구절 id 와 공개 표시 (AC-9)
 

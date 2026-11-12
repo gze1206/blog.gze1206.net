@@ -12,10 +12,10 @@ const MAX_HTML_BYTES = 512 * 1024;
 const USER_AGENT = 'blog.gze1206.net bookmark-card (+https://gze1206.net)';
 
 export interface OpenGraphMeta {
-  title?: string;
-  description?: string;
-  image?: string;
-  siteName?: string;
+  title?: string | undefined;
+  description?: string | undefined;
+  image?: string | undefined;
+  siteName?: string | undefined;
 }
 
 /** http(s) 절대 URL 인지. `javascript:` 등 다른 스킴과 상대 경로를 걸러낸다. */

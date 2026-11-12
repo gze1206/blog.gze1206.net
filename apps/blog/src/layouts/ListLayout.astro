@@ -12,13 +12,13 @@ import BaseLayout from './BaseLayout.astro';
 
 interface Props {
   /** **사이트 이름 없는** 맨 제목. 생략하면 heading 을 그대로 쓴다. */
-  title?: string;
+  title?: string | undefined;
   description: string;
   /** 페이지 h1 위에 붙는 작은 분류 라벨. 예: "카테고리". */
   eyebrow?: string;
   heading: string;
   /** h1 아래 설명 문단. 없으면 렌더하지 않는다. */
-  lead?: string;
+  lead?: string | undefined;
 }
 
 const { title, description, eyebrow, heading, lead } = Astro.props;
