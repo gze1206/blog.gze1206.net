@@ -26,10 +26,7 @@ export function isProductionDeploy(env: {
   CF_PAGES?: string | undefined;
   CF_PAGES_BRANCH?: string | undefined;
 }): boolean {
-  return (
-    env.CF_PAGES === '1' &&
-    (env.CF_PAGES_BRANCH === BLOG_LAYOUT.publishBranch || env.CF_PAGES_BRANCH === 'main')
-  );
+  return env.CF_PAGES === '1' && env.CF_PAGES_BRANCH === BLOG_LAYOUT.publishBranch;
 }
 
 export function smokeGate(): AstroIntegration {

@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
+import { BLOG_LAYOUT } from '@gze1206/content-contract';
 
 import { BookAssetStore } from '../src/server/adapters/bookAssets.js';
 import { bookSlug } from '../src/core/books/metadata.js';
@@ -107,7 +108,7 @@ await mkdir(path.dirname(seededAsset), { recursive: true });
 await writeFile(seededAsset, 'approved-image');
 await writeFile(path.join(publicBlogRoot, 'README.md'), 'public blog fixture\n');
 for (const args of [
-  ['init', '-b', 'v4'],
+  ['init', '-b', BLOG_LAYOUT.publishBranch],
   ['config', 'user.name', 'E2E Publisher'],
   ['config', 'user.email', 'publisher@example.test'],
   ['add', 'README.md'],
@@ -123,7 +124,7 @@ const app = createApp(
   new PublicBlogAdapter({
     privateRoot: workspaceRoot,
     remote: publicBlogServer.remote,
-    branch: 'v4',
+    branch: BLOG_LAYOUT.publishBranch,
     workBase: publishWorkBase,
     outboxRoot: publishOutboxRoot,
     author: { name: 'E2E Publisher', email: 'publisher@example.test' },

@@ -26,31 +26,11 @@ Cloudflare·DNS·Google·Waline 조작은 아직 실행하지 않았다. 현재 
 공개 URL을 바꾸는 작업은 반드시 다음 순서로 한다. 각 단계가 확인되기 전에는 다음 단계로 진행하지
 않는다.
 
-### 1. NOR-6 — GitHub → Cloudflare 정적 배포
+### 1·2. NOR-6·NOR-7 — 정적 배포와 정식 도메인
 
-1. Cloudflare Pages 또는 Workers Static Assets에서 `gze1206/blog.gze1206.net` 저장소와 `v4` 브랜치를
-   연결한다. `main`은 현재 운영 중인 Nuxt 사이트이므로 이 단계에서 연결하지 않는다.
-2. Build command는 `pnpm build`로 설정한다. CLI 배포가 필요하면 정적 산출물에 대해
-   `pnpm exec wrangler deploy --config wrangler.jsonc`를 실행한다.
-3. 처음에는 제공 URL에서 공개 경로를 확인한다. `v4 → main` 병합은 전체 전환 승인 뒤에만 수행한다.
-
-참고: [Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/),
-[Cloudflare Workers Git integration](https://developers.cloudflare.com/workers/ci-cd/builds/).
-
-### 2. NOR-7 — 정식 도메인·리다이렉트
-
-1. Custom Domain에 `gze1206.net`을 연결해 HTTPS 발급까지 기다린다.
-2. 정본은 `https://gze1206.net`으로 유지한다. canonical·RSS·사이트맵은 이미 이 호스트를 사용한다.
-3. Zone-level Redirect Rule(또는 Bulk Redirect)을 **301 + path/query 보존**으로 만든다.
-   - `www.gze1206.net/*` → `https://gze1206.net/:splat`
-   - `blog.gze1206.net/*` → `https://gze1206.net/:splat`
-4. 두 이전 호스트는 Cloudflare 프록시 DNS 레코드가 있어야 Redirect Rule이 적용된다. `/blog/<slug>`
-   경로는 이관되어 있으므로 path를 보존한다.
-5. 정적 Assets 규칙 또는 Zone Redirect Rule은 동일 호스트의 경로 리다이렉트에만 쓰고, 호스트 간
-   정규화에는 Zone Redirect Rule을 쓴다.
-
-참고: [Worker custom domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/),
-[Cloudflare Redirect Rules](https://developers.cloudflare.com/rules/url-forwarding/).
+NOR-199 가 이어받았다. 배포처는 Cloudflare Pages, 프로덕션 브랜치는 `main`, 정본은
+`https://gze1206.net` 이다. 절차와 되돌리기는 [operations/blog/launch.md](./operations/blog/launch.md),
+확인은 `pnpm check:domains` 로 한다.
 
 ### 3. NOR-32 — Waline 댓글
 

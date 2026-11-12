@@ -22,7 +22,8 @@
     "boundaries": "node packages/repo-tools/src/cli/boundaries.ts",
     "spec:check": "node packages/repo-tools/src/cli/spec-check.ts",
     "tdd:evidence": "node packages/repo-tools/src/cli/tdd-evidence.ts",
-    "dead-exports": "node packages/repo-tools/src/cli/dead-exports.ts"
+    "dead-exports": "node packages/repo-tools/src/cli/dead-exports.ts",
+    "check:domains": "node packages/repo-tools/src/cli/check-domains.ts"
   },
   "devDependencies": {
     "prettier": "^3.9.5",

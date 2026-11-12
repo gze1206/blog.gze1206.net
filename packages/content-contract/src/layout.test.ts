@@ -16,3 +16,7 @@ it('NOR-196 AC-3: booksDir·bookCoversDir 가 실제 디렉터리를 가리킨�
   expect(existsSync(`${repoRoot}${BLOG_LAYOUT.booksDir}`)).toBe(true);
   expect(existsSync(`${repoRoot}${BLOG_LAYOUT.bookCoversDir}`)).toBe(true);
 });
+
+it('NOR-199 AC-1: 발행 브랜치는 런칭 뒤의 프로덕션 브랜치 main 이다', () => {
+  expect(BLOG_LAYOUT.publishBranch).toBe('main');
+});
