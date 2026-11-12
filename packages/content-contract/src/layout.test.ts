@@ -11,3 +11,8 @@ describe('BLOG_LAYOUT', () => {
     expect(existsSync(`${repoRoot}${BLOG_LAYOUT.publicDir}`)).toBe(true);
   });
 });
+
+it('NOR-196 AC-3: booksDir·bookCoversDir 가 실제 디렉터리를 가리킨다', () => {
+  expect(existsSync(`${repoRoot}${BLOG_LAYOUT.booksDir}`)).toBe(true);
+  expect(existsSync(`${repoRoot}${BLOG_LAYOUT.bookCoversDir}`)).toBe(true);
+});
