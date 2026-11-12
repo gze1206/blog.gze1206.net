@@ -61,3 +61,11 @@ it('NOR-196 AC-11: 제목이 빈 책의 인용을 거부한다', () => {
 it('NOR-196 AC-11: 저자 이름이 빈 책의 인용을 거부한다', () => {
   expect(() => expandBookquotes(tag, () => ({ ...book, authors: [''] }))).toThrow();
 });
+
+it('NOR-196 AC-11: 대소문자나 서식 문자를 바꾼 인용 태그를 거부한다', () => {
+  for (const name of ['BookQuote', 'BOOKQUOTE', 'book\u200bquote', '/BookQuote']) {
+    expect(() => expandBookquotes(`{% ${name} book="책" excerpt="${id}" /%}`, () => book)).toThrow(
+      'invalid bookquote source',
+    );
+  }
+});
