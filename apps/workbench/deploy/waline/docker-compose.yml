@@ -1,0 +1,102 @@
+# 공개 댓글 서버 (NOR-32).
+#
+# 이 스택은 **워크벤치와 다른 경계**에 있다. 워크벤치는 Tailnet 안에서만 닿을 수 있고,
+# 댓글 서버는 방문자가 닿아야 한다. 그래서 같은 호스트에서 돌더라도 compose 프로젝트와
+# 네트워크를 분리한다 — 한 네트워크에 두면 터널이 열리는 순간 워크벤치도 같은 사설망 안의
+# 이웃이 된다.
+#
+# 공개 경로는 Cloudflare Tunnel 하나뿐이다. 호스트 포트를 열지 않으므로 공유기·방화벽에
+# 구멍을 내지 않고, 터널 컨테이너만 Waline 에 닿을 수 있다.
+name: waline
+
+services:
+  waline:
+    # 태그가 아니라 digest 로 고정한다. 갱신은 digest 교체이며 롤백도 그 반대로만 한다.
+    image: 'lizheming/waline:latest@${WALINE_DIGEST:?WALINE_DIGEST is required}'
+    init: true
+    # 포트를 공개하지 않는다. 이 서비스에 닿을 수 있는 것은 같은 네트워크의 터널뿐이다.
+    expose:
+      - '8360'
+    networks:
+      - comments
+    environment:
+      TZ: '${TZ:-Asia/Seoul}'
+      SQLITE_PATH: '/app/data'
+      # 로그인 없이 댓글을 받는다. 비개발자도 쓸 수 있어야 한다는 것이 이 선택의 이유다.
+      LOGIN: 'disable'
+      # 관리자 계정으로 쓸 주소. 이 주소로 가입한 사람이 관리자가 된다.
+      AUTHOR_EMAIL: '${WALINE_AUTHOR_EMAIL:?WALINE_AUTHOR_EMAIL is required}'
+      SITE_NAME: '${WALINE_SITE_NAME:-gze1206.net}'
+      SITE_URL: '${WALINE_SITE_URL:?WALINE_SITE_URL is required}'
+      # 이 도메인에서 온 요청만 받는다. 남의 페이지가 내 댓글 서버를 쓰지 못하게 한다.
+      SECURE_DOMAINS: '${WALINE_SECURE_DOMAINS:?WALINE_SECURE_DOMAINS is required}'
+      # 로그인이 없으므로 남는 방어선은 이 둘이다. IP 당 간격(초)과 스팸 판정.
+      IPQPS: '${WALINE_IPQPS:-60}'
+      AKISMET_KEY: '${WALINE_AKISMET_KEY:-false}'
+      # 첫 댓글은 사람이 승인한 뒤 보인다. 익명 댓글을 받는 이상 이 값을 끄지 않는다.
+      COMMENT_AUDIT: '${WALINE_COMMENT_AUDIT:-true}'
+      # 세션 서명 키. 바꾸면 기존 로그인 세션이 모두 끊긴다.
+      JWT_TOKEN: '${WALINE_JWT_TOKEN:?WALINE_JWT_TOKEN is required}'
+    volumes:
+      # 유일한 영속 상태. 백업 대상은 이 디렉터리 하나다.
+      - type: bind
+        source: '${WALINE_DATA_DIR:?WALINE_DATA_DIR is required}'
+        target: /app/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # 이미지가 root 로 도는 것을 그대로 두지 않는다. 데이터 디렉터리를 이 ID 로 소유시킨다.
+    user: '${WALINE_UID:-10002}:${WALINE_GID:-10002}'
+    read_only: true
+    # 앱이 부팅 때 런타임 설정을 자기 설치 경로 안에 쓴다. 그 자리만 쓰기 가능하게 열어 준다 —
+    # 비루트로 돌리면 여기서 막혀 부팅 직후 죽는다(실측).
+    tmpfs:
+      - /app/node_modules/@waline/vercel/runtime:mode=0700,uid=${WALINE_UID:-10002},gid=${WALINE_GID:-10002},size=8m
+      - /tmp:mode=0700,uid=${WALINE_UID:-10002},gid=${WALINE_GID:-10002},size=32m
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8360/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    restart: unless-stopped
+
+  tunnel:
+    image: 'cloudflare/cloudflared:latest@${CLOUDFLARED_DIGEST:?CLOUDFLARED_DIGEST is required}'
+    init: true
+    command: ['tunnel', '--no-autoupdate', 'run']
+    networks:
+      - comments
+    environment:
+      # 대시보드에서 만든 터널 토큰. 어느 hostname 이 어디로 가는지는 대시보드가 갖는다.
+      TUNNEL_TOKEN: '${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN is required}'
+    depends_on:
+      waline:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    restart: unless-stopped
+
+networks:
+  # 이 스택 전용 사설망. 워크벤치는 여기에 붙지 않는다.
+  comments:
+    driver: bridge
+    internal: false

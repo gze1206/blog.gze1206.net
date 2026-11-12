@@ -88,5 +88,5 @@ NOR-15의 커스텀 블럭 중 두 개는 **외부 데이터에 의존**한다.
   - 데이터 없이 렌더된 폴백 카드는 정보량이 적다. 중요한 링크라면 저자가 `title`/`description` 을 명시하는 것이 정답이다.
   - CI는 캐시 콜드 — 의도한 트레이드오프(위 참고).
 - 후속 작업:
-  - NOR-20(Keystatic 삽입 UI)이 이 태그 스키마를 그대로 매핑한다. 스키마 정의는 [`docs/spec/NOR-15-custom-blocks.md`](../spec/NOR-15-custom-blocks.md) 가 단일 참조점이다.
+  - NOR-20(Keystatic 삽입 UI)이 이 태그 스키마를 그대로 매핑한다. 스키마 정의는 [`docs/spec/NOR-15-custom-blocks.md`](../spec/blog/NOR-15-custom-blocks.md) 가 단일 참조점이다.
   - 배포 파이프라인(NOR-31) 구성 시 `GITHUB_TOKEN` 시크릿 주입과 캐시 디렉토리 보존 여부를 결정한다.

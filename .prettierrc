@@ -4,8 +4,13 @@
   "trailingComma": "all",
   "tabWidth": 2,
   "printWidth": 100,
-  "plugins": ["prettier-plugin-astro", "prettier-plugin-tailwindcss"],
   "overrides": [
+    {
+      "files": "apps/blog/**",
+      "options": {
+        "plugins": ["prettier-plugin-astro", "prettier-plugin-tailwindcss"]
+      }
+    },
     {
       "files": "*.astro",
       "options": {

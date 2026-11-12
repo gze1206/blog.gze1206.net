@@ -11,7 +11,7 @@ dist/
 .netlify/
 
 # Search index (Pagefind, generated at build)
-public/pagefind/
+apps/blog/public/pagefind/
 
 # Env & secrets
 .env
@@ -35,3 +35,8 @@ pnpm-debug.log*
 !.vscode/settings.json
 !.vscode/extensions.json
 .idea/
+
+**/coverage/
+
+**/test-results/
+**/playwright-report/

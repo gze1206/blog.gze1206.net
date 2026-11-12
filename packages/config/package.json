@@ -1,0 +1,15 @@
+{
+  "name": "@gze1206/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./eslint": "./eslint.js"
+  },
+  "peerDependencies": {
+    "@eslint/js": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "typescript-eslint": "catalog:"
+  }
+}

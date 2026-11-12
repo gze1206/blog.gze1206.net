@@ -1,0 +1,52 @@
+# 미니PC의 워크벤치 런타임 형상 (NOR-147, NOR-148).
+#
+# 이미지는 태그가 아니라 **digest** 로 고정한다. 태그는 같은 이름이 다른 내용을 가리킬 수 있어
+# "무엇이 돌고 있는가"를 나중에 확인할 수 없고, 롤백도 결정적이지 않다.
+#
+# 쓰기 가능한 mount 는 개인 작업 공간(②) 하나뿐이다. 공개 블로그는 상시 clone 하지 않고
+# 발행 세션마다 tmpfs 위에 임시로 clone 한 뒤 파기한다.
+services:
+  workbench:
+    image: 'ghcr.io/gze1206/personal-workbench@${IMAGE_DIGEST:?IMAGE_DIGEST is required}'
+    user: '${WORKBENCH_UID:-10001}:${WORKBENCH_GID:-10001}'
+    network_mode: host
+    init: true
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      WORKSPACE_ROOT: /data/workspace
+      APP_TIME_ZONE: '${APP_TIME_ZONE:?APP_TIME_ZONE is required}'
+      # 발행 대상 remote. 컨테이너에는 이 저장소에 쓸 자격 증명이 없다 — 읽기만 한다.
+      PUBLIC_BLOG_REMOTE: '${PUBLIC_BLOG_REMOTE:?PUBLIC_BLOG_REMOTE is required}'
+      PUBLIC_BLOG_BRANCH: '${PUBLIC_BLOG_BRANCH:-v4}'
+      # 임시 clone 자리. 아래 tmpfs 와 같은 경로여야 한다.
+      PUBLISH_WORK_BASE: /run/publish
+      # 발행 커밋 identity. 없으면 부팅하지 않는다.
+      PUBLISH_GIT_AUTHOR_NAME: '${PUBLISH_GIT_AUTHOR_NAME:?PUBLISH_GIT_AUTHOR_NAME is required}'
+      PUBLISH_GIT_AUTHOR_EMAIL: '${PUBLISH_GIT_AUTHOR_EMAIL:?PUBLISH_GIT_AUTHOR_EMAIL is required}'
+      PORT: '3000'
+    volumes:
+      - type: bind
+        source: '${WORKSPACE_ROOT:?WORKSPACE_ROOT is required}'
+        target: /data/workspace
+    # 임시 clone 과 git 의 작업 파일은 디스크에 남지 않는다. 컨테이너가 죽어도 함께 사라진다.
+    tmpfs:
+      - /run/publish:mode=0700,uid=${WORKBENCH_UID:-10001},gid=${WORKBENCH_GID:-10001},size=${PUBLISH_TMPFS_SIZE:-512m},noexec,nosuid,nodev
+      - /tmp:mode=0700,uid=${WORKBENCH_UID:-10001},gid=${WORKBENCH_GID:-10001},size=64m,noexec,nosuid,nodev
+    healthcheck:
+      # 컨테이너 안에서 자기 자신에게만 묻는다. Tailnet 밖으로 나가지 않는다.
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
