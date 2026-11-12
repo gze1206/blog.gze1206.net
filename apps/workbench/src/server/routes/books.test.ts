@@ -625,6 +625,28 @@ describe('구절 고치기와 지우기', () => {
     };
   }
 
+  it('NOR-196 AC-9: 구절 수정 후 id 와 public 이 유지된다', async () => {
+    const { routes, id, read } = await withExcerpts();
+    const first = (await read()).excerpts?.[0];
+    expect(first?.id).toBeDefined();
+    const set = await routes.request(`/api/books/${id}/excerpts/0`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text: '공개', public: true }),
+    });
+    expect(set.status).toBe(200);
+    await routes.request(`/api/books/${id}/excerpts/0`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text: '수정' }),
+    });
+    expect((await read()).excerpts?.[0]).toMatchObject({
+      id: first?.id,
+      public: true,
+      text: '수정',
+    });
+  });
+
   it('오타를 고쳐도 옮겨 적은 날은 그대로다', async () => {
     const { routes, id, read } = await withExcerpts();
 
