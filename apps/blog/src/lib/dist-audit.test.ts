@@ -24,3 +24,33 @@ describe('산출물 감사', () => {
     expect(isSmokeEnabled({})).toBe(false);
   });
 });
+
+it('NOR-197 AC-5: 감사는 빠진 OG 이미지를 찾는다', () => {
+  const input = {
+    files: [
+      {
+        path: 'about/index.html',
+        html: '<meta property="og:image" content="https://gze1206.net/og/about.png">',
+      },
+    ],
+    assets: [],
+    draftSlugs: [],
+    draftTitles: [],
+    smoke: false,
+  };
+  expect(auditDist(input)).toContainEqual(expect.objectContaining({ rule: 'missing-og-image' }));
+  expect(auditDist({ ...input, assets: [{ path: 'og/about.png', content: null }] })).toEqual([]);
+});
+it('NOR-197 AC-6: 감사는 meta refresh 를 찾는다', () => {
+  expect(
+    auditDist({
+      files: [
+        { path: 'career/index.html', html: '<meta http-equiv="refresh" content="0;url=/about">' },
+      ],
+      assets: [],
+      draftSlugs: [],
+      draftTitles: [],
+      smoke: false,
+    }),
+  ).toContainEqual(expect.objectContaining({ rule: 'meta-refresh' }));
+});
