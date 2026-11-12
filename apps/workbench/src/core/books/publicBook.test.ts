@@ -42,6 +42,25 @@ describe('책 공개 변환', () => {
     if (write.kind === 'write')
       expect(planBookExport({ record, current: write.content }).kind).toBe('noop');
   });
+  it('NOR-196 AC-10: 표지 파일과 공개 URL 은 책 id 로 정한다', () => {
+    const result = planBookExport({
+      record,
+      current: null,
+      cover: {
+        workspacePath: 'assets/books/original.png',
+        info: { src: 'ignored', width: 10, height: 20 },
+      },
+    });
+    expect(result.kind).toBe('write');
+    if (result.kind !== 'write') throw new Error('expected write');
+    expect(result.cover).toEqual({
+      from: 'assets/books/original.png',
+      to: 'apps/blog/public/assets/books/책-제목.png',
+    });
+    expect(JSON.parse(result.content).cover.src).toBe(
+      '/assets/books/%EC%B1%85-%EC%A0%9C%EB%AA%A9.png',
+    );
+  });
   it('NOR-196 AC-15: 블로그 책을 가져와 다시 내보내면 표지를 빼고 같은 값이다', () => {
     const original = {
       title: '책',

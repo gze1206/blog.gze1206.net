@@ -212,6 +212,8 @@ export interface WorkbenchDocument extends z.infer<typeof commonSchema> {
   readonly extra: Record<string, unknown>;
 }
 
+export type BookDocument = WorkbenchDocument;
+
 export class DocumentValidationError extends Error {
   public override readonly name = 'DocumentValidationError';
 }
