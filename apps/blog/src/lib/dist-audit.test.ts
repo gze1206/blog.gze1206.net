@@ -74,3 +74,15 @@ it('NOR-197 AC-7: 수식과 Mermaid 블록이 있는 페이지만 무거운 자�
   ).toEqual([]);
   expect(audit('<script type="module" src="/_astro/ordinary.js"></script>')).toEqual([]);
 });
+
+it('NOR-197 AC-1: 프로덕션 감사는 smoke 경로 아래의 정적 자산도 찾는다', () => {
+  const input = {
+    files: [],
+    assets: [{ path: 'smoke/placeholder.svg', content: null }],
+    draftSlugs: [],
+    draftTitles: [],
+    smoke: false,
+  };
+  expect(auditDist(input).map((finding) => finding.rule)).toEqual(['smoke-in-production']);
+  expect(auditDist({ ...input, smoke: true })).toEqual([]);
+});
