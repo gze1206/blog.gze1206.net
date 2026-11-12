@@ -16,10 +16,12 @@ export function updateExcerpt(
   index: number,
   patch: { page?: number | undefined; text: string; memo?: string | undefined; public?: boolean },
 ): Excerpt[] {
+  const { public: publicValue, ...fields } = patch;
   return excerpts.map((excerpt, i) =>
     i === index
       ? {
-          ...patch,
+          ...fields,
+          ...(publicValue === true ? { public: true } : {}),
           ...(excerpt.id === undefined ? {} : { id: excerpt.id }),
           ...(excerpt.addedAt === undefined ? {} : { addedAt: excerpt.addedAt }),
           ...(patch.public === undefined && excerpt.public !== undefined
