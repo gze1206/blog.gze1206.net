@@ -455,7 +455,9 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     let diff =
       plan.kind === 'noop'
         ? ''
-        : unifiedDiff(targetPath, current, plan.kind === 'write' ? plan.content : '');
+        : plan.kind === 'delete'
+          ? unifiedDeleteDiff(targetPath, current ?? '')
+          : unifiedDiff(targetPath, current, plan.content);
     if (plan.kind === 'write' && plan.cover) diff += `표지 추가/교체: ${plan.cover.to}\n`;
     if (
       plan.kind !== 'noop' &&
@@ -775,6 +777,17 @@ function unifiedDiff(targetPath: string, before: string | null, after: string): 
     `@@ ${oldRange} +1,${afterLines.length} @@`,
     ...beforeLines.map((line) => `-${line}`),
     ...afterLines.map((line) => `+${line}`),
+    '',
+  ].join('\n');
+}
+
+function unifiedDeleteDiff(targetPath: string, before: string): string {
+  const beforeLines = lines(before);
+  return [
+    `--- a/${targetPath}`,
+    '+++ /dev/null',
+    `@@ -1,${beforeLines.length} +0,0 @@`,
+    ...beforeLines.map((line) => `-${line}`),
     '',
   ].join('\n');
 }

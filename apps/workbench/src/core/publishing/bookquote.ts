@@ -26,7 +26,9 @@ export function expandBookquotes(
     if (
       !book ||
       book.kind !== 'book' ||
+      !book.title.trim() ||
       !book.authors?.length ||
+      book.authors.some((author) => !author.trim()) ||
       !excerpt ||
       excerpt.public !== true
     )
