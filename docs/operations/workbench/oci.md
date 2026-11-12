@@ -43,10 +43,14 @@ git 메타데이터와 deploy key 를 작업 트리 밖에 두고, 컨테이너�
 - `.gitignore` 의 `.workbench/` 가 발행 outbox 를 뺀다. 작업 트리에 `.git` 이 없으므로 앱의 부팅 검사는
   건너뛰고, 커밋하는 백업 스크립트가 `git check-ignore` 로 확인한 뒤에만 커밋한다.
 - 커밋 identity 는 GitHub noreply 주소를 쓴다. 발행 커밋 identity(`PUBLISH_GIT_AUTHOR_*`)도 같다.
-- 작업 트리에서 git 을 직접 쓸 때는 백업 계정으로 git 디렉터리를 지정한다.
+- 직접 확인할 때는 이력과 원격만 본다. 백업 계정은 작업 트리를 읽을 수 없고(서비스만 읽기 권한을 갖는다),
+  작업 트리 상태는 백업 단위를 실행해 확인한다. `safe.directory='*'` 는 설정하지 않는다. 작업 트리 안에
+  중첩 저장소가 생기면 그 설정이 실행되기 때문이다.
 
 ```sh
-sudo -u workbench-backup git --git-dir=/srv/workbench/workspace.git status
+sudo -u workbench-backup git --git-dir=/srv/workbench/workspace.git log --oneline -5
+sudo -u workbench-backup git --git-dir=/srv/workbench/workspace.git ls-remote origin main
+sudo systemctl start workspace-backup.service
 ```
 
 ## 백업
@@ -61,9 +65,10 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now workspace-backup.timer
 ```
 
-매일 한 번(04:30 전후) 바뀐 파일을 커밋하고, 먼저 `git bundle --all` 과 outbox tar 를
-`/srv/workbench/backups` 에 14개까지 남긴 뒤 마지막에 private remote 로 push 한다. 네트워크가 끊겨도
-로컬 백업은 남고, push 가 실패하면 단위가 실패로 끝난다. 서비스는 작업 트리를 `CAP_DAC_READ_SEARCH` 로
+매일 한 번(04:30 전후) outbox tar 를 남기고, 바뀐 파일을 커밋하고, `git bundle --all` 을 남긴 뒤
+마지막에 private remote 로 push 한다. 백업은 `/srv/workbench/backups` 에 종류별로 14개까지 둔다. 커밋
+단계가 실패해도(작업 트리 안의 `.git`, `.gitignore` 에서 빠진 `.workbench/` 등) tar 와 bundle 은 남고 push 만
+건너뛴다. 어느 단계든 실패하면 단위가 실패로 끝난다. 서비스는 작업 트리를 `CAP_DAC_READ_SEARCH` 로
 읽기만 하고, 쓰는 곳은 git 디렉터리와 백업 디렉터리뿐이다. 상태 확인:
 
 ```sh

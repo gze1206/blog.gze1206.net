@@ -20,6 +20,8 @@ NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
 ReadOnlyPaths=/srv/workbench/private-workspace
+# 읽기 우회 권한이 닿을 필요가 없는 비밀 위치는 가린다.
+InaccessiblePaths=/srv/workbench/deploy -/etc/shadow -/etc/gshadow -/etc/ssh -/var/lib/docker -/var/lib/tailscale -/etc/docker
 ReadWritePaths=/srv/workbench/workspace.git /srv/workbench/backups
 PrivateTmp=yes
 PrivateDevices=yes
