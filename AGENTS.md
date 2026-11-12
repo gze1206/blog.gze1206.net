@@ -48,7 +48,7 @@
 - **PR 전 셀프 리뷰 루프**: 셀프 리뷰 → 셀프 반영을 반복해 안정시킨 뒤 PR을 연다. **사용자 피드백은 PR에서** 받는다([conventions/workflow.md](./docs/conventions/workflow.md#셀프-리뷰-루프-pr-전-필수)).
 - **마무리 보안 검수**: 전체 작업을 마무리하기 직전에 Claude·Codex 병렬 보안 검수를 한 번 돌린다([conventions/workflow.md](./docs/conventions/workflow.md#마무리-보안-검수)).
 - **공개 저장소**: Tailnet 도메인, Tailscale IP, 호스트명, 개인 이메일, 로컬 절대 경로를 코드·문서·커밋에 남기지 않는다.
-- 브랜치: 작업은 `v4`(통합) 기준, PR base는 `v4`, 런칭 시 `v4` → `master`.
+- 브랜치: 작업은 `v4`(통합) 기준, PR base는 `v4`, 런칭 시 `v4` → `main`.
 
 ## 빌드 / 검증
 

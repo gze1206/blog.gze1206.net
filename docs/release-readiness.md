@@ -6,7 +6,7 @@
 
 `v4` 브랜치는 정적 자산으로 빌드된다. 공개 사이트에는 작성 UI나 동적 작성 API가 없으며, 작성과
 비공개 보관, 공개용 변환은 private Tailnet 워크벤치가 담당한다. 아래 로컬 검증을 통과했지만,
-Cloudflare·DNS·Google·Waline 조작은 아직 실행하지 않았다. 현재 운영 중인 `master` 블로그와
+Cloudflare·DNS·Google·Waline 조작은 아직 실행하지 않았다. 현재 운영 중인 `main`(옛 `master`) 블로그와
 도메인/DNS에는 이 작업으로 변경을 가하지 않았다.
 
 - `pnpm test`, `pnpm lint`, `pnpm build`, `pnpm format:check` 통과
@@ -29,10 +29,10 @@ Cloudflare·DNS·Google·Waline 조작은 아직 실행하지 않았다. 현재 
 ### 1. NOR-6 — GitHub → Cloudflare 정적 배포
 
 1. Cloudflare Pages 또는 Workers Static Assets에서 `gze1206/blog.gze1206.net` 저장소와 `v4` 브랜치를
-   연결한다. `master`는 현재 운영 중인 Nuxt 사이트이므로 이 단계에서 연결하지 않는다.
+   연결한다. `main`은 현재 운영 중인 Nuxt 사이트이므로 이 단계에서 연결하지 않는다.
 2. Build command는 `pnpm build`로 설정한다. CLI 배포가 필요하면 정적 산출물에 대해
    `pnpm exec wrangler deploy --config wrangler.jsonc`를 실행한다.
-3. 처음에는 제공 URL에서 공개 경로를 확인한다. `v4 → master` 병합은 전체 전환 승인 뒤에만 수행한다.
+3. 처음에는 제공 URL에서 공개 경로를 확인한다. `v4 → main` 병합은 전체 전환 승인 뒤에만 수행한다.
 
 참고: [Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/),
 [Cloudflare Workers Git integration](https://developers.cloudflare.com/workers/ci-cd/builds/).

@@ -2,7 +2,7 @@ name: workbench-image
 
 on:
   push:
-    branches: [master]
+    branches: [main]
     tags: ['workbench-v*']
     paths:
       - 'apps/workbench/**'
