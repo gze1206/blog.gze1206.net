@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { chmod, mkdir, open, readFile, realpath, rename, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { BLOG_LAYOUT } from '@gze1206/content-contract';
+import { BLOG_LAYOUT, isBookId } from '@gze1206/content-contract';
 
 const run = promisify(execFile);
 
@@ -38,7 +38,8 @@ export class PublishOutbox {
 
   public async write(input: PublishOutboxInput): Promise<PublishOutboxResult> {
     const root = await this.prepareRoot();
-    const slug = slugFromTargetPath(input.targetPath);
+    const key = targetKeyFromPath(input.targetPath);
+    const slug = key.startsWith('post:') ? key.slice(5) : `book-${safeKey(key.slice(5))}`;
     const prefix = `${slug}-${new Date().toISOString().replace(/[-:.]/gu, '')}`;
     const bundleRef = `${prefix}.bundle`;
     const patchRef = `${prefix}.patch`;
@@ -157,12 +158,26 @@ export class PublishOutbox {
   }
 }
 
-function slugFromTargetPath(targetPath: string): string {
-  const prefix = `${BLOG_LAYOUT.postsDir}/`;
-  const fileName = targetPath.startsWith(prefix) ? targetPath.slice(prefix.length) : '';
-  const match = /^([a-z0-9-]+)\.mdoc$/u.exec(fileName);
-  if (!match?.[1]) throw new Error('invalid publish target path');
-  return match[1];
+export function targetKeyFromPath(targetPath: string): string {
+  const posts = `${BLOG_LAYOUT.postsDir}/`;
+  if (targetPath.startsWith(posts)) {
+    const match = /^([a-z0-9-]+)\.mdoc$/u.exec(targetPath.slice(posts.length));
+    if (match?.[1]) return `post:${match[1]}`;
+  }
+  const books = `${BLOG_LAYOUT.booksDir}/`;
+  if (targetPath.startsWith(books) && targetPath.endsWith('.json')) {
+    const id = targetPath.slice(books.length, -5);
+    if (isBookId(id)) return `book:${id}`;
+  }
+  throw new Error('invalid publish target path');
+}
+function safeKey(id: string): string {
+  return (
+    id
+      .normalize('NFC')
+      .replace(/[^\p{L}\p{N}_-]/gu, '')
+      .slice(0, 64) || 'book'
+  );
 }
 
 function assertArtifactRef(root: string, reference: string): string {
