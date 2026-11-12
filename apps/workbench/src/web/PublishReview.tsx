@@ -53,6 +53,11 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
         </dl>
 
         <h3 className="mt-7 text-sm font-semibold text-stone-700">통합 diff</h3>
+        {(review.warnings ?? []).map((warning) => (
+          <p key={warning} role="alert">
+            {warning}
+          </p>
+        ))}
         <pre
           aria-label="통합 diff"
           className="mt-2 max-h-[28rem] overflow-auto rounded-lg bg-stone-950 p-5 font-mono text-xs leading-5 whitespace-pre text-stone-100"

@@ -95,6 +95,13 @@ export interface PublishReviewData {
     readonly draft: boolean;
   };
   readonly assets: readonly string[];
+  readonly quotes?: readonly {
+    readonly book: string;
+    readonly excerpt: string;
+    readonly length: number;
+    readonly bookPublicTotal: number;
+  }[];
+  readonly warnings?: readonly string[];
   readonly diff: string;
 }
 

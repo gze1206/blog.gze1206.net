@@ -1,5 +1,6 @@
 import { orderedFields, parseFrontmatter, serializeFrontmatter } from '../document/frontmatter.js';
 import { POST_FIELD_ORDER } from '@gze1206/content-contract';
+import type { ExpandedQuote } from './bookquote.js';
 import { parsePublishedPost, type PublicPost } from './contract.js';
 import { rewriteAssetReferences } from './references.js';
 import {
@@ -15,6 +16,7 @@ export interface PublicAssetCopy {
 
 export interface TransformedPublicPost {
   readonly metadata: PublicPost;
+  readonly quotes: ExpandedQuote[];
   readonly source: string;
   readonly assets: readonly PublicAssetCopy[];
 }
@@ -34,6 +36,7 @@ export function transformPublicDraft(input: TransformPublicDraftInput): Transfor
   const metadata = parsePublishedPost(parsed.data);
   return {
     metadata,
+    quotes: validated.quotes,
     source,
     assets: validated.assets.map(({ privatePath, publicPath }) => ({ privatePath, publicPath })),
   };

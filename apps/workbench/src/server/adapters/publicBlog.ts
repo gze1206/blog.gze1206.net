@@ -1,12 +1,13 @@
 import { createHash } from 'node:crypto';
 import { lstat, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { BLOG_LAYOUT } from '@gze1206/content-contract';
+import { BLOG_LAYOUT, isBookId } from '@gze1206/content-contract';
 
-import { parseDocument } from '../../core/document/document.js';
+import { parseDocument, type BookDocument } from '../../core/document/document.js';
 import { parseFrontmatter } from '../../core/document/frontmatter.js';
 import type { BlogPost } from '../../core/import/blogImport.js';
 import type { PublicPost } from '../../core/publishing/contract.js';
+import { quoteWarnings, type ExpandedQuote } from '../../core/publishing/bookquote.js';
 import {
   transformPublicDraft,
   type TransformPublicDraftInput,
@@ -36,6 +37,8 @@ export interface PublishReview {
   readonly metadata: PublicPost;
   readonly assets: readonly string[];
   readonly diff: string;
+  readonly quotes?: readonly ExpandedQuote[];
+  readonly warnings?: readonly string[];
 }
 
 export interface PublicAssetCandidate {
@@ -293,7 +296,23 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       throw new Error('invalid or unavailable public asset id');
     }
     const assets = selected.filter((asset): asset is InspectedPublicAsset => asset !== undefined);
+    const books = new Map<string, BookDocument>();
+    for (const match of input.source.matchAll(/\{%\s*bookquote\s+book="([^"\r\n]+)"/gu)) {
+      const id = match[1];
+      if (!id || !isBookId(id) || books.has(id)) continue;
+      const relativePath = `books/${id}.md`;
+      await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
+      try {
+        books.set(
+          id,
+          parseDocument(await readFile(path.join(this.options.privateRoot, relativePath), 'utf8')),
+        );
+      } catch (error) {
+        if (!isNodeError(error) || error.code !== 'ENOENT') throw error;
+      }
+    }
     const transformInput: TransformPublicDraftInput = {
+      lookupBook: (id) => books.get(id),
       source: input.source,
       assets: assets.map(({ reference, privatePath }) => ({
         draftReference: reference,
@@ -330,6 +349,8 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
           ({ publicPath }) => `${BLOG_LAYOUT.publicDir}/${publicPath}`,
         ),
         diff,
+        quotes: prepared.transformed.quotes,
+        warnings: quoteWarnings(prepared.transformed.quotes),
       },
       destinationStates,
     };
