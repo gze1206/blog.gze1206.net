@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { POST_FIELD_ORDER, postObject, postSchema, strictPostSchema } from './index.js';
+import { POST_FIELD_ORDER, postObject, postSchema, strictPostSchema } from './index.ts';
 
 const valid = {
   title: '글',

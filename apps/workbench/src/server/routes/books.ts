@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 
+import { ensureExcerptIds, updateExcerpt } from '../../core/books/excerpts.js';
+import { createBulletId } from '../../core/bullets/syntax.js';
 import { normalizeIsbn, type BookMetadataProvider } from '../../core/books/metadata.js';
 import {
   parseDocument,
@@ -59,6 +61,7 @@ const createSchema = z
  */
 const excerptSchema = z
   .object({
+    public: z.boolean().optional(),
     page: z.number().int().positive().optional(),
     text: z.string().min(1),
     /** 이 구절에 대한 메모. 책 전체를 향한 것은 독서 메모(`memos`)로 간다. */
@@ -117,6 +120,7 @@ const updateSchema = z
   .strict();
 
 export interface BookRouteOptions {
+  readonly createId?: () => string;
   readonly today: () => string;
   readonly slugify: (title: string) => string;
 }
@@ -163,7 +167,15 @@ export function createBookRoutes(
   ): Promise<string> {
     const entry = await store.readDocument(relativePath);
     const updated = change(parseDocument(entry.source));
-    await store.writeDocument(relativePath, serializeDocument(updated));
+    await store.writeDocument(
+      relativePath,
+      serializeDocument({
+        ...updated,
+        ...(updated.excerpts === undefined
+          ? {}
+          : { excerpts: ensureExcerptIds(updated.excerpts, options.createId ?? createBulletId) }),
+      }),
+    );
     return relativePath;
   }
 
@@ -325,6 +337,13 @@ export function createBookRoutes(
         return document;
       }
       // 남긴 날은 그대로 둔다. 오타를 고쳤다고 읽은 날이 바뀌지는 않는다.
+      if (field === 'excerpts') {
+        return {
+          ...document,
+          updatedAt: options.today(),
+          excerpts: updateExcerpt(document.excerpts ?? [], index, input.data),
+        };
+      }
       items[index] = {
         ...input.data,
         ...(current.addedAt === undefined ? {} : { addedAt: current.addedAt }),

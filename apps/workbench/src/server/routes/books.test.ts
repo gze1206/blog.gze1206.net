@@ -413,6 +413,7 @@ describe('POST /api/books/:id/excerpts', () => {
     );
     expect(document.excerpts).toEqual([
       {
+        id: expect.any(String),
         page: 42,
         text: '인지혁명이 가능했던 것은\n허구를 믿는 능력 때문이다',
         memo: '여기서 말하는 허구는 제도 전반',
@@ -625,6 +626,41 @@ describe('구절 고치기와 지우기', () => {
     };
   }
 
+  it('NOR-196 AC-9: 구절 수정 후 id 와 public 이 유지된다', async () => {
+    const { routes, id, read } = await withExcerpts();
+    const first = (await read()).excerpts?.[0];
+    expect(first?.id).toBeDefined();
+    const set = await routes.request(`/api/books/${id}/excerpts/0`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text: '공개', public: true }),
+    });
+    expect(set.status).toBe(200);
+    await routes.request(`/api/books/${id}/excerpts/0`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text: '수정' }),
+    });
+    expect((await read()).excerpts?.[0]).toMatchObject({
+      id: first?.id,
+      public: true,
+      text: '수정',
+    });
+  });
+
+  it('NOR-196 AC-9: 공개 해제는 저장된 public 키를 지운다', async () => {
+    const { routes, id, read } = await withExcerpts();
+    for (const value of [true, false]) {
+      const response = await routes.request(`/api/books/${id}/excerpts/0`, {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text: '첫 번째', public: value }),
+      });
+      expect(response.status).toBe(200);
+    }
+    expect((await read()).excerpts?.[0]).not.toHaveProperty('public');
+  });
+
   it('오타를 고쳐도 옮겨 적은 날은 그대로다', async () => {
     const { routes, id, read } = await withExcerpts();
 
@@ -636,6 +672,7 @@ describe('구절 고치기와 지우기', () => {
 
     expect(response.status).toBe(200);
     expect((await read()).excerpts?.[0]).toEqual({
+      id: expect.any(String),
       text: '첫 번째 (고침)',
       page: 12,
       addedAt: '2026-08-19',

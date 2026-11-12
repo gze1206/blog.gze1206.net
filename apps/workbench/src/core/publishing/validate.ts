@@ -1,6 +1,7 @@
 import { parseDocument } from '../document/document.js';
 import { parsePublishedPost, type PublicPost } from './contract.js';
 import { parseAssetReferences } from './references.js';
+import { expandBookquotes, type BookLookup, type ExpandedQuote } from './bookquote.js';
 
 export interface PublicAssetInput {
   readonly draftReference: string;
@@ -10,11 +11,13 @@ export interface PublicAssetInput {
 
 export interface PublicDraftValidationInput {
   readonly privateRoot: string;
+  readonly lookupBook?: BookLookup;
   readonly assets: readonly PublicAssetInput[];
 }
 
 export interface ValidatedPublicDraft {
   readonly metadata: PublicPost;
+  readonly quotes: ExpandedQuote[];
   readonly content: string;
   readonly assets: readonly PublicAssetInput[];
 }
@@ -33,7 +36,9 @@ export function validatePublicDraft(
       throw new Error('only publicEligible public-draft documents can be published');
     }
 
+    const expanded = expandBookquotes(document.content, input.lookupBook ?? (() => undefined));
     assertNoLeaks(source, input.privateRoot);
+    assertNoLeaks(expanded.body, input.privateRoot);
     const metadata = parsePublishedPost({
       title: document.title,
       description: document.description,
@@ -48,8 +53,8 @@ export function validatePublicDraft(
       ...(document.toc === undefined ? {} : { toc: document.toc }),
     });
     const assets = validateAssets(input.assets, input.privateRoot, metadata.slug);
-    assertAllAssetReferencesResolved(document.content, assets);
-    return { metadata, content: document.content, assets };
+    assertAllAssetReferencesResolved(expanded.body, assets);
+    return { metadata, content: expanded.body, assets, quotes: expanded.quotes };
   } catch (error) {
     if (error instanceof PublicDraftValidationError) throw error;
     throw new PublicDraftValidationError(

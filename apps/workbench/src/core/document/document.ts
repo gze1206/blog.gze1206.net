@@ -37,6 +37,11 @@ const publishDateInputSchema = z
  */
 const excerptSchema = z
   .object({
+    id: z
+      .string()
+      .regex(/^[0-7][0-9A-HJKMNP-TV-Z]{25}$/u)
+      .optional(),
+    public: z.boolean().optional(),
     /** 몇 쪽에서 옮겼나. 페이지를 안 알려 주는 앱도 있어 없을 수 있다. */
     page: z.number().int().positive().optional(),
     text: z.string().min(1),
@@ -206,6 +211,8 @@ export interface WorkbenchDocument extends z.infer<typeof commonSchema> {
   readonly content: string;
   readonly extra: Record<string, unknown>;
 }
+
+export type BookDocument = WorkbenchDocument;
 
 export class DocumentValidationError extends Error {
   public override readonly name = 'DocumentValidationError';

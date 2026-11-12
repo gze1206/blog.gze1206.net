@@ -8,6 +8,8 @@ import { promisify } from 'node:util';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 
+import { BookAssetStore } from '../src/server/adapters/bookAssets.js';
+import { bookSlug } from '../src/core/books/metadata.js';
 import { ServerFileStore } from '../src/server/adapters/fileStore.js';
 import { ServerJournalStore } from '../src/server/adapters/journalStore.js';
 import { PublicBlogAdapter } from '../src/server/adapters/publicBlog.js';
@@ -40,6 +42,43 @@ date: 2026-08-11
 
 - □ 첫 번째 남은 일 <!-- wb:id=01J5AR7W6M3Q9N8K2T4V1X0ZBC -->
 - □ 두 번째 남은 일 <!-- wb:id=01J5AR7W6M3Q9N8K2T4V1X0ZBD -->
+`,
+);
+await mkdir(path.join(workspaceRoot, 'books'));
+await writeFile(
+  path.join(workspaceRoot, 'books/9788934972464.md'),
+  `---
+title: 인용 테스트
+kind: book
+createdAt: 2026-08-12
+updatedAt: 2026-08-12
+authors: [저자]
+isbn13: '9788934972464'
+status: reading
+format: paper
+source: purchase
+visible: true
+excerpts:
+  - id: 01J5AR7W6M3Q9N8K2T4V1X0ZBC
+    text: 공개할 문장
+---
+`,
+);
+await writeFile(
+  path.join(workspaceRoot, 'drafts/quote-test.md'),
+  `---
+title: Quote test
+kind: public-draft
+createdAt: 2026-08-12
+updatedAt: 2026-08-12
+publicEligible: true
+description: quote test
+slug: quote-test
+category: engineering
+tags: [git]
+publishedAt: 2026-08-12
+---
+{% bookquote book="9788934972464" excerpt="01J5AR7W6M3Q9N8K2T4V1X0ZBC" /%}
 `,
 );
 const seededDraftPath = 'drafts/asset-publish.md';
@@ -94,6 +133,11 @@ const app = createApp(
     clock: () => new Date('2026-08-12T12:00:00.000Z'),
     createId: () => 'e2e-review-id',
     timeZone: 'Asia/Seoul',
+  },
+  {
+    provider: { lookup: async () => null },
+    assets: new BookAssetStore({ workspaceRoot }),
+    options: { today: () => '2026-08-12', slugify: bookSlug },
   },
 );
 app.use('*', serveStatic({ root: './dist/web' }));

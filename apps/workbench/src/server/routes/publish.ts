@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
+import { isBookId } from '@gze1206/content-contract';
 
 import type { FileStore } from '../../core/ports.js';
 import type { PublicBlogPublisher } from '../adapters/publicBlog.js';
@@ -62,6 +63,29 @@ export function createPublishRoutes(store: FileStore, publisher: PublicBlogPubli
       reviewId: input.data.reviewId,
     });
     return context.json(result, 201);
+  });
+
+  routes.post('/api/publish/books/:id/review', async (context) => {
+    const id = context.req.param('id');
+    if (!isBookId(id)) return context.json(errorBody('invalid_id', 'Invalid book id'), 400);
+    if (!publisher.reviewBook) throw new Error('book publishing is unavailable');
+    return context.json(await publisher.reviewBook(id));
+  });
+
+  routes.post('/api/publish/books/:id/confirm', async (context) => {
+    const id = context.req.param('id');
+    if (!isBookId(id)) return context.json(errorBody('invalid_id', 'Invalid book id'), 400);
+    const input = z
+      .object({ confirmPublish: z.literal(true), reviewId: opaqueIdSchema })
+      .strict()
+      .safeParse(await readJson(context.req.raw));
+    if (!input.success)
+      return context.json(
+        errorBody('invalid_request', 'Publishing requires confirmPublish: true'),
+        400,
+      );
+    if (!publisher.publishBook) throw new Error('book publishing is unavailable');
+    return context.json(await publisher.publishBook(id, input.data), 201);
   });
 
   return routes;

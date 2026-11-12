@@ -55,7 +55,7 @@ const FORMAT_LABELS = { ebook: '전자책', paper: '종이책', audio: '오디�
 
           <ul class="shelf__row">
             {group.books.map((book) => (
-              <li class="book-card">
+              <li class="book-card" id={book.id}>
                 <div class="book-card__frame">
                   {book.data.cover ? (
                     <img

@@ -11,3 +11,9 @@ describe('계약 연결', () => {
     expect(seriesSchema).toBe(contractSeries);
   });
 });
+
+it('NOR-196 AC-1: 블로그 bookSchema 는 계약의 것과 같은 객체다', async () => {
+  const contract = await import('@gze1206/content-contract');
+  const blog = await import('./schemas');
+  expect(blog.bookSchema).toBe(contract.bookSchema);
+});

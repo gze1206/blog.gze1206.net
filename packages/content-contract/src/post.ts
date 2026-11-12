@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SLUG_PATTERN } from './slug.js';
+import { SLUG_PATTERN } from './slug.ts';
 
 const text = z.string().trim().min(1);
 

@@ -7,20 +7,11 @@ function book(
 ): BookLike {
   return {
     id,
-    data: { title: id, visible: true, ...data },
+    data: { title: id, ...data },
   };
 }
 
 describe('selectVisibleBooks', () => {
-  it('감춘 책은 목록에서 뺀다', () => {
-    const books = [
-      book('공개', { status: 'finished', visible: true }),
-      book('비공개', { status: 'finished', visible: false }),
-    ];
-
-    expect(selectVisibleBooks(books).map((entry) => entry.id)).toEqual(['공개']);
-  });
-
   it('읽는 중인 책이 먼저, 그다음은 최근에 손을 뗀 것부터', () => {
     const books = [
       book('작년완독', { status: 'finished', finishedAt: new Date('2025-01-01') }),
@@ -85,11 +76,5 @@ describe('groupBooksByYear', () => {
     ];
 
     expect(groupBooksByYear(books).map((group) => group.year)).toEqual([2026, 2024, null]);
-  });
-
-  it('감춘 책은 그룹에도 들어가지 않는다', () => {
-    const books = [book('비공개', { status: 'finished', visible: false })];
-
-    expect(groupBooksByYear(books)).toEqual([]);
   });
 });

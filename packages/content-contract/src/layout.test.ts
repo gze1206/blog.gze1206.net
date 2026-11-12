@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { BLOG_LAYOUT } from './index.js';
+import { BLOG_LAYOUT } from './index.ts';
 
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 
@@ -10,4 +10,9 @@ describe('BLOG_LAYOUT', () => {
     expect(existsSync(`${repoRoot}${BLOG_LAYOUT.postsDir}`)).toBe(true);
     expect(existsSync(`${repoRoot}${BLOG_LAYOUT.publicDir}`)).toBe(true);
   });
+});
+
+it('NOR-196 AC-3: booksDir·bookCoversDir 가 실제 디렉터리를 가리킨다', () => {
+  expect(existsSync(`${repoRoot}${BLOG_LAYOUT.booksDir}`)).toBe(true);
+  expect(existsSync(`${repoRoot}${BLOG_LAYOUT.bookCoversDir}`)).toBe(true);
 });

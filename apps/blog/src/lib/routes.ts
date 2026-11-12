@@ -38,8 +38,8 @@ export function aboutPath(): string {
 }
 
 /** 읽은 책 — 공개하기로 한 독서 기록 (NOR-153). */
-export function booksPath(): string {
-  return '/books';
+export function booksPath(id?: string): string {
+  return id === undefined ? '/books' : `/books#${segment(id)}`;
 }
 
 /** 포트폴리오 — 공개 가능한 작업을 문제·역할·기술·결과로 보는 곳 (NOR-151). */

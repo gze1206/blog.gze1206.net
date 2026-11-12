@@ -1,12 +1,16 @@
 import { createHash } from 'node:crypto';
-import { lstat, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
+import { chmod, lstat, mkdir, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { BLOG_LAYOUT } from '@gze1206/content-contract';
+import { BLOG_LAYOUT, isBookId } from '@gze1206/content-contract';
 
-import { parseDocument } from '../../core/document/document.js';
+import { parseDocument, type BookDocument } from '../../core/document/document.js';
 import { parseFrontmatter } from '../../core/document/frontmatter.js';
+import { bookIdOf, planBookExport, type BookExportPlan } from '../../core/books/publicBook.js';
+import { findImageMetadata, readImageSize } from '../../core/books/imageSize.js';
+import { resolveWorkspacePath } from './paths.js';
 import type { BlogPost } from '../../core/import/blogImport.js';
 import type { PublicPost } from '../../core/publishing/contract.js';
+import { quoteWarnings, type ExpandedQuote } from '../../core/publishing/bookquote.js';
 import {
   transformPublicDraft,
   type TransformPublicDraftInput,
@@ -36,6 +40,22 @@ export interface PublishReview {
   readonly metadata: PublicPost;
   readonly assets: readonly string[];
   readonly diff: string;
+  readonly quotes?: readonly ExpandedQuote[];
+  readonly warnings?: readonly string[];
+}
+
+export interface BookReview {
+  readonly reviewId: string;
+  readonly baseHead: string;
+  readonly branch: string;
+  readonly targetPath: string;
+  readonly diff: string;
+  readonly kind: BookExportPlan['kind'];
+  readonly warnings: readonly string[];
+}
+export interface BookConfirm {
+  readonly confirmPublish: boolean;
+  readonly reviewId: string;
 }
 
 export interface PublicAssetCandidate {
@@ -58,6 +78,8 @@ export interface PublicBlogPublisher {
   listAssets(documentId: string): Promise<readonly PublicAssetCandidate[]>;
   review(input: PublishDraftInput): Promise<PublishReview>;
   publish(input: ConfirmPublishInput): Promise<PublishResult>;
+  reviewBook?(id: string): Promise<BookReview>;
+  publishBook?(id: string, confirm: BookConfirm): Promise<PublishResult>;
 }
 
 export interface PublicBlogAdapterOptions {
@@ -199,19 +221,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       const { review } = reviewState;
       const contentFingerprint = fingerprint(prepared, reviewState);
       await this.sessions.get(input.reviewId, contentFingerprint, review.baseHead);
-      this.assertAuthorConfigured();
-      await this.assertRepositoryRoot(clone);
-      const dirtyFiles = await this.cloneManager.git(clone, [
-        'status',
-        '--porcelain',
-        '--untracked-files=all',
-      ]);
-      if (dirtyFiles !== '')
-        throw new Error(`publishing requires a clean public blog worktree: ${dirtyFiles}`);
-      if ((await this.cloneManager.git(clone, ['branch', '--list', review.branch])) !== '') {
-        throw new Error(`publish branch already exists: ${review.branch}`);
-      }
-      await this.cloneManager.git(clone, ['switch', '-c', review.branch]);
+      await this.beginPublish(clone, review.branch);
       await this.writeOutput(clone.repositoryRoot, review.targetPath, prepared.transformed.source);
       for (const asset of prepared.assets) {
         await this.writeApprovedAsset(
@@ -276,6 +286,253 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     }
   }
 
+  public async reviewBook(id: string): Promise<BookReview> {
+    const clone = await this.cloneManager.create();
+    try {
+      const state = await this.createBookReview(id, clone);
+      const session = this.sessions.register({
+        cloneDir: clone.sessionDir,
+        baseSha: state.review.baseHead,
+        fingerprint: state.fingerprint,
+      });
+      return { ...state.review, reviewId: session.reviewId };
+    } catch (error) {
+      await this.cloneManager.remove(clone.sessionDir);
+      throw error;
+    }
+  }
+
+  public async publishBook(id: string, confirm: BookConfirm): Promise<PublishResult> {
+    if (confirm.confirmPublish !== true)
+      throw new Error('publishing requires confirmPublish: true');
+    const session = await this.sessions.lookup(confirm.reviewId);
+    const clone = {
+      sessionDir: session.cloneDir,
+      repositoryRoot: path.join(session.cloneDir, 'repository'),
+    };
+    try {
+      const state = await this.createBookReview(id, clone);
+      const { review, plan, coverBytes, coverStates } = state;
+      await this.sessions.get(confirm.reviewId, state.fingerprint, review.baseHead);
+      if (plan.kind === 'noop') throw new Error('book export has no changes');
+      await this.beginPublish(clone, review.branch);
+      const changed = [review.targetPath];
+      for (const coverState of coverStates) {
+        if (
+          coverState.exists &&
+          (plan.kind === 'delete' || coverState.relativePath !== plan.cover?.to)
+        ) {
+          await assertNoSymlinkAncestors(clone.repositoryRoot, coverState.relativePath);
+          await rm(path.join(clone.repositoryRoot, coverState.relativePath));
+          changed.push(coverState.relativePath);
+        }
+      }
+      if (plan.kind === 'delete') {
+        await assertNoSymlinkAncestors(clone.repositoryRoot, plan.path);
+        await rm(path.join(clone.repositoryRoot, plan.path));
+      } else {
+        await this.writeOutput(clone.repositoryRoot, plan.path, plan.content);
+        await chmod(path.join(clone.repositoryRoot, plan.path), 0o644);
+        if (plan.cover && coverBytes) {
+          await this.writeApprovedAsset(clone.repositoryRoot, coverBytes, plan.cover.to);
+          await chmod(path.join(clone.repositoryRoot, plan.cover.to), 0o644);
+          changed.push(plan.cover.to);
+        }
+      }
+      await this.cloneManager.git(clone, ['add', '-A', '--', ...changed]);
+      const message =
+        plan.kind === 'delete'
+          ? `📚 docs(content): 책 ${id} 를 책장에서 뺀다`
+          : `📚 docs(content): 책 ${id} 를 내보낸다`;
+      await this.cloneManager.git(clone, [
+        '-c',
+        'user.useConfigOnly=true',
+        '-c',
+        `user.name=${this.options.author.name}`,
+        '-c',
+        `user.email=${this.options.author.email}`,
+        'commit',
+        '-m',
+        message,
+      ]);
+      const commit = await this.cloneManager.git(clone, ['rev-parse', 'HEAD']);
+      const exportResult = await this.outbox.write({
+        cloneDir: clone.repositoryRoot,
+        baseSha: review.baseHead,
+        branch: review.branch,
+        commit,
+        commitMessage: message,
+        targetPath: review.targetPath,
+        source: plan.kind === 'write' ? plan.content : '',
+        diff: review.diff,
+        author: `${this.options.author.name} <${this.options.author.email}>`,
+        assets:
+          plan.kind === 'write' && plan.cover && coverBytes
+            ? [{ reference: plan.cover.to, bytes: coverBytes }]
+            : [],
+        exporter: {
+          bundle: (baseSha, branch) => this.cloneManager.createBundle(clone, baseSha, branch),
+          formatPatch: (baseSha, branch) =>
+            this.cloneManager.gitBytes(clone, [
+              'format-patch',
+              '--binary',
+              '--stdout',
+              `${baseSha}..${branch}`,
+            ]),
+        },
+        ...(this.options.forceExportFormat === undefined
+          ? {}
+          : { forceFormat: this.options.forceExportFormat }),
+      });
+      await this.sessions.consume(confirm.reviewId, state.fingerprint, review.baseHead);
+      return {
+        ...exportResult,
+        baseSha: review.baseHead,
+        branch: review.branch,
+        commit,
+        targetPath: review.targetPath,
+      };
+    } catch (error) {
+      await this.sessions.discard(confirm.reviewId);
+      throw error;
+    }
+  }
+
+  private async createBookReview(id: string, clone: EphemeralClone) {
+    if (!isBookId(id)) throw new Error('invalid book id');
+    const documentPath = `books/${id}.md`;
+    await assertNoSymlinkAncestors(this.options.privateRoot, documentPath);
+    const documentFile = await resolveWorkspacePath(this.options.privateRoot, documentPath);
+    await assertRegularFile(documentFile);
+    const record = parseDocument(await readFile(documentFile, 'utf8'));
+    if (record.kind !== 'book' || bookIdOf(record) !== id)
+      throw new Error('book id does not match document');
+    const targetPath = `${BLOG_LAYOUT.booksDir}/${id}.json`;
+    const [current, baseHead, coverStates] = await Promise.all([
+      this.readOutput(clone.repositoryRoot, targetPath),
+      this.cloneManager.git(clone, ['rev-parse', 'HEAD']),
+      Promise.all(
+        ['jpg', 'jpeg', 'png', 'webp'].map((ext) =>
+          this.readPublicAssetState(
+            clone.repositoryRoot,
+            `${BLOG_LAYOUT.bookCoversDir}/${id}.${ext}`,
+          ),
+        ),
+      ),
+    ]);
+    let coverBytes: Buffer | undefined;
+    let cover:
+      | {
+          workspacePath: string;
+          info: { src: string; width: number; height: number; source?: string };
+        }
+      | undefined;
+    if (record.visible !== false && record.cover !== undefined) {
+      if (!/^assets\/books\/[^/]+\.(?:jpe?g|png|webp)$/iu.test(record.cover))
+        throw new Error('invalid book cover path');
+      await assertNoSymlinkAncestors(this.options.privateRoot, record.cover);
+      const coverFile = await resolveWorkspacePath(this.options.privateRoot, record.cover);
+      const coverStat = await assertRegularFile(coverFile);
+      if (coverStat.size > 5 * 1024 * 1024) throw new Error('book cover is too large');
+      coverBytes = await readFile(coverFile);
+      const size = readImageSize(coverBytes);
+      if (!size) throw new Error('unsupported book cover image');
+      const ext = path.extname(record.cover).toLowerCase();
+      if (
+        (size.type === 'jpeg' && !['.jpg', '.jpeg'].includes(ext)) ||
+        (size.type !== 'jpeg' && ext !== `.${size.type}`)
+      )
+        throw new Error('book cover extension does not match image');
+      cover = {
+        workspacePath: record.cover,
+        info: {
+          src: '',
+          width: size.width,
+          height: size.height,
+          ...(record.coverSource === undefined ? {} : { source: record.coverSource }),
+        },
+      };
+    }
+    let plan = planBookExport({ record, current, ...(cover === undefined ? {} : { cover }) });
+    // 책 JSON 이 같아도 표지 파일이 다르거나(같은 확장자·크기의 새 이미지) 옛 표지가 남아 있으면 내보낸다.
+    if (plan.kind === 'noop' && record.visible !== false && current !== null) {
+      const desiredCover =
+        cover === undefined
+          ? undefined
+          : `${BLOG_LAYOUT.bookCoversDir}/${id}${path.extname(cover.workspacePath).toLowerCase()}`;
+      const desiredHash =
+        coverBytes === undefined ? null : createHash('sha256').update(coverBytes).digest('hex');
+      const coverChanged =
+        desiredCover !== undefined &&
+        coverStates.find((state) => state.relativePath === desiredCover)?.contentHash !==
+          desiredHash;
+      const staleCover = coverStates.some(
+        (state) => state.exists && state.relativePath !== desiredCover,
+      );
+      if (coverChanged || staleCover)
+        plan = {
+          kind: 'write',
+          path: targetPath,
+          content: current,
+          ...(desiredCover === undefined || cover === undefined
+            ? {}
+            : { cover: { from: cover.workspacePath, to: desiredCover } }),
+        };
+    }
+    let diff =
+      plan.kind === 'noop'
+        ? ''
+        : plan.kind === 'delete'
+          ? unifiedDeleteDiff(targetPath, current ?? '')
+          : unifiedDiff(targetPath, current, plan.content);
+    if (plan.kind === 'write' && plan.cover) diff += `표지 추가/교체: ${plan.cover.to}\n`;
+    if (
+      plan.kind !== 'noop' &&
+      coverStates.some(
+        (state) =>
+          state.exists && (plan.kind === 'delete' || state.relativePath !== plan.cover?.to),
+      )
+    )
+      diff += '기존 표지 삭제\n';
+    const branchKey =
+      id
+        .normalize('NFC')
+        .replace(/[^\p{L}\p{N}_-]/gu, '')
+        .slice(0, 64) || 'book';
+    const metadata = coverBytes ? findImageMetadata(coverBytes) : [];
+    const warnings = metadata.length
+      ? [`표지에 메타데이터(EXIF 등)가 있습니다: ${metadata.join(', ')}`]
+      : [];
+    const review = {
+      warnings,
+      baseHead,
+      branch: `content/book-${branchKey}`,
+      targetPath,
+      diff,
+      kind: plan.kind,
+    };
+    const fingerprint = createHash('sha256')
+      .update(JSON.stringify({ id, plan, review, coverStates }))
+      .update(coverBytes ?? Buffer.alloc(0))
+      .digest('hex');
+    return { review, plan, coverBytes, coverStates, fingerprint };
+  }
+
+  private async beginPublish(clone: EphemeralClone, branch: string): Promise<void> {
+    this.assertAuthorConfigured();
+    await this.assertRepositoryRoot(clone);
+    const dirtyFiles = await this.cloneManager.git(clone, [
+      'status',
+      '--porcelain',
+      '--untracked-files=all',
+    ]);
+    if (dirtyFiles !== '')
+      throw new Error(`publishing requires a clean public blog worktree: ${dirtyFiles}`);
+    if ((await this.cloneManager.git(clone, ['branch', '--list', branch])) !== '')
+      throw new Error(`publish branch already exists: ${branch}`);
+    await this.cloneManager.git(clone, ['switch', '-c', branch]);
+  }
+
   private assertAuthorConfigured(): void {
     if (this.options.author.name.trim() === '' || this.options.author.email.trim() === '') {
       throw new Error('publishing requires explicit author identity');
@@ -293,7 +550,22 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       throw new Error('invalid or unavailable public asset id');
     }
     const assets = selected.filter((asset): asset is InspectedPublicAsset => asset !== undefined);
+    const books = new Map<string, BookDocument>();
+    for (const match of input.source.matchAll(/\{%\s*bookquote\s+book="([^"\r\n]+)"/gu)) {
+      const id = match[1];
+      if (!id || !isBookId(id) || books.has(id)) continue;
+      const relativePath = `books/${id}.md`;
+      await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
+      try {
+        const bookFile = await resolveWorkspacePath(this.options.privateRoot, relativePath);
+        await assertRegularFile(bookFile);
+        books.set(id, parseDocument(await readFile(bookFile, 'utf8')));
+      } catch (error) {
+        if (!isNodeError(error) || error.code !== 'ENOENT') throw error;
+      }
+    }
     const transformInput: TransformPublicDraftInput = {
+      lookupBook: (id) => books.get(id),
       source: input.source,
       assets: assets.map(({ reference, privatePath }) => ({
         draftReference: reference,
@@ -330,6 +602,8 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
           ({ publicPath }) => `${BLOG_LAYOUT.publicDir}/${publicPath}`,
         ),
         diff,
+        quotes: prepared.transformed.quotes,
+        warnings: quoteWarnings(prepared.transformed.quotes),
       },
       destinationStates,
     };
@@ -538,6 +812,17 @@ function unifiedDiff(targetPath: string, before: string | null, after: string): 
   ].join('\n');
 }
 
+function unifiedDeleteDiff(targetPath: string, before: string): string {
+  const beforeLines = lines(before);
+  return [
+    `--- a/${targetPath}`,
+    '+++ /dev/null',
+    `@@ -1,${beforeLines.length} +0,0 @@`,
+    ...beforeLines.map((line) => `-${line}`),
+    '',
+  ].join('\n');
+}
+
 function lines(source: string): readonly string[] {
   if (source === '') return [];
   return source.endsWith('\n') ? source.slice(0, -1).split('\n') : source.split('\n');
@@ -561,4 +846,10 @@ async function assertNoSymlinkAncestors(root: string, relativePath: string): Pro
 
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && 'code' in error;
+}
+
+async function assertRegularFile(file: string) {
+  const info = await lstat(file);
+  if (!info.isFile()) throw new Error('not a regular file');
+  return info;
 }

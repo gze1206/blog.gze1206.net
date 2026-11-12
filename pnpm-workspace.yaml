@@ -8,6 +8,7 @@ allowBuilds:
   workerd: true
 
 catalog:
+  '@markdoc/markdoc': ^0.5.8
   typescript: 6.0.3
   zod: ^4.4.3
   vitest: ^4.1.10

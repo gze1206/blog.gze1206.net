@@ -1,0 +1,28 @@
+---
+import { getCollection } from 'astro:content';
+import type { BookquoteSource } from '@gze1206/content-contract';
+import { captionSegments, formatBookquoteCaption } from '../../lib/bookquote';
+
+type Props = BookquoteSource;
+const books = await getCollection('books');
+const caption = formatBookquoteCaption(Astro.props, new Set(books.map((book) => book.id)));
+const segments = captionSegments(caption);
+---
+
+<figure class="bookquote media-figure">
+  <blockquote cite={caption.href}><slot /></blockquote>
+  <figcaption>
+    {
+      segments.map((segment, index) => (
+        <>
+          {index > 0 && ', '}
+          {segment === caption.title && caption.href ? (
+            <a href={caption.href}>{segment}</a>
+          ) : (
+            segment
+          )}
+        </>
+      ))
+    }
+  </figcaption>
+</figure>

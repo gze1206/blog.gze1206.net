@@ -52,7 +52,25 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
           <dd>{review.assets.length === 0 ? '없음' : review.assets.join(', ')}</dd>
         </dl>
 
+        {(review.quotes ?? []).length > 0 ? (
+          <section className="mt-7 text-sm">
+            <h3 className="font-semibold text-stone-700">인용 목록</h3>
+            <ul>
+              {review.quotes?.map((quote, index) => (
+                <li key={index}>
+                  {quote.book} · {[...quote.excerpt].slice(0, 40).join('')} · {quote.length}자 · 책
+                  누적 {quote.bookPublicTotal}자
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
         <h3 className="mt-7 text-sm font-semibold text-stone-700">통합 diff</h3>
+        {(review.warnings ?? []).map((warning) => (
+          <p key={warning} role="alert">
+            {warning}
+          </p>
+        ))}
         <pre
           aria-label="통합 diff"
           className="mt-2 max-h-[28rem] overflow-auto rounded-lg bg-stone-950 p-5 font-mono text-xs leading-5 whitespace-pre text-stone-100"

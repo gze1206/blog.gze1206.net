@@ -15,7 +15,6 @@ export interface BookLike {
     readonly status: BookStatus;
     readonly startedAt?: Date | undefined;
     readonly finishedAt?: Date | undefined;
-    readonly visible: boolean;
   };
 }
 
@@ -40,22 +39,20 @@ export function bookYear(book: BookLike): number | null {
  * 순서가 흔들리지 않게 한다.
  */
 export function selectVisibleBooks<T extends BookLike>(books: readonly T[]): T[] {
-  return books
-    .filter((book) => book.data.visible)
-    .sort((a, b) => {
-      const statusDiff = STATUS_ORDER[a.data.status] - STATUS_ORDER[b.data.status];
-      if (statusDiff !== 0) return statusDiff;
+  return [...books].sort((a, b) => {
+    const statusDiff = STATUS_ORDER[a.data.status] - STATUS_ORDER[b.data.status];
+    if (statusDiff !== 0) return statusDiff;
 
-      const aDate = (a.data.finishedAt ?? a.data.startedAt)?.getTime();
-      const bDate = (b.data.finishedAt ?? b.data.startedAt)?.getTime();
-      if (aDate !== bDate) {
-        if (aDate === undefined) return 1;
-        if (bDate === undefined) return -1;
-        return bDate - aDate;
-      }
+    const aDate = (a.data.finishedAt ?? a.data.startedAt)?.getTime();
+    const bDate = (b.data.finishedAt ?? b.data.startedAt)?.getTime();
+    if (aDate !== bDate) {
+      if (aDate === undefined) return 1;
+      if (bDate === undefined) return -1;
+      return bDate - aDate;
+    }
 
-      return a.data.title.localeCompare(b.data.title, 'ko');
-    });
+    return a.data.title.localeCompare(b.data.title, 'ko');
+  });
 }
 
 /** 연도별로 묶는다. 연도를 알 수 없는 책은 `null` 그룹으로 맨 뒤에 둔다. */
