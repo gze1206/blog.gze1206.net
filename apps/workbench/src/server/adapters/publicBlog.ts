@@ -431,7 +431,8 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         throw new Error('invalid book cover path');
       await assertNoSymlinkAncestors(this.options.privateRoot, record.cover);
       const coverFile = await resolveWorkspacePath(this.options.privateRoot, record.cover);
-      await assertRegularFile(coverFile);
+      const coverStat = await assertRegularFile(coverFile);
+      if (coverStat.size > 5 * 1024 * 1024) throw new Error('book cover is too large');
       coverBytes = await readFile(coverFile);
       const size = readImageSize(coverBytes);
       if (!size) throw new Error('unsupported book cover image');
@@ -841,6 +842,8 @@ function isNodeError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && 'code' in error;
 }
 
-async function assertRegularFile(file: string): Promise<void> {
-  if (!(await lstat(file)).isFile()) throw new Error('not a regular file');
+async function assertRegularFile(file: string) {
+  const info = await lstat(file);
+  if (!info.isFile()) throw new Error('not a regular file');
+  return info;
 }

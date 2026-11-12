@@ -5,7 +5,7 @@ export function readImageSize(
   const ascii = (offset: number, text: string) =>
     [...text].every((c, i) => bytes[offset + i] === c.charCodeAt(0));
   const result = (width: number, height: number, type: 'jpeg' | 'png' | 'webp') =>
-    width > 0 && height > 0 ? { width, height, type } : null;
+    width > 0 && height > 0 && width <= 10000 && height <= 10000 ? { width, height, type } : null;
   if (bytes.length >= 24 && bytes[0] === 137 && ascii(1, 'PNG\r\n\x1a\n') && ascii(12, 'IHDR'))
     return result(view.getUint32(16), view.getUint32(20), 'png');
   if (bytes.length >= 12 && ascii(0, 'RIFF') && ascii(8, 'WEBP')) {
