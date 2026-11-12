@@ -648,6 +648,19 @@ describe('구절 고치기와 지우기', () => {
     });
   });
 
+  it('NOR-196 AC-9: 공개 해제는 저장된 public 키를 지운다', async () => {
+    const { routes, id, read } = await withExcerpts();
+    for (const value of [true, false]) {
+      const response = await routes.request(`/api/books/${id}/excerpts/0`, {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text: '첫 번째', public: value }),
+      });
+      expect(response.status).toBe(200);
+    }
+    expect((await read()).excerpts?.[0]).not.toHaveProperty('public');
+  });
+
   it('오타를 고쳐도 옮겨 적은 날은 그대로다', async () => {
     const { routes, id, read } = await withExcerpts();
 

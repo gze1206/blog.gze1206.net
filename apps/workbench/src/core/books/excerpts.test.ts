@@ -24,4 +24,9 @@ describe('구절 식별', () => {
       { id: 'a', text: 'changed', addedAt: '2026-01-01', public: true },
     ]);
   });
+  it('NOR-196 AC-9: public false 패치는 public 키를 지운다', () => {
+    expect(
+      updateExcerpt([{ id: 'a', text: 'one', public: true }], 0, { text: 'one', public: false }),
+    ).toEqual([{ id: 'a', text: 'one' }]);
+  });
 });
