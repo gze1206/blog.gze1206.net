@@ -14,13 +14,14 @@ export function expandBookquotes(
   body: string,
   lookup: BookLookup,
 ): { body: string; quotes: ExpandedQuote[] } {
-  for (const match of body.matchAll(/\{%\s*(\/?[^\s/%}]+)/gu)) {
-    const name = match[1];
-    if (
-      name &&
-      ['/bookquote', 'bookquote'].includes(name.replace(/\p{Cf}/gu, '').toLowerCase()) &&
-      name !== 'bookquote'
-    )
+  // 태그 이름 앞뒤의 공백·서식 문자(\p{Cf})와 대소문자를 지운 이름이 bookquote 계열이면 인용 후보다.
+  // 원본 형식(`{% bookquote …`)이 아니면 모두 거부한다(fail-closed).
+  for (const match of body.matchAll(/\{%([\s\p{Cf}]*)([^\s%}]+)/gu)) {
+    const prefix = match[1] ?? '';
+    const name = match[2] ?? '';
+    const normalized = name.replace(/\p{Cf}/gu, '').toLowerCase();
+    if (!/^\/?bookquote(?![a-z0-9_-])/u.test(normalized)) continue;
+    if (name !== 'bookquote' || /\p{Cf}/u.test(prefix))
       throw new PublicDraftValidationError('invalid bookquote source');
   }
   const quotes: ExpandedQuote[] = [];
