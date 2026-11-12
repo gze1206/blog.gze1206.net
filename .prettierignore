@@ -8,3 +8,5 @@ apps/blog/public/pagefind/
 **/playwright-report/
 
 **/coverage/
+
+**/dist-smoke/

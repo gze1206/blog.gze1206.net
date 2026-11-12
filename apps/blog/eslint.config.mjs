@@ -17,6 +17,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist/',
+      'dist-smoke/',
       '.astro/',
       'node_modules/',
       'public/pagefind/',
