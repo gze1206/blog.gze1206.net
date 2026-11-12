@@ -37,5 +37,28 @@ export function auditDist(input: AuditInput): AuditFinding[] {
       }
     }
   }
+  const assetPaths = new Set(input.assets.map((asset) => asset.path));
+  for (const file of input.files) {
+    if (/<meta\b[^>]*http-equiv=["']refresh["']/i.test(file.html))
+      findings.push({ rule: 'meta-refresh', path: file.path, detail: 'meta refresh' });
+    for (const match of file.html.matchAll(
+      /<meta\b[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/gi,
+    )) {
+      try {
+        const url = new URL(match[1], 'https://gze1206.net');
+        if (
+          url.origin !== 'https://gze1206.net' ||
+          !url.pathname.startsWith('/og/') ||
+          !url.pathname.endsWith('.png')
+        )
+          continue;
+        const path = decodeURIComponent(url.pathname).slice(1);
+        if (!assetPaths.has(path))
+          findings.push({ rule: 'missing-og-image', path: file.path, detail: path });
+      } catch {
+        /* 잘못된 URL 은 이미지 참조 검사 대상이 아니다. */
+      }
+    }
+  }
   return findings;
 }

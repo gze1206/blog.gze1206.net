@@ -8,6 +8,7 @@ import { codeBlockTransformers } from './src/shiki/transformers/index.ts';
 import { createHeadingIdFactory } from './src/lib/heading-id.ts';
 import { HEADING_ANCHOR_CLASS, headingAnchorLabel } from './src/lib/heading-anchor.ts';
 import { collectMdocFenceLanguages } from './src/shiki/fence-languages.ts';
+import { isLoadedLanguage } from './src/lib/code-lang.ts';
 import { SHIKI_THEMES } from './src/shiki/themes.ts';
 
 // 테마는 `.md` 경로와 같은 것을 쓴다. 여기서 따로 적으면 글 형식에 따라 코드 색이 달라진다.
@@ -29,7 +30,7 @@ const highlighter = await createHighlighter({
 });
 
 for (const lang of contentLangs) {
-  if (highlighter.getLoadedLanguages().includes(lang)) continue;
+  if (isLoadedLanguage(lang, highlighter.getLoadedLanguages())) continue;
   try {
     await highlighter.loadLanguage(lang);
   } catch {
@@ -121,7 +122,7 @@ export default defineMarkdocConfig({
 
         // 쓰이는 언어는 위에서 전부 미리 로드했다. 그래도 없으면(콘텐츠 스캔 이후에 추가된
         // 언어 등) 조용히 죽지 않고 plaintext 로 떨어뜨린다.
-        if (!highlighter.getLoadedLanguages().includes(lang)) {
+        if (!isLoadedLanguage(lang, highlighter.getLoadedLanguages())) {
           console.warn(
             `[NOR-17] Markdoc 코드블럭 언어 '${lang}' 가 로드돼 있지 않아 plaintext 로 렌더합니다. ` +
               `개발 서버라면 재시작하면 반영됩니다.`,
