@@ -17,12 +17,16 @@ async function walk(dir: string): Promise<string[]> {
 
 const posts = await collectPosts('src/content/posts');
 const drafts = posts.filter((post) => post.draft);
-const publicTitles = new Set(posts.filter((post) => !post.draft).map((post) => post.title.toLowerCase()));
-const draftTitles = drafts.map((post) => post.title).filter((title) => {
-  if (!publicTitles.has(title.toLowerCase())) return true;
-  console.warn(`draft title matches public post; skipping title audit: ${title}`);
-  return false;
-});
+const publicTitles = new Set(
+  posts.filter((post) => !post.draft).map((post) => post.title.toLowerCase()),
+);
+const draftTitles = drafts
+  .map((post) => post.title)
+  .filter((title) => {
+    if (!publicTitles.has(title.toLowerCase())) return true;
+    console.warn(`draft title matches public post; skipping title audit: ${title}`);
+    return false;
+  });
 const files: DistFile[] = [];
 const assets: { path: string; content: string | null }[] = [];
 for (const path of await walk('dist')) {

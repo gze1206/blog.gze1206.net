@@ -6,7 +6,9 @@ import { collectPosts } from './draft-list.ts';
 
 it('NOR-197 AC-1: mdx draft 를 스키마로 수집한다', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'draft-list-'));
-  await writeFile(path.join(dir, 'draft.mdx'), `---
+  await writeFile(
+    path.join(dir, 'draft.mdx'),
+    `---
 title: Draft
 description: description
 slug: draft-example
@@ -16,8 +18,11 @@ publishedAt: 2026-11-12
 updatedAt: 2026-11-12
 draft: true
 ---
-body`);
-  expect(await collectPosts(dir)).toEqual([expect.objectContaining({ slug: 'draft-example', draft: true })]);
+body`,
+  );
+  expect(await collectPosts(dir)).toEqual([
+    expect.objectContaining({ slug: 'draft-example', draft: true }),
+  ]);
 });
 
 it('NOR-197 AC-1: 글이 없으면 수집에 실패한다', async () => {

@@ -28,13 +28,20 @@ export const SMOKE_ENABLED = isSmokeEnabled({
 });
 export function auditDist(input: AuditInput): AuditFinding[] {
   const findings: AuditFinding[] = [];
-  for (const item of [...input.files.map((file) => ({ path: file.path, content: file.html })), ...input.assets]) {
+  for (const item of [
+    ...input.files.map((file) => ({ path: file.path, content: file.html })),
+    ...input.assets,
+  ]) {
     const smokePath = item.path.startsWith('smoke/');
     if (smokePath && !input.smoke)
       findings.push({ rule: 'smoke-in-production', path: item.path, detail: 'smoke output' });
     if (smokePath && input.smoke) continue;
     const normalize = (value: string): string => {
-      try { value = decodeURIComponent(value); } catch { /* 원문을 검사한다. */ }
+      try {
+        value = decodeURIComponent(value);
+      } catch {
+        /* 원문을 검사한다. */
+      }
       return decodeHTML(value).toLowerCase();
     };
     const boundaryMatch = (value: string, slug: string): boolean => {
