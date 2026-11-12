@@ -1,6 +1,7 @@
 import { bookquoteTag } from '@gze1206/content-contract';
 import { describe, expect, it } from 'vitest';
 import config from '../../markdoc.config.mjs';
+import * as bookquote from './bookquote';
 import { formatBookquoteCaption } from './bookquote';
 
 it('NOR-196 AC-6: 블로그 bookquote 태그 속성은 계약의 bookquoteTag 와 같다', () => {
@@ -39,4 +40,39 @@ describe('NOR-196 AC-7: 책 인용 출처', () => {
       ),
     ).toEqual({ authors: '가', title: '『제목』' });
   });
+});
+
+it('NOR-196 AC-7: figcaption 은 저자, 『제목』, 역자, 출판사, 연도, 쪽수 순서다', () => {
+  expect(bookquote).toHaveProperty('captionSegments');
+  const { captionSegments } = bookquote as unknown as {
+    captionSegments: (caption: bookquote.BookquoteCaption) => string[];
+  };
+  const caption = formatBookquoteCaption(
+    {
+      book: '책',
+      title: '제목',
+      authors: ['가'],
+      translators: ['나'],
+      publisher: '출판사',
+      year: 2020,
+      page: 42,
+    },
+    new Set(),
+  );
+  expect(captionSegments(caption)).toEqual([
+    '가',
+    '『제목』',
+    '나 옮김',
+    '출판사',
+    '2020',
+    'p. 42',
+  ]);
+  expect(
+    captionSegments(
+      formatBookquoteCaption(
+        { book: '책', title: '제목', authors: ['가'], translators: [] },
+        new Set(),
+      ),
+    ),
+  ).toEqual(['가', '『제목』']);
 });
