@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 type Route = { status: number; location?: string; body?: string };
 
 function fakeFetch(routes: Record<string, Route>) {
-  const calls: { url: string; redirect: RequestRedirect | undefined }[] = [];
+  const calls: { url: string; redirect: RequestInit['redirect'] }[] = [];
   const fetchFn = async (input: string, init?: RequestInit): Promise<Response> => {
     calls.push({ url: input, redirect: init?.redirect });
     const route = routes[input] ?? { status: 404 };
