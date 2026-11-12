@@ -60,5 +60,45 @@ export function auditDist(input: AuditInput): AuditFinding[] {
       }
     }
   }
+  const katexAssets = new Set(
+    input.assets
+      .filter(
+        (asset) =>
+          asset.path.endsWith('.css') &&
+          asset.content?.includes('.katex') &&
+          asset.content.includes('KaTeX_'),
+      )
+      .map((asset) => asset.path),
+  );
+  const mermaidAssets = new Set(
+    input.assets
+      .filter(
+        (asset) =>
+          asset.path.endsWith('.js') &&
+          (/(?:^|\/)(?:mermaid(?:-parser)?|cytoscape)[.-]/i.test(asset.path) ||
+            (/chunk-/i.test(asset.path) && /langium|mermaid|cytoscape/i.test(asset.content ?? ''))),
+      )
+      .map((asset) => asset.path),
+  );
+  for (const file of input.files) {
+    const refs = [
+      ...file.html.matchAll(
+        /<(?:script|link)\b[^>]*(?:src|href)=["']\/([^"'?#]+)[^"']*["'][^>]*>/gi,
+      ),
+    ].map((match) => match[1]);
+    const hasMath = /class=["'][^"']*\bkatex\b[^"']*["']/i.test(file.html);
+    const hasKatexCss = refs.some((ref) => katexAssets.has(ref));
+    if (hasMath !== hasKatexCss)
+      findings.push({
+        rule: 'heavy-asset',
+        path: file.path,
+        detail: hasMath ? 'missing KaTeX CSS' : 'unneeded KaTeX CSS',
+      });
+    if (
+      !/data-language=["']mermaid["']/i.test(file.html) &&
+      refs.some((ref) => mermaidAssets.has(ref))
+    )
+      findings.push({ rule: 'heavy-asset', path: file.path, detail: 'unneeded Mermaid chunk' });
+  }
   return findings;
 }

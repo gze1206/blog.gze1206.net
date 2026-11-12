@@ -32,7 +32,7 @@ for (const path of await walk('dist')) {
   else
     assets.push({
       path: name,
-      content: name.endsWith('.js') ? await readFile(path, 'utf8') : null,
+      content: /\.(?:js|css)$/.test(name) ? await readFile(path, 'utf8') : null,
     });
 }
 const findings = auditDist({
