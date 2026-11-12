@@ -1,6 +1,17 @@
 import { useState } from 'react';
 
-import { bookCoverUrl, updateBook, type BookUpdate, type DocumentEntry } from './api.js';
+import {
+  bookCoverUrl,
+  updateBook,
+  reviewBook,
+  confirmBook,
+  type BookUpdate,
+  type DocumentEntry,
+  type BookPublishReviewData,
+  type PublishResult,
+} from './api.js';
+import { bookSlug } from '../core/books/metadata.js';
+import { BookPublishReview } from './BookPublishReview.js';
 import { BookNotes } from './BookNotes.js';
 
 interface Props {
@@ -45,6 +56,8 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
   */
   const [form, setForm] = useState<BookUpdate | null>(initial ?? null);
   const [busy, setBusy] = useState(false);
+  const [review, setReview] = useState<BookPublishReviewData | null>(null);
+  const [result, setResult] = useState<PublishResult | null>(null);
 
   if (form === null) {
     return <p className="p-8 text-sm text-stone-500">책 정보를 읽지 못했습니다.</p>;
@@ -73,6 +86,29 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
     }
   };
 
+  const bookId = initial?.isbn13 ?? bookSlug(initial?.title ?? '');
+  const runReview = async () => {
+    setBusy(true);
+    try {
+      setResult(null);
+      setReview(await reviewBook(bookId));
+    } catch (caught) {
+      onError(caught instanceof Error ? caught.message : '검토하지 못했습니다.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  const confirm = async () => {
+    if (review === null) return;
+    setBusy(true);
+    try {
+      setResult(await confirmBook(bookId, review.reviewId));
+    } catch (caught) {
+      onError(caught instanceof Error ? caught.message : '내보내지 못했습니다.');
+    } finally {
+      setBusy(false);
+    }
+  };
   const dirty = JSON.stringify(form) !== JSON.stringify(initial);
   const cover = document.cover === undefined ? null : bookCoverUrl(document.cover);
 
@@ -84,6 +120,14 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
           <p className="text-xs text-stone-400">읽은 책</p>
         </div>
         <div className="flex gap-2">
+          <button
+            type="button"
+            className="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 disabled:opacity-40"
+            disabled={busy || dirty}
+            onClick={() => void runReview()}
+          >
+            {form.visible ? '책장으로 내보내기' : '책장에서 빼기'}
+          </button>
           <button
             className="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700"
             onClick={onEditSource}
@@ -103,6 +147,16 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        {review ? (
+          <BookPublishReview
+            review={review}
+            cover={document.cover ?? '표지 없음'}
+            busy={busy}
+            result={result}
+            onClose={() => setReview(null)}
+            onConfirm={() => void confirm()}
+          />
+        ) : null}
         <div className="flex gap-5">
           <span className="flex h-36 w-24 flex-none items-center justify-center overflow-hidden rounded border border-stone-200 bg-stone-100 text-[11px] text-stone-400">
             {cover === null ? (
@@ -276,6 +330,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
         <div className="mt-5 grid grid-cols-2 gap-6 border-t border-stone-200 pt-5">
           <BookNotes
             documentId={document.id}
+            bookId={bookId}
             items={document.excerpts ?? []}
             list="excerpts"
             onChanged={onChanged}

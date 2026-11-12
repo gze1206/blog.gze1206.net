@@ -8,6 +8,8 @@ import { promisify } from 'node:util';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 
+import { BookAssetStore } from '../src/server/adapters/bookAssets.js';
+import { bookSlug } from '../src/core/books/metadata.js';
 import { ServerFileStore } from '../src/server/adapters/fileStore.js';
 import { ServerJournalStore } from '../src/server/adapters/journalStore.js';
 import { PublicBlogAdapter } from '../src/server/adapters/publicBlog.js';
@@ -57,7 +59,7 @@ format: paper
 source: purchase
 visible: true
 excerpts:
-  - id: quote1
+  - id: 01J5AR7W6M3Q9N8K2T4V1X0ZBC
     text: 공개할 문장
 ---
 `,
@@ -76,7 +78,7 @@ category: engineering
 tags: [git]
 publishedAt: 2026-08-12
 ---
-{% bookquote book="9788934972464" excerpt="quote1" /%}
+{% bookquote book="9788934972464" excerpt="01J5AR7W6M3Q9N8K2T4V1X0ZBC" /%}
 `,
 );
 const seededDraftPath = 'drafts/asset-publish.md';
@@ -131,6 +133,11 @@ const app = createApp(
     clock: () => new Date('2026-08-12T12:00:00.000Z'),
     createId: () => 'e2e-review-id',
     timeZone: 'Asia/Seoul',
+  },
+  {
+    provider: { lookup: async () => null },
+    assets: new BookAssetStore({ workspaceRoot }),
+    options: { today: () => '2026-08-12', slugify: bookSlug },
   },
 );
 app.use('*', serveStatic({ root: './dist/web' }));

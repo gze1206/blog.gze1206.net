@@ -386,6 +386,8 @@ export async function updateBook(documentId: string, update: BookUpdate): Promis
  */
 export interface BookListItem {
   readonly text: string;
+  readonly id?: string | undefined;
+  readonly public?: boolean | undefined;
   readonly page?: number | undefined;
   readonly memo?: string | undefined;
 }
@@ -424,4 +426,20 @@ export async function deleteBookListItem(
 
 export async function createBook(input: BookInput): Promise<{ readonly relativePath: string }> {
   return request('/api/books', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export interface BookPublishReviewData {
+  readonly reviewId: string;
+  readonly kind: 'write' | 'delete' | 'noop';
+  readonly targetPath: string;
+  readonly diff: string;
+}
+export async function reviewBook(id: string): Promise<BookPublishReviewData> {
+  return request(`/api/publish/books/${encodeURIComponent(id)}/review`, { method: 'POST' });
+}
+export async function confirmBook(id: string, reviewId: string): Promise<PublishResult> {
+  return request(`/api/publish/books/${encodeURIComponent(id)}/confirm`, {
+    method: 'POST',
+    body: JSON.stringify({ confirmPublish: true, reviewId }),
+  });
 }

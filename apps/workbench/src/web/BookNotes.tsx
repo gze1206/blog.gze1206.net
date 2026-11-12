@@ -10,6 +10,7 @@ import {
 
 interface Props {
   readonly documentId: string;
+  readonly bookId?: string;
   readonly list: BookListName;
   readonly items: readonly BookListItem[];
   readonly onChanged: () => void;
@@ -43,13 +44,14 @@ const LABELS = {
  * 그 메모는 **그 문장**에 대한 것이고, 책 전체를 향한 생각은 독서 메모로, 다 읽고 쓰는 글은
  * 독서 노트(문서 본문)로 간다.
  */
-export function BookNotes({ documentId, list, items, onChanged, onError }: Props) {
+export function BookNotes({ documentId, bookId, list, items, onChanged, onError }: Props) {
   const labels = LABELS[list];
   const [editing, setEditing] = useState<number | 'new' | null>(null);
   const [page, setPage] = useState('');
   const [text, setText] = useState('');
   const [memo, setMemo] = useState('');
   const [busy, setBusy] = useState(false);
+  const [publicOverrides, setPublicOverrides] = useState<Record<number, boolean>>({});
 
   const open = (target: number | 'new') => {
     const current = target === 'new' ? undefined : items[target];
@@ -80,11 +82,31 @@ export function BookNotes({ documentId, list, items, onChanged, onError }: Props
     }
   };
 
+  const toggle = async (index: number, item: BookListItem, value: boolean) => {
+    setBusy(true);
+    setPublicOverrides((current) => ({ ...current, [index]: value }));
+    try {
+      await updateBookListItem(documentId, 'excerpts', index, {
+        text: item.text,
+        ...(item.page === undefined ? {} : { page: item.page }),
+        ...(item.memo === undefined ? {} : { memo: item.memo }),
+        public: value,
+      });
+      onChanged();
+    } catch (caught) {
+      setPublicOverrides((current) => ({ ...current, [index]: item.public === true }));
+      onError(caught instanceof Error ? caught.message : '공개 상태를 바꾸지 못했습니다.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const remove = async (index: number) => {
     setBusy(true);
     try {
       await deleteBookListItem(documentId, list, index);
       setEditing(null);
+      setPublicOverrides({});
       onChanged();
     } catch (caught) {
       onError(caught instanceof Error ? caught.message : '지우지 못했습니다.');
@@ -146,6 +168,35 @@ export function BookNotes({ documentId, list, items, onChanged, onError }: Props
               ) : (
                 <>
                   <p className="text-sm whitespace-pre-wrap text-stone-800">{item.text}</p>
+                  {list === 'excerpts' ? (
+                    <div className="mt-1 flex gap-3 text-sm text-stone-600">
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={publicOverrides[index] ?? item.public === true}
+                          aria-disabled={busy}
+                          onChange={(event) => {
+                            if (!busy) void toggle(index, item, event.target.checked);
+                          }}
+                        />{' '}
+                        공개
+                      </label>
+                      {(publicOverrides[index] ?? item.public === true) &&
+                      item.id !== undefined &&
+                      bookId !== undefined ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void navigator.clipboard
+                              .writeText(`{% bookquote book="${bookId}" excerpt="${item.id}" /%}`)
+                              .catch(() => onError('복사하지 못했습니다.'))
+                          }
+                        >
+                          인용 복사
+                        </button>
+                      ) : null}
+                    </div>
+                  ) : null}
                   {item.memo === undefined ? null : (
                     <p className="mt-1 text-sm whitespace-pre-wrap text-stone-600">— {item.memo}</p>
                   )}
