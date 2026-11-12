@@ -24,6 +24,10 @@ export const SMOKE_ENABLED = isSmokeEnabled({
 export function auditDist(input: AuditInput): AuditFinding[] {
   const findings: AuditFinding[] = [];
   if (!input.smoke) {
+    for (const asset of input.assets) {
+      if (asset.path.startsWith('smoke/'))
+        findings.push({ rule: 'smoke-in-production', path: asset.path, detail: 'smoke asset' });
+    }
     for (const file of input.files) {
       if (file.path.startsWith('smoke/'))
         findings.push({ rule: 'smoke-in-production', path: file.path, detail: 'smoke page' });

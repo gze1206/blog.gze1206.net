@@ -11,6 +11,7 @@ import cilGrammar from './src/shiki/langs/cil.tmLanguage.json';
 import { codeBlockTransformers } from './src/shiki/transformers/index.ts';
 import { rehypeHeadingAnchors } from './src/rehype/heading-anchors.ts';
 import { ogImageAudit } from './src/integrations/og-image-audit.ts';
+import { smokeGate } from './src/integrations/smoke-gate.ts';
 import { isSitemapPage } from './src/lib/sitemap.ts';
 import { SHIKI_THEMES } from './src/shiki/themes.ts';
 
@@ -23,7 +24,13 @@ export default defineConfig({
   // 여기까지 맞춰 두면 dev 서버·프로덕션·canonical 이 한 벌로 움직인다.
   trailingSlash: 'never',
   // `ogImageAudit` 는 빌드 끝에 dist 의 og:image 참조가 실재하는지 확인만 한다(경고만, NOR-28).
-  integrations: [sitemap({ filter: isSitemapPage }), markdoc(), react(), ogImageAudit()],
+  integrations: [
+    sitemap({ filter: isSitemapPage }),
+    markdoc(),
+    react(),
+    ogImageAudit(),
+    smokeGate(),
+  ],
   markdown: {
     shikiConfig: {
       // 테마는 `src/shiki/themes.ts` 하나에서 온다 — `.mdoc` 경로도 같은 것을 쓴다.
