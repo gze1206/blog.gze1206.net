@@ -23,13 +23,21 @@ export async function checkDomains(
   options: DomainCheckOptions,
 ): Promise<string[]> {
   const failures: string[] = [];
-  const get = (url: string) => fetchFn(url, { redirect: 'manual' });
+  // 네트워크 오류(DNS 실패 등)는 던지지 않고 실패 항목으로 남긴다. 나머지 항목도 계속 확인한다.
+  const get = async (url: string): Promise<Response | undefined> => {
+    try {
+      return await fetchFn(url, { redirect: 'manual' });
+    } catch (error) {
+      failures.push(`${url}: 요청 실패 (${describeError(error)})`);
+      return undefined;
+    }
+  };
   const canonicalOrigin = new URL(options.canonical).origin;
 
   const home = await get(`${canonicalOrigin}/`);
-  if (home.status !== 200) {
+  if (home !== undefined && home.status !== 200) {
     failures.push(`${canonicalOrigin}/: 200 이 아니라 ${home.status}`);
-  } else {
+  } else if (home !== undefined) {
     const href = HREF.exec(CANONICAL_LINK.exec(await home.text())?.[0] ?? '')?.[1];
     if (href === undefined || new URL(href, canonicalOrigin).origin !== canonicalOrigin) {
       failures.push(`${canonicalOrigin}/: canonical 이 정본 호스트가 아니다 (${href ?? '없음'})`);
@@ -40,6 +48,7 @@ export async function checkDomains(
   for (const alias of options.aliases) {
     const url = new URL(options.probe, `https://${alias}`).href;
     const response = await get(url);
+    if (response === undefined) continue;
     const location = response.headers.get('location');
     if (response.status !== 301 || location === null || new URL(location, url).href !== expected) {
       failures.push(
@@ -51,10 +60,19 @@ export async function checkDomains(
   for (const legacy of options.legacyPaths) {
     const url = new URL(legacy, canonicalOrigin).href;
     const response = await get(url);
-    if (response.status !== 200) failures.push(`${url}: 200 이 아니라 ${response.status}`);
+    if (response !== undefined && response.status !== 200)
+      failures.push(`${url}: 200 이 아니라 ${response.status}`);
   }
 
   return failures;
+}
+
+function describeError(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const cause = error.cause;
+  const code =
+    typeof cause === 'object' && cause !== null && 'code' in cause ? String(cause.code) : '';
+  return code === '' ? error.message : `${error.message}: ${code}`;
 }
 
 /** 옛 사이트 sitemap 에 있던 경로 목록(`legacy-paths.txt`). */
