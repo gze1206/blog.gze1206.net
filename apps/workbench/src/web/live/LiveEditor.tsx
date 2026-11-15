@@ -47,6 +47,8 @@ export function LiveEditor({ source, onChange, className = '', onUploadImage, on
   const view = useRef<EditorView | null>(null);
   const changeRef = useRef(onChange);
   const loaded = useRef(false);
+  /** 바깥 원본으로 상태를 새로 만들 때마다(다른 문서) 오른다. 늦게 끝난 올리기를 가려낸다. */
+  const generation = useRef(0);
   useEffect(() => {
     changeRef.current = onChange;
   }, [onChange]);
@@ -68,6 +70,7 @@ export function LiveEditor({ source, onChange, className = '', onUploadImage, on
     const editor = view.current;
     if (!editor || (loaded.current && sourceOf(editor.state) === source)) return;
     loaded.current = true;
+    generation.current += 1;
     editor.setState(
       createSourceState(source, [
         history(),
@@ -125,9 +128,15 @@ export function LiveEditor({ source, onChange, className = '', onUploadImage, on
                 event.target.value = '';
                 const editor = view.current;
                 if (!file || !editor) return;
+                const started = generation.current;
                 setUploading(true);
                 onUploadImage(file)
                   .then((reference) => {
+                    // 올리는 사이 다른 문서로 바뀌었으면 넣지 않는다.
+                    if (generation.current !== started || view.current !== editor) {
+                      onError?.('올리는 사이 문서가 바뀌어 이미지를 본문에 넣지 않았습니다.');
+                      return;
+                    }
                     const at = editor.state.selection.main;
                     const insert = `![설명](${reference})`;
                     editor.dispatch({

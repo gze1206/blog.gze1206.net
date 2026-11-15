@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   confirmPublish,
@@ -50,10 +50,15 @@ export function App() {
   const [addingBook, setAddingBook] = useState(false);
   /** 사이트 콘텐츠 화면(NOR-208). 문서를 고르면 문서가 앞선다. */
   const [siteOpen, setSiteOpen] = useState(false);
+  /** 지금 열린 문서 id. 늦게 끝난 올리기가 다른 문서의 상태를 바꾸지 않게 본다. */
+  const selectedIdRef = useRef<string | null>(null);
   const [publishStatus, setPublishStatus] = useState<PublishStatusData | null>(null);
   /** 책은 폼으로 다루는 것이 기본이고, 원본 마크다운은 필요할 때 연다. */
   const [editingSource, setEditingSource] = useState(false);
   const [selected, setSelected] = useState<DocumentEntry | null>(null);
+  useEffect(() => {
+    selectedIdRef.current = selected?.id ?? null;
+  }, [selected]);
   const [source, setSource] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -369,11 +374,16 @@ export function App() {
                 ? {
                     onReviewPublish: () => void review(),
                     onUploadImage: async (file: File) => {
-                      const uploaded = await uploadPublicAsset(selected.id, file);
-                      setPublishAssets(await listPublishAssets(selected.id));
-                      setSelectedAssetIds((current) =>
-                        current.includes(uploaded.id) ? current : [...current, uploaded.id],
-                      );
+                      const documentId = selected.id;
+                      const uploaded = await uploadPublicAsset(documentId, file);
+                      const assets = await listPublishAssets(documentId);
+                      // 올리는 사이 다른 문서를 열었으면 그 문서의 자산 목록을 건드리지 않는다.
+                      if (selectedIdRef.current === documentId) {
+                        setPublishAssets(assets);
+                        setSelectedAssetIds((current) =>
+                          current.includes(uploaded.id) ? current : [...current, uploaded.id],
+                        );
+                      }
                       return uploaded.reference;
                     },
                     onError: setError,

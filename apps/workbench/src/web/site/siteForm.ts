@@ -133,10 +133,11 @@ export function toFormValue(field: SiteField, data: Data): FormValue {
       return Array.isArray(value) ? value.map(String).join('\n\n') : '';
     case 'rows':
       return Array.isArray(value)
-        ? value.map((item) => {
+        ? value.map((item, index) => {
             const record = (item ?? {}) as Record<string, unknown>;
             // 원래 행을 함께 들고 다녀, 되돌려 쓸 때 화면에 없는 필드와 순서를 지킨다.
-            const row: Row = { [ROW_SOURCE]: JSON.stringify(record) };
+            // 행 id 는 데이터 순서로 정해 다시 그려도 같다. 올리기 결과를 맞는 행에 넣는 데 쓴다.
+            const row: Row = { [ROW_ID]: `i${index}`, [ROW_SOURCE]: JSON.stringify(record) };
             for (const column of field.columns)
               row[column.key] = record[column.key] === undefined ? '' : String(record[column.key]);
             return row;
@@ -204,6 +205,13 @@ export function applyFormValue(
 
 /** 행에 원래 객체를 담아 두는 칸. 화면에는 보이지 않는다. */
 const ROW_SOURCE = '\u0000source';
+const ROW_ID = '\u0000id';
+let newRows = 0;
+
+/** 행을 가리키는 id. 행을 지우거나 더해도 바뀌지 않는다. */
+export function rowId(row: Row): string {
+  return row[ROW_ID] ?? '';
+}
 
 function parseRowSource(source: string | undefined): Record<string, unknown> {
   if (source === undefined) return {};
@@ -219,5 +227,9 @@ function parseRowSource(source: string | undefined): Record<string, unknown> {
 
 /** 행 목록에 넣을 빈 행. */
 export function emptyRow(field: Extract<SiteField, { type: 'rows' }>): Row {
-  return Object.fromEntries(field.columns.map((column) => [column.key, '']));
+  newRows += 1;
+  return {
+    [ROW_ID]: `n${newRows}`,
+    ...Object.fromEntries(field.columns.map((column) => [column.key, ''])),
+  };
 }
