@@ -1,6 +1,5 @@
 import { rm } from 'node:fs/promises';
 import { collectPosts } from '../lib/draft-list.ts';
-import { BLOG_LAYOUT } from '@gze1206/content-contract';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AstroIntegration } from 'astro';
@@ -22,23 +21,14 @@ export async function removeSmokeOutput(
   }
 }
 
-export function isProductionDeploy(env: {
-  CF_PAGES?: string | undefined;
-  CF_PAGES_BRANCH?: string | undefined;
-}): boolean {
-  return env.CF_PAGES === '1' && env.CF_PAGES_BRANCH === BLOG_LAYOUT.publishBranch;
-}
-
 export function smokeGate(): AstroIntegration {
   return {
     name: 'smoke-gate',
     hooks: {
       'astro:config:setup': () => {
-        if (
-          isProductionDeploy(process.env) &&
-          isSmokeEnabled({ BLOG_SMOKE: process.env.BLOG_SMOKE })
-        )
-          throw new Error('BLOG_SMOKE is forbidden on production Cloudflare Pages deployments');
+        // preview(*.pages.dev)도 공개 주소다. smoke 빌드는 로컬 e2e 에서만 쓴다 (NOR-199 AC-2).
+        if (process.env.CF_PAGES === '1' && isSmokeEnabled({ BLOG_SMOKE: process.env.BLOG_SMOKE }))
+          throw new Error('BLOG_SMOKE is forbidden on Cloudflare Pages builds');
       },
       'astro:build:done': async ({ dir }) => {
         await removeSmokeOutput(

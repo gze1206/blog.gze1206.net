@@ -38,14 +38,20 @@ it('NOR-197 AC-2: 공개 Cloudflare 배포에서 smoke 빌드를 거부한다', 
     vi.stubEnv('BLOG_SMOKE', '1');
     expect(() => setup?.({} as never)).toThrow(/BLOG_SMOKE/);
   }
-  vi.stubEnv('CF_PAGES_BRANCH', 'preview');
-  expect(() => setup?.({} as never)).not.toThrow();
   vi.unstubAllEnvs();
 });
 
-it('NOR-199 AC-2: publishBranch 의 Pages 배포만 프로덕션이다', async () => {
-  const { isProductionDeploy } = await import('./smoke-gate.ts');
-  expect(isProductionDeploy({ CF_PAGES: '1', CF_PAGES_BRANCH: 'main' })).toBe(true);
-  expect(isProductionDeploy({ CF_PAGES: '1', CF_PAGES_BRANCH: 'v4' })).toBe(false);
-  expect(isProductionDeploy({ CF_PAGES_BRANCH: 'main' })).toBe(false);
+it('NOR-199 AC-2: preview 를 포함한 모든 Pages 빌드에서 smoke 를 거부하고 로컬 빌드는 허용한다', async () => {
+  const { smokeGate } = await import('./smoke-gate.ts');
+  const setup = smokeGate().hooks['astro:config:setup'];
+  expect(setup).toBeTypeOf('function');
+  vi.stubEnv('BLOG_SMOKE', '1');
+  vi.stubEnv('CF_PAGES', '1');
+  for (const branch of ['preview', 'v4', '']) {
+    vi.stubEnv('CF_PAGES_BRANCH', branch);
+    expect(() => setup?.({} as never)).toThrow(/BLOG_SMOKE/);
+  }
+  vi.stubEnv('CF_PAGES', '');
+  expect(() => setup?.({} as never)).not.toThrow();
+  vi.unstubAllEnvs();
 });
