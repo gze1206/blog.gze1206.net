@@ -105,6 +105,21 @@ const linkableTagSlugs = new Set(tagGroups.map((group) => group.slug));
                       )}
                     </ul>
                   )}
+                  {book.data.quotes.length > 0 && (
+                    <details class="book-card__quotes">
+                      <summary>남긴 구절 {book.data.quotes.length}</summary>
+                      <ul>
+                        {book.data.quotes.map((quote) => (
+                          <li class="book-card__quote" id={`${book.id}-${quote.id}`}>
+                            <blockquote>{quote.text}</blockquote>
+                            {quote.page !== undefined && (
+                              <p class="book-card__quote-page">p. {quote.page}</p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
                   {book.data.relatedPost && (
                     <p class="book-card__related">
                       <a href={postPath(book.data.relatedPost)} class="home-text-link">

@@ -7,7 +7,7 @@ export function planBookImport(
 ): { path: string; document: BookDocument } {
   if (!isBookId(id)) throw new Error('invalid book id');
   const book = bookSchema.parse(json);
-  const { cover: _cover, startedAt, finishedAt, ...fields } = book;
+  const { cover: _cover, startedAt, finishedAt, quotes, ...fields } = book;
   const date =
     startedAt?.toISOString().slice(0, 10) ?? finishedAt?.toISOString().slice(0, 10) ?? '1970-01-01';
   return {
@@ -21,6 +21,17 @@ export function planBookImport(
       extra: {},
       ...(startedAt === undefined ? {} : { startedAt: startedAt.toISOString().slice(0, 10) }),
       ...(finishedAt === undefined ? {} : { finishedAt: finishedAt.toISOString().slice(0, 10) }),
+      // 블로그의 공개 구절은 워크벤치에서 공개로 켠 구절로 돌아온다(NOR-215).
+      ...(quotes.length === 0
+        ? {}
+        : {
+            excerpts: quotes.map((quote) => ({
+              id: quote.id,
+              text: quote.text,
+              public: true,
+              ...(quote.page === undefined ? {} : { page: quote.page }),
+            })),
+          }),
     },
   };
 }
