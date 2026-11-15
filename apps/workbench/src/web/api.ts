@@ -539,7 +539,7 @@ export async function confirmSite(
 }
 
 /** 공개 초안의 발행 상태(NOR-209). */
-export type PublishState = 'published' | 'differs' | 'unpublished' | 'invalid';
+export type PublishState = 'published' | 'differs' | 'unpublished' | 'invalid' | 'draft';
 export interface PublishStatusData {
   readonly documents: readonly {
     readonly documentId: string;

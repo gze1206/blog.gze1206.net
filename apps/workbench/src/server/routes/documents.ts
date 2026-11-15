@@ -97,6 +97,8 @@ function toHttpSummary(document: DocumentSummary) {
     kind: document.kind,
     updatedAt: document.updatedAt,
     ...(document.cover === undefined ? {} : { cover: document.cover }),
+    // 블로그 글을 카테고리별로 묶으려면 목록에 실어야 한다(NOR-221, NOR-227).
+    ...(document.category === undefined ? {} : { category: document.category }),
   };
 }
 
@@ -109,6 +111,9 @@ function toHttpEntry(entry: DocumentEntry) {
       kind: entry.document.kind,
       updatedAt: entry.document.updatedAt,
       ...(entry.document.cover === undefined ? {} : { cover: entry.document.cover }),
+      ...(typeof entry.document.category === 'string' && entry.document.category !== ''
+        ? { category: entry.document.category }
+        : {}),
     }),
     source: entry.source,
     /*

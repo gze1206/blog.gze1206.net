@@ -57,7 +57,9 @@ export function Editor({
           <p className="text-xs text-muted">
             {published
               ? `블로그에 발행된 글 · ${publishState === 'published' ? '블로그와 같음' : '블로그와 다름'}`
-              : 'Markdown + YAML frontmatter'}
+              : publishState === 'draft'
+                ? '블로그에 보이지 않는 초안(draft)'
+                : 'Markdown + YAML frontmatter'}
           </p>
         </div>
         <div className="flex gap-2">
