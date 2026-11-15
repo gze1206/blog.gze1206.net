@@ -75,3 +75,33 @@ describe('bookSchema', () => {
 it('NOR-196 AC-4: 책 ID의 제어 문자와 서식 문자를 거부한다', () => {
   for (const id of ['a\u0001b', 'a\u007fb', 'a\u200bb']) expect(isBookId(id)).toBe(false);
 });
+
+describe('NOR-215 공개 구절', () => {
+  const base = {
+    title: '책',
+    authors: ['저자'],
+    status: 'finished',
+    format: 'paper',
+    source: 'purchase',
+  };
+  const id = (n: number) => `01J0000000000000000000000${n}`;
+
+  it('NOR-215 AC-1: quotes 를 받고 PUBLIC_BOOK_FIELDS 는 quotes 를 담되 excerpts 는 담지 않는다', () => {
+    expect(PUBLIC_BOOK_FIELDS).toContain('quotes');
+    expect(PUBLIC_BOOK_FIELDS).not.toContain('excerpts');
+    const parsed = strictBookSchema.safeParse({
+      ...base,
+      quotes: [{ id: id(1), text: '구절', page: 12 }],
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it('NOR-215 AC-1: 같은 책의 구절이 누적 2,000자를 넘으면 거부한다', () => {
+    const quotes = [
+      { id: id(1), text: '가'.repeat(1000) },
+      { id: id(2), text: '나'.repeat(1001) },
+    ];
+    expect(strictBookSchema.safeParse({ ...base, quotes }).success).toBe(false);
+    expect(strictBookSchema.safeParse({ ...base, quotes: quotes.slice(0, 1) }).success).toBe(true);
+  });
+});

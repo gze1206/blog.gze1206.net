@@ -58,3 +58,23 @@ it('NOR-212 AC-2: 책 편집 화면은 파일 이름을 내보내기 id 로 쓴�
     }),
   ).toBe('니체의-초월자');
 });
+
+it('NOR-215 AC-5: 책 편집 화면은 공개 구절 목록과 누적 글자 수를 보여 준다', () => {
+  const html = renderToStaticMarkup(
+    <BookEditor
+      document={{
+        ...document,
+        excerpts: [
+          { id: '01J00000000000000000000001', text: '공개한 문장', public: true, page: 3 },
+          { id: '01J00000000000000000000002', text: '숨긴 문장', public: false },
+        ],
+      }}
+      onChanged={() => undefined}
+      onEditSource={() => undefined}
+      onError={() => undefined}
+    />,
+  );
+  expect(html).toContain('공개 구절');
+  expect(html).toContain('6 / 2,000자');
+  expect(html).toContain('p. 3');
+});
