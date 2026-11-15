@@ -17,6 +17,7 @@ import { createHealthRoutes } from './routes/health.js';
 import { createBookRoutes, type BookRouteOptions } from './routes/books.js';
 import { createImportRoutes } from './routes/import.js';
 import { createPublishRoutes } from './routes/publish.js';
+import { createSiteRoutes } from './routes/site.js';
 import { createReviewRoutes, type ReviewRouteOptions } from './routes/reviews.js';
 
 const defaultBulletOptions: BulletRouteOptions = {
@@ -66,6 +67,17 @@ export function createApp(
   // 가져오기는 발행자와 같은 어댑터가 제공한다(같은 임시 clone 규율을 탄다).
   if (publisher && 'listImportablePosts' in publisher) {
     app.route('/', createImportRoutes(store, publisher as never));
+  }
+  // 사이트 콘텐츠도 같은 어댑터의 임시 clone 규율을 탄다(NOR-208).
+  if (publisher?.listSite && publisher.reviewSite && publisher.publishSite) {
+    app.route(
+      '/',
+      createSiteRoutes({
+        listSite: publisher.listSite.bind(publisher),
+        reviewSite: publisher.reviewSite.bind(publisher),
+        publishSite: publisher.publishSite.bind(publisher),
+      }),
+    );
   }
   app.notFound((context) =>
     context.json({ error: { code: 'not_found', message: 'Not found' } }, 404),

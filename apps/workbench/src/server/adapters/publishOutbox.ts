@@ -3,8 +3,14 @@ import { createHash, randomUUID } from 'node:crypto';
 import { chmod, mkdir, open, readFile, realpath, rename, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { BLOG_LAYOUT, isBookId } from '@gze1206/content-contract';
+import {
+  BLOG_LAYOUT,
+  SITE_COLLECTIONS,
+  isBookId,
+  type SiteCollection,
+} from '@gze1206/content-contract';
 import { publishRefKey } from '../../core/publishing/refKey.js';
+import { SITE_COLLECTION_NAMES, sitePath } from '../../core/site/siteContent.js';
 
 const run = promisify(execFile);
 
@@ -40,7 +46,11 @@ export class PublishOutbox {
   public async write(input: PublishOutboxInput): Promise<PublishOutboxResult> {
     const root = await this.prepareRoot();
     const key = targetKeyFromPath(input.targetPath);
-    const slug = key.startsWith('post:') ? key.slice(5) : `book-${publishRefKey(key.slice(5))}`;
+    const slug = key.startsWith('post:')
+      ? key.slice(5)
+      : key.startsWith('site:')
+        ? `site-${key.slice(5).replace(':', '-')}`
+        : `book-${publishRefKey(key.slice(5))}`;
     const prefix = `${slug}-${new Date().toISOString().replace(/[-:.]/gu, '')}`;
     const bundleRef = `${prefix}.bundle`;
     const patchRef = `${prefix}.patch`;
@@ -170,7 +180,29 @@ export function targetKeyFromPath(targetPath: string): string {
     const id = targetPath.slice(books.length, -5);
     if (isBookId(id)) return `book:${id}`;
   }
+  for (const collection of SITE_COLLECTION_NAMES) {
+    for (const id of siteIdCandidates(collection, targetPath)) {
+      if (sitePathOrNull(collection, id) === targetPath) return `site:${collection}:${id}`;
+    }
+  }
   throw new Error('invalid publish target path');
+}
+
+function siteIdCandidates(collection: SiteCollection, targetPath: string): string[] {
+  const target = SITE_COLLECTIONS[collection];
+  if (target.single) return [collection];
+  const prefix = `${target.path}/`;
+  return targetPath.startsWith(prefix) && targetPath.endsWith('.json')
+    ? [targetPath.slice(prefix.length, -5)]
+    : [];
+}
+
+function sitePathOrNull(collection: SiteCollection, id: string): string | null {
+  try {
+    return sitePath(collection, id);
+  } catch {
+    return null;
+  }
 }
 
 function assertArtifactRef(root: string, reference: string): string {
