@@ -254,6 +254,24 @@ test('NOR-203 AC-6: 추가 버튼은 한 줄이고 본문 글꼴은 Pretendard �
   expect(family).toMatch(/^"?Pretendard/u);
 });
 
+test('NOR-205 AC-5: 문서를 지우면 휴지통으로 가고 복원하면 돌아온다', async ({ page }) => {
+  page.on('dialog', (dialog) => void dialog.accept());
+  await page.goto('/');
+  await page.getByLabel('새 문서 제목').fill('지울 문서');
+  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  const remove = page.getByRole('button', { name: '삭제', exact: true });
+  await expect(remove).toBeVisible();
+  await remove.click();
+  const documents = page.getByRole('region', { name: 'Documents' });
+  await expect(page.getByRole('button', { name: /^지울 문서/u })).toHaveCount(0);
+  const trash = page.getByRole('region', { name: '휴지통' });
+  await expect(trash).toContainText('지울 문서');
+  await trash.getByRole('button', { name: '복원' }).first().click();
+  await expect(documents.getByRole('button', { name: /지울 문서/u })).toBeVisible();
+  // 휴지통이 비면 그 영역은 사라진다.
+  await expect(trash).toHaveCount(0);
+});
+
 test('NOR-204 AC-4: 쉼표로 구분하는 칸에 여러 이름을 그대로 칠 수 있다', async ({ page }) => {
   await page.goto('/');
   const book = page.getByRole('button', { name: /인용 테스트/u });

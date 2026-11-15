@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   confirmPublish,
   createDocument,
+  deleteDocument,
+  listTrash,
   createReview,
   listDocuments,
   listPublishAssets,
@@ -20,6 +22,7 @@ import {
   type PublicAssetCandidate,
   type ReviewSuggestion,
   type TemplateSummary,
+  type TrashItem,
 } from './api.js';
 import { DocumentList } from './DocumentList.js';
 import { BookDialog } from './BookDialog.js';
@@ -30,6 +33,7 @@ import { PublishReview } from './PublishReview.js';
 import { readSkippedReviewPeriods } from './reviewPreferences.js';
 import { TemplateGallery } from './TemplateGallery.js';
 import { ThemeToggle } from './ThemeToggle.js';
+import { TrashList } from './TrashList.js';
 import { DayPage } from './day/[date].js';
 
 export function App() {
@@ -37,6 +41,7 @@ export function App() {
   const [documents, setDocuments] = useState<DocumentSummary[]>([]);
   /** 읽지 못한 파일. 목록에서 빠진 이유를 사용자가 알아야 고칠 수 있다(NOR-190). */
   const [documentProblems, setDocumentProblems] = useState<DocumentProblem[]>([]);
+  const [trash, setTrash] = useState<readonly TrashItem[]>([]);
   const [importing, setImporting] = useState(false);
   const [addingBook, setAddingBook] = useState(false);
   /** 책은 폼으로 다루는 것이 기본이고, 원본 마크다운은 필요할 때 연다. */
@@ -53,11 +58,43 @@ export function App() {
   const [reviewSuggestion, setReviewSuggestion] = useState<ReviewSuggestion | null>(null);
 
   const refresh = useCallback(async () => {
-    const [nextTemplates, nextDocuments] = await Promise.all([listTemplates(), listDocuments()]);
+    const [nextTemplates, nextDocuments, nextTrash] = await Promise.all([
+      listTemplates(),
+      listDocuments(),
+      listTrash().catch(() => [] as readonly TrashItem[]),
+    ]);
     setTemplates(nextTemplates);
     setDocuments(nextDocuments.documents);
     setDocumentProblems(nextDocuments.problems);
+    setTrash(nextTrash);
   }, []);
+
+  useEffect(() => {
+    // 휴지통은 처음 화면에 필요하지 않다. 못 읽어도 다른 화면은 그대로 쓴다.
+    void listTrash()
+      .then(setTrash)
+      .catch(() => undefined);
+  }, []);
+
+  /** 휴지통으로 옮긴다(NOR-205). 발행한 글은 블로그에서 따로 내려야 한다. */
+  const removeSelected = async () => {
+    if (selected === null) return;
+    const message =
+      selected.kind === 'public-draft' || selected.kind === 'book'
+        ? `"${selected.title}" 을 휴지통으로 옮길까요? 이미 블로그에 내보낸 내용은 블로그에서 따로 내려야 합니다.`
+        : `"${selected.title}" 을 휴지통으로 옮길까요? 휴지통에서 되돌릴 수 있습니다.`;
+    if (!window.confirm(message)) return;
+    setBusy(true);
+    try {
+      await deleteDocument(selected.id);
+      setSelected(null);
+      await refresh();
+    } catch (caught) {
+      setError(toMessage(caught));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -243,6 +280,9 @@ export function App() {
           problems={documentProblems}
           selectedId={selected?.id ?? null}
         />
+        {trash.length > 0 ? (
+          <TrashList items={trash} onChanged={() => void refresh()} onError={setError} />
+        ) : null}
       </aside>
       <main className="flex min-w-0 flex-1 flex-col bg-background">
         {error ? (
@@ -270,6 +310,7 @@ export function App() {
             document={selected}
             key={selected.id}
             onChanged={() => void selectDocument(selected.id)}
+            onDelete={() => void removeSelected()}
             onEditSource={() => setEditingSource(true)}
             onError={setError}
           />
@@ -290,6 +331,7 @@ export function App() {
             <Editor
               dirty={source !== selected.source}
               onChange={setSource}
+              onDelete={() => void removeSelected()}
               onSave={() => void save()}
               {...(selected.kind === 'public-draft'
                 ? { onReviewPublish: () => void review() }

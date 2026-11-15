@@ -1,4 +1,4 @@
-import { open, readFile, readdir, realpath, stat, unlink } from 'node:fs/promises';
+import { link, open, readFile, readdir, realpath, rename, stat, unlink } from 'node:fs/promises';
 import path from 'node:path';
 
 import { parseDocument, serializeDocument } from '../../core/document/document.js';
@@ -8,9 +8,12 @@ import type {
   DocumentList,
   DocumentProblem,
   DocumentSummary,
+  DocumentTrash,
   FileStore,
   TemplateSummary,
+  TrashEntry,
 } from '../../core/ports.js';
+import { TrashConflictError } from '../../core/ports.js';
 import { instantiateTemplate, parseTemplate } from '../../core/template/index.js';
 import { atomicWriteFile, createDirectoryDurably } from './atomicWrite.js';
 import { assertWorkspaceRelativePath, resolveWorkspacePath } from './paths.js';
@@ -21,8 +24,12 @@ const idPattern = /^[A-Za-z0-9_-]+$/u;
 const supportedDocumentRoots = ['inbox', 'journal', 'notes', 'drafts', 'reviews', 'books'] as const;
 const documentRoots = new Set<string>(supportedDocumentRoots);
 const reservedDirectoryNames = new Set(['assets', 'templates']);
+/** 휴지통. `.workbench/` 는 git 백업에서 빠지고 문서 목록도 점으로 시작하는 곳을 읽지 않는다. */
+const trashDirectory = '.workbench/trash';
+/** `<UTC 시각>--<원래 경로 base64url>.md`. 시각이 앞이라 이름 순이 지운 순서다. */
+const trashIdPattern = /^(\d{8}T\d{6}\d{3}Z)--([A-Za-z0-9_-]+)\.md$/u;
 
-export class ServerFileStore implements FileStore {
+export class ServerFileStore implements FileStore, DocumentTrash {
   private readonly writeQueues = new Map<string, Promise<unknown>>();
 
   public constructor(private readonly root: string) {}
@@ -157,6 +164,73 @@ export class ServerFileStore implements FileStore {
     );
   }
 
+  public async trashDocument(relativePath: string): Promise<TrashEntry> {
+    const target = await this.resolveDocumentPath(relativePath);
+    const { document } = await this.readDocument(relativePath);
+    const deletedAt = new Date();
+    const id = `${deletedAt.toISOString().replace(/[-:.]/gu, '')}--${Buffer.from(relativePath, 'utf8').toString('base64url')}.md`;
+    return this.runSerialized(relativePath, async () =>
+      this.withWorkspaceLock(async () => {
+        const directory = await resolveWorkspacePath(this.root, trashDirectory);
+        await createDirectoryDurably(directory);
+        await rename(target, path.join(directory, id));
+        return { id, relativePath, title: document.title, deletedAt: deletedAt.toISOString() };
+      }),
+    );
+  }
+
+  public async listTrash(): Promise<readonly TrashEntry[]> {
+    const directory = await resolveWorkspacePath(this.root, trashDirectory);
+    const names = await readdir(directory).catch(() => [] as string[]);
+    const entries: TrashEntry[] = [];
+    for (const name of names.sort().reverse()) {
+      const parsed = parseTrashId(name);
+      if (parsed === null) continue;
+      let title = path.posix.basename(parsed.relativePath, '.md');
+      try {
+        title = parseDocument(await readFile(path.join(directory, name), 'utf8')).title;
+      } catch {
+        // 읽지 못해도 휴지통에서는 보이게 한다. 지우거나 되돌릴 수 있어야 한다.
+      }
+      entries.push({
+        id: name,
+        relativePath: parsed.relativePath,
+        title,
+        deletedAt: parsed.deletedAt,
+      });
+    }
+    return entries;
+  }
+
+  public async restoreTrash(id: string): Promise<string> {
+    const parsed = parseTrashId(id);
+    if (parsed === null) throw new Error('invalid trash id');
+    return this.runSerialized(parsed.relativePath, async () =>
+      this.withWorkspaceLock(async () => {
+        const source = path.join(await resolveWorkspacePath(this.root, trashDirectory), id);
+        const target = await this.prepareWriteTarget(parsed.relativePath);
+        // link 는 대상이 있으면 실패한다. 확인과 옮기기 사이에 끼어들 틈이 없다.
+        try {
+          await link(source, target);
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+            throw new TrashConflictError(`${parsed.relativePath} 에 이미 문서가 있습니다.`);
+          }
+          throw error;
+        }
+        await unlink(source);
+        return parsed.relativePath;
+      }),
+    );
+  }
+
+  public async purgeTrash(id: string): Promise<void> {
+    if (parseTrashId(id) === null) throw new Error('invalid trash id');
+    await this.withWorkspaceLock(async () => {
+      await unlink(path.join(await resolveWorkspacePath(this.root, trashDirectory), id));
+    });
+  }
+
   private async prepareWriteTarget(relativePath: string): Promise<string> {
     const initialTarget = await this.resolveDocumentPath(relativePath);
     await createDirectoryDurably(path.dirname(initialTarget));
@@ -228,6 +302,20 @@ export class ServerFileStore implements FileStore {
       await unlink(lockPath).catch(() => undefined);
     }
   }
+}
+
+function parseTrashId(id: string): { relativePath: string; deletedAt: string } | null {
+  const match = trashIdPattern.exec(id);
+  if (match === null) return null;
+  const relativePath = Buffer.from(match[2] ?? '', 'base64url').toString('utf8');
+  try {
+    assertDocumentRelativePath(relativePath);
+  } catch {
+    return null;
+  }
+  const stamp = match[1] ?? '';
+  const deletedAt = `${stamp.slice(0, 4)}-${stamp.slice(4, 6)}-${stamp.slice(6, 8)}T${stamp.slice(9, 11)}:${stamp.slice(11, 13)}:${stamp.slice(13, 15)}.${stamp.slice(15, 18)}Z`;
+  return { relativePath, deletedAt };
 }
 
 function assertDocumentRelativePath(relativePath: string): void {

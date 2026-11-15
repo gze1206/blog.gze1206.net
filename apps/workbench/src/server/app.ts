@@ -4,11 +4,12 @@ import { z } from 'zod';
 import { createBulletId } from '../core/bullets/syntax.js';
 import { DocumentValidationError } from '../core/document/document.js';
 import { PublicDraftValidationError } from '../core/publishing/validate.js';
-import type { FileStore } from '../core/ports.js';
+import type { DocumentTrash, FileStore } from '../core/ports.js';
 import type { JournalStore } from './adapters/journalStore.js';
 import type { PublicBlogPublisher } from './adapters/publicBlog.js';
 import { createBulletRoutes, type BulletRouteOptions } from './routes/bullets.js';
 import { createDocumentRoutes } from './routes/documents.js';
+import { createTrashRoutes } from './routes/trash.js';
 import type { BookMetadataProvider } from '../core/books/metadata.js';
 import type { BookAssetStore } from './adapters/bookAssets.js';
 import { createHealthRoutes } from './routes/health.js';
@@ -54,6 +55,8 @@ export function createApp(
   const app = new Hono();
   app.route('/', createHealthRoutes());
   app.route('/', createDocumentRoutes(store));
+  // 휴지통은 파일 저장소가 지원할 때만 연다(NOR-205).
+  if (isTrash(store)) app.route('/', createTrashRoutes(store));
   app.route('/', createReviewRoutes(store, journalStore, reviewOptions));
   if (journalStore) app.route('/', createBulletRoutes(journalStore, bulletOptions));
   if (books) app.route('/', createBookRoutes(store, books.provider, books.assets, books.options));
@@ -110,4 +113,8 @@ function isJournalStore(value: unknown): value is JournalStore {
 
 function isPublicBlogPublisher(value: unknown): value is PublicBlogPublisher {
   return typeof value === 'object' && value !== null && 'listAssets' in value && 'publish' in value;
+}
+
+function isTrash(store: FileStore): store is FileStore & DocumentTrash {
+  return 'trashDocument' in store && 'listTrash' in store;
 }
