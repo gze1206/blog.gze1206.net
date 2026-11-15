@@ -48,7 +48,11 @@ const MARK_CLASS: Record<string, string> = {
   Strikethrough: 'cm-lp-strike',
 };
 
-export function previewDecorations(state: EditorState): PreviewItem[] {
+/**
+ * `ensureMs` 만큼 기다려 문서 끝까지 구문 트리를 확보한다. 편집기는 0 을 넘겨 입력을 막지 않고,
+ * 배경 파싱으로 트리가 바뀌면 다시 계산한다.
+ */
+export function previewDecorations(state: EditorState, ensureMs = 200): PreviewItem[] {
   const doc = state.doc;
   const text = doc.toString();
   const items: PreviewItem[] = [];
@@ -89,7 +93,9 @@ export function previewDecorations(state: EditorState): PreviewItem[] {
   };
 
   // 파서는 시간 예산 안에서만 트리를 만든다. 덜 된 트리로 계산하면 뒤쪽 장식이 빠진다.
-  const tree = ensureSyntaxTree(state, state.doc.length, 200) ?? syntaxTree(state);
+  const tree =
+    (ensureMs > 0 ? ensureSyntaxTree(state, state.doc.length, ensureMs) : null) ??
+    syntaxTree(state);
   tree.iterate({
     from: fmEnd,
     enter(node) {
@@ -192,7 +198,7 @@ export function sourceOf(state: EditorState): string {
 
 function toDecorations(state: EditorState): DecorationSet {
   const ranges: Range<Decoration>[] = [];
-  for (const item of previewDecorations(state)) {
+  for (const item of previewDecorations(state, 0)) {
     if (item.kind === 'line')
       ranges.push(Decoration.line({ class: item.className ?? '' }).range(item.from));
     else if (item.kind === 'mark' && item.to > item.from)
