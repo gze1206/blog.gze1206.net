@@ -556,6 +556,28 @@ export async function loadPublishStatus(): Promise<PublishStatusData> {
   return request('/api/publish/status');
 }
 
+/** 확정한 발행이 어디까지 왔는지 (NOR-228). */
+export type ProgressStage =
+  'queued' | 'relayed' | 'checking' | 'merged' | 'failed' | 'closed' | 'rejected' | 'stale';
+
+export interface PublishProgressItem {
+  readonly ref: string;
+  readonly stage: ProgressStage;
+  readonly branch?: string;
+  readonly reason?: string;
+  readonly pull?: { readonly number: number; readonly url: string };
+}
+
+export async function loadPublishProgress(
+  refs: readonly string[],
+): Promise<readonly PublishProgressItem[]> {
+  const query = refs.map((ref) => `ref=${encodeURIComponent(ref)}`).join('&');
+  const body = await request<{ progress: readonly PublishProgressItem[] }>(
+    `/api/publish/progress?${query}`,
+  );
+  return body.progress;
+}
+
 /** 포트폴리오 이미지를 올린다(NOR-219). 블로그에서 쓸 경로와 크기를 돌려받는다. */
 export async function uploadSiteImage(
   file: File,

@@ -25,6 +25,7 @@ import {
   type SiteField,
 } from './siteForm.js';
 import { DiffView } from '../diff/DiffView.js';
+import { trackPublish } from '../publish/trackPublish.js';
 
 const COLLECTIONS: readonly { id: SiteCollection; label: string }[] = [
   { id: 'profile', label: '프로필' },
@@ -531,7 +532,9 @@ export function SiteContent() {
     setBusy(true);
     setError(null);
     try {
-      setResult(await confirmSite(review.change, review.data.reviewId));
+      const confirmed = await confirmSite(review.change, review.data.reviewId);
+      setResult(confirmed);
+      trackPublish(confirmed.outboxRef, `사이트 · ${review.change.collection}/${review.change.id}`);
       // 병합되기 전까지 목록이 main 의 옛 내용을 보이지 않게, 발행한 내용을 대기로 겹친다.
       const change = review.change;
       const removed =

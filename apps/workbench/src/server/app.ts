@@ -17,6 +17,7 @@ import { createHealthRoutes } from './routes/health.js';
 import { createBookRoutes, type BookRouteOptions } from './routes/books.js';
 import { createImportRoutes } from './routes/import.js';
 import { createPublishRoutes } from './routes/publish.js';
+import { createPublishProgressRoutes } from './routes/publishProgress.js';
 import { createSiteRoutes } from './routes/site.js';
 import { createReviewRoutes, type ReviewRouteOptions } from './routes/reviews.js';
 
@@ -42,6 +43,8 @@ export function createApp(
     readonly assets: BookAssetStore;
     readonly options: BookRouteOptions;
   },
+  /** 확정한 발행의 진행 조회 (NOR-228). 릴레이 ledger 사본과 PR 조회가 있을 때만 연다. */
+  progress?: Parameters<typeof createPublishProgressRoutes>[0],
 ): Hono {
   const journalStore = isJournalStore(journalStoreOrPublisher)
     ? journalStoreOrPublisher
@@ -63,6 +66,7 @@ export function createApp(
   app.route('/', createReviewRoutes(store, journalStore, reviewOptions));
   if (journalStore) app.route('/', createBulletRoutes(journalStore, bulletOptions));
   if (books) app.route('/', createBookRoutes(store, books.provider, books.assets, books.options));
+  if (progress) app.route('/', createPublishProgressRoutes(progress));
   if (publisher) app.route('/', createPublishRoutes(store, publisher));
   // 가져오기는 발행자와 같은 어댑터가 제공한다(같은 임시 clone 규율을 탄다).
   if (publisher && 'listImportablePosts' in publisher) {
