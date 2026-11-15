@@ -39,7 +39,7 @@
 | NOR-202 | [블로그 작은 라벨과 고정폭 한글 시인성](./blog/NOR-202-label-legibility.md)       | done        |
 | NOR-207 | [시리즈 진입점을 푸터에서 탐색으로](./blog/NOR-207-series-in-topics.md)           | done        |
 | NOR-211 | [블로그 빌드 중 외부 메타 조회의 SSRF 차단](./blog/NOR-211-build-fetch-ssrf.md)   | done        |
-| NOR-216 | [읽은 책 상세 페이지](./blog/NOR-216-book-detail.md)                              | in-progress |
+| NOR-216 | [읽은 책 상세 페이지](./blog/NOR-216-book-detail.md)                              | done        |
 
 ### 워크벤치 (`workbench/`)
 
@@ -52,10 +52,11 @@
 | NOR-203 | [워크벤치 디자인 정비와 라이트/다크 테마](./workbench/NOR-203-design-theme.md)                             | done        |
 | NOR-204 | [책 편집에서 표지 바꾸기와 역자 입력](./workbench/NOR-204-book-cover-translators.md)                       | done        |
 | NOR-205 | [워크벤치 문서 삭제(휴지통)](./workbench/NOR-205-document-trash.md)                                        | done        |
-| NOR-210 | [발행을 PR 로 자동 전달하고 CI 통과 시 자동 병합](./workbench/NOR-210-publish-relay.md)                    | in-progress |
+| NOR-210 | [발행을 PR 로 자동 전달하고 CI 통과 시 자동 병합](./workbench/NOR-210-publish-relay.md)                    | done        |
 | NOR-212 | [책장으로 내보내기의 책 id 를 파일 이름으로 고정](./workbench/NOR-212-book-export-id.md)                   | done        |
 | NOR-213 | [발행 검토 diff 를 실제 줄 diff 로, 책 JSON 을 Prettier 형식으로](./workbench/NOR-213-review-diff.md)      | done        |
-| NOR-214 | [발행 산출물·브랜치 이름을 ASCII 로](./workbench/NOR-214-ascii-publish-names.md)                           | in-progress |
+| NOR-214 | [발행 산출물·브랜치 이름을 ASCII 로](./workbench/NOR-214-ascii-publish-names.md)                           | done        |
+| NOR-206 | [문서 미리보기와 WYSIWYG](./workbench/NOR-206-preview.md)                                                  | in-progress |
 
 ### 저장소 공통 (`repo/`)
 
