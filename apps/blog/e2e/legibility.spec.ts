@@ -44,7 +44,7 @@ async function hangulText(page: import('@playwright/test').Page) {
 }
 
 for (const path of PAGES) {
-  test(`NOR-202 AC-2, AC-3: ${path} 의 한글은 12px 이상이고 고정폭 폰트로 시작하지 않는다`, async ({
+  test(`NOR-202 AC-2 · NOR-202 AC-3: ${path} 의 한글은 12px 이상이고 고정폭 폰트로 시작하지 않는다`, async ({
     page,
   }) => {
     await page.route('https://comments.gze1206.net/**', (route) =>
