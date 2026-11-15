@@ -10,6 +10,7 @@ import rehypeKatex from 'rehype-katex';
 import cilGrammar from './src/shiki/langs/cil.tmLanguage.json';
 import { codeBlockTransformers } from './src/shiki/transformers/index.ts';
 import { rehypeHeadingAnchors } from './src/rehype/heading-anchors.ts';
+import { bookCoverThumbs } from './src/integrations/book-cover-thumbs.ts';
 import { ogImageAudit } from './src/integrations/og-image-audit.ts';
 import { smokeGate } from './src/integrations/smoke-gate.ts';
 import { isSitemapPage } from './src/lib/sitemap.ts';
@@ -29,6 +30,7 @@ export default defineConfig({
     markdoc(),
     react(),
     ogImageAudit(),
+    bookCoverThumbs(),
     smokeGate(),
   ],
   markdown: {
