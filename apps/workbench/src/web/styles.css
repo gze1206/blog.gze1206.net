@@ -159,3 +159,34 @@
 .diff-view .diff-empty {
   background-color: var(--color-surface-sunken);
 }
+
+/*
+  코드 구문 강조 (NOR-229). 편집기와 미리보기가 같은 tok-* 클래스를 쓴다(@lezer/highlight classHighlighter).
+  색은 공유 토큰(--theme-code-*, packages/theme/tokens.css)이 테마별로 정한다.
+  마크다운 토큰(제목·강조·링크)은 라이브 프리뷰가 따로 그리므로 여기서는 코드 토큰만 칠한다.
+*/
+:is(.cm-editor, .preview pre) .tok-keyword {
+  color: var(--theme-code-keyword);
+}
+:is(.cm-editor, .preview pre) :is(.tok-string, .tok-string2) {
+  color: var(--theme-code-string);
+}
+:is(.cm-editor, .preview pre) :is(.tok-number, .tok-bool, .tok-atom) {
+  color: var(--theme-code-number);
+}
+:is(.cm-editor, .preview pre) .tok-comment {
+  color: var(--theme-code-comment);
+  font-style: italic;
+}
+:is(.cm-editor, .preview pre) :is(.tok-typeName, .tok-className, .tok-namespace) {
+  color: var(--theme-code-type);
+}
+:is(.cm-editor, .preview pre) .tok-variableName.tok-definition {
+  color: var(--theme-code-definition);
+}
+:is(.cm-editor, .preview pre) .tok-propertyName {
+  color: var(--theme-code-property);
+}
+:is(.cm-editor, .preview pre) .tok-operator {
+  color: var(--theme-code-operator);
+}

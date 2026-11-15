@@ -5,7 +5,7 @@
  * 장식 계산(`previewDecorations`)은 DOM 없이 `EditorState` 만으로 하므로 단위 테스트할 수 있다.
  */
 import { markdown, markdownLanguage as baseMarkdown } from '@codemirror/lang-markdown';
-import { ensureSyntaxTree, syntaxTree } from '@codemirror/language';
+import { ensureSyntaxTree, syntaxHighlighting, syntaxTree } from '@codemirror/language';
 import {
   EditorSelection,
   EditorState,
@@ -20,6 +20,9 @@ import {
   ViewPlugin,
   type ViewUpdate,
 } from '@codemirror/view';
+import { classHighlighter } from '@lezer/highlight';
+
+import { codeLanguage } from './codeHighlight.js';
 
 export interface PreviewItem {
   readonly from: number;
@@ -31,7 +34,8 @@ export interface PreviewItem {
 
 /** 목록 자동 이어쓰기 같은 입력 변경 키맵은 넣지 않는다. 입력한 글자가 그대로 원본이다(AC-8). */
 export function markdownLanguage(): Extension {
-  return markdown({ base: baseMarkdown, addKeymap: false });
+  // 코드 블록 안의 언어도 파싱한다(NOR-229). 언어 파서는 처음 쓸 때 불러온다.
+  return markdown({ base: baseMarkdown, addKeymap: false, codeLanguages: codeLanguage });
 }
 
 /** 맨 앞 YAML frontmatter 가 끝나는 위치. 없으면 0. */
@@ -281,7 +285,14 @@ const theme = EditorView.theme({
 
 /** 라이브 프리뷰 편집기에 필요한 확장 전부. */
 export function livePreview(): Extension {
-  return [markdownLanguage(), livePreviewPlugin, theme, EditorView.lineWrapping];
+  return [
+    markdownLanguage(),
+    livePreviewPlugin,
+    theme,
+    // 코드 토큰에 tok-* 클래스를 붙인다. 색은 styles.css 의 .tok-* 가 정한다(NOR-229).
+    syntaxHighlighting(classHighlighter),
+    EditorView.lineWrapping,
+  ];
 }
 
 /** 선택을 `marker` 로 감싼다. 이미 감싼 선택이면 벗긴다(AC-8). */

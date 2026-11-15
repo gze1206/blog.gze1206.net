@@ -529,3 +529,28 @@ test('NOR-228 AC-5: 진행 중인 발행은 새로고침 뒤에도 토스트로 
   await toasts.getByRole('button', { name: '진행 중인 글 진행 알림 닫기' }).click();
   await expect(toasts).toHaveCount(0);
 });
+
+test('NOR-229 AC-1·AC-4: 코드 블록을 편집기와 미리보기에서 강조하고 블록 메뉴로 틀을 넣는다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('새 문서 제목').fill('코드 강조 확인');
+  await page
+    .getByRole('region', { name: 'Templates' })
+    .getByRole('button', { name: /빠른 메모/u })
+    .click();
+  const editor = page.getByLabel('Markdown 문서');
+  await expect(editor).toContainText('title: 코드 강조 확인');
+  await appendToEditor(page, '\n```ts\nconst answer = 42;\n```\n\n');
+  await expect(editor.locator('.tok-keyword').first()).toHaveText('const');
+
+  await page.getByLabel('블록 넣기').selectOption('callout');
+  await expect(editor).toContainText('{% callout type="note" title="제목" %}');
+  await page.keyboard.type('알림');
+  await expect(editor).toContainText('title="알림"');
+
+  await page.getByRole('button', { name: '나란히' }).click();
+  const preview = page.getByRole('region', { name: '미리보기' });
+  await expect(preview.locator('pre[data-language="ts"] .tok-keyword')).toHaveText('const');
+  await expect(preview.locator('aside.callout')).toContainText('알림');
+});

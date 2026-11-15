@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { previewDocument } from './api.js';
+import { highlightPreview } from './live/codeHighlight.js';
 
 interface Props {
   readonly source: string;
@@ -15,6 +16,12 @@ export function PreviewPane({ source, className = '' }: Props) {
   const [html, setHtml] = useState('');
   const [warnings, setWarnings] = useState<readonly string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const body = useRef<HTMLDivElement>(null);
+
+  // 서버 HTML 의 코드 블록에 편집기와 같은 강조를 입힌다(NOR-229).
+  useEffect(() => {
+    if (body.current) void highlightPreview(body.current);
+  }, [html]);
 
   useEffect(() => {
     let active = true;
@@ -54,7 +61,7 @@ export function PreviewPane({ source, className = '' }: Props) {
           ))}
         </ul>
       ) : null}
-      <div className="preview" dangerouslySetInnerHTML={{ __html: html }} />
+      <div className="preview" dangerouslySetInnerHTML={{ __html: html }} ref={body} />
     </section>
   );
 }

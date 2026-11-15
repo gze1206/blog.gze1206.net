@@ -11,6 +11,7 @@ import {
   toggleLinePrefix,
   toggleWrap,
 } from './livePreview.js';
+import { BLOCKS, insertBlock } from './blocks.js';
 
 type Command = (state: EditorState) => TransactionSpec;
 
@@ -115,6 +116,28 @@ export function LiveEditor({ source, onChange, className = '', onUploadImage, on
             {tool.text}
           </button>
         ))}
+        <select
+          aria-label="블록 넣기"
+          className="text-muted hover:bg-surface-sunken hover:text-foreground rounded bg-transparent px-2 py-1 text-xs"
+          onChange={(event) => {
+            const block = BLOCKS.find((item) => item.name === event.target.value);
+            event.target.value = '';
+            const editor = view.current;
+            if (!block || !editor) return;
+            editor.dispatch(insertBlock(editor.state, block));
+            editor.focus();
+          }}
+          value=""
+        >
+          <option disabled value="">
+            블록
+          </option>
+          {BLOCKS.map((block) => (
+            <option key={block.name} value={block.name}>
+              {block.label}
+            </option>
+          ))}
+        </select>
         {onUploadImage ? (
           <label className="text-muted hover:bg-surface-sunken hover:text-foreground cursor-pointer rounded px-2 py-1 text-xs">
             {uploading ? '올리는 중…' : '이미지'}
