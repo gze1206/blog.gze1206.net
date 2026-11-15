@@ -2,6 +2,9 @@ import { useState } from 'react';
 
 import {
   bookCoverUrl,
+  changeBookCover,
+  lookupBook,
+  uploadBookCover,
   updateBook,
   reviewBook,
   confirmBook,
@@ -111,6 +114,40 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
       setBusy(false);
     }
   };
+  /** 표지는 저장 버튼과 따로 바로 바뀐다(NOR-204). 폼에 쓰던 내용은 건드리지 않는다. */
+  const replaceCover = async (work: () => Promise<void>) => {
+    setBusy(true);
+    try {
+      await work();
+      onChanged();
+    } catch (caught) {
+      onError(caught instanceof Error ? caught.message : '표지를 바꾸지 못했습니다.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  const coverKey = form.isbn13 ?? bookSlug(form.title);
+  const uploadCover = (file: File | undefined) =>
+    file === undefined
+      ? undefined
+      : void replaceCover(async () => {
+          const { cover: path } = await uploadBookCover(coverKey, file);
+          await changeBookCover(document.id, { cover: path });
+        });
+  const findCover = () =>
+    void replaceCover(async () => {
+      const isbn = form.isbn13;
+      if (isbn === undefined) throw new Error('ISBN 을 먼저 적고 저장하세요.');
+      const { metadata } = await lookupBook(isbn);
+      if (metadata?.coverUrl === undefined)
+        throw new Error('이 ISBN 으로는 표지를 찾지 못했습니다.');
+      await changeBookCover(document.id, {
+        coverUrl: metadata.coverUrl,
+        coverSource: metadata.source,
+      });
+    });
+  const removeCover = () => void replaceCover(() => changeBookCover(document.id, { remove: true }));
+
   const dirty = JSON.stringify(form) !== JSON.stringify(initial);
   const cover = document.cover === undefined ? null : bookCoverUrl(document.cover);
 
@@ -170,13 +207,42 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
           />
         ) : null}
         <div className="flex gap-5">
-          <span className="flex h-36 w-24 flex-none items-center justify-center overflow-hidden rounded border border-border bg-surface-sunken text-[11px] text-muted">
-            {cover === null ? (
-              '표지 없음'
-            ) : (
-              <img alt="" className="h-full w-full object-cover" src={cover} />
-            )}
-          </span>
+          <div className="flex w-24 flex-none flex-col gap-1.5">
+            <span className="flex h-36 w-24 items-center justify-center overflow-hidden rounded border border-border bg-surface-sunken text-[11px] text-muted">
+              {cover === null ? (
+                '표지 없음'
+              ) : (
+                <img alt="" className="h-full w-full object-cover" src={cover} />
+              )}
+            </span>
+            <label className="cursor-pointer rounded border border-border-strong bg-surface px-2 py-1 text-center text-xs text-body hover:border-muted">
+              파일로 바꾸기
+              <input
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                disabled={busy}
+                onChange={(event) => uploadCover(event.target.files?.[0])}
+                type="file"
+              />
+            </label>
+            <button
+              className="rounded border border-border-strong bg-surface px-2 py-1 text-xs text-body hover:border-muted disabled:opacity-40"
+              disabled={busy || form.isbn13 === undefined}
+              onClick={findCover}
+              title={form.isbn13 === undefined ? 'ISBN 을 먼저 적고 저장하세요.' : undefined}
+              type="button"
+            >
+              ISBN 으로 찾기
+            </button>
+            <button
+              className="rounded px-2 py-1 text-xs text-muted hover:text-danger disabled:opacity-40"
+              disabled={busy || cover === null}
+              onClick={removeCover}
+              type="button"
+            >
+              표지 지우기
+            </button>
+          </div>
 
           <div className="grid min-w-0 flex-1 gap-3">
             <Field label="제목">
@@ -187,10 +253,18 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
               />
             </Field>
             <Field label="저자 (쉼표로 구분)">
-              <input
-                className="w-full rounded border border-border-strong px-2 py-1 text-sm"
-                onChange={(event) => set('authors', splitList(event.target.value))}
-                value={form.authors.join(', ')}
+              <ListInput onChange={(names) => set('authors', names)} values={form.authors} />
+            </Field>
+            <Field label="역자 (쉼표로 구분)">
+              <ListInput
+                onChange={(names) =>
+                  setForm((current) =>
+                    current === null
+                      ? current
+                      : withField(current, 'translators', names.length === 0 ? undefined : names),
+                  )
+                }
+                values={form.translators ?? []}
               />
             </Field>
             <div className="grid grid-cols-3 gap-2">
@@ -305,16 +379,15 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="태그 (쉼표로 구분)">
-              <input
-                className="w-full rounded border border-border-strong px-2 py-1 text-sm"
-                onChange={(event) =>
-                  setForm((current) => {
-                    if (current === null) return current;
-                    const tags = splitList(event.target.value);
-                    return withField(current, 'tags', tags.length === 0 ? undefined : tags);
-                  })
+              <ListInput
+                onChange={(tags) =>
+                  setForm((current) =>
+                    current === null
+                      ? current
+                      : withField(current, 'tags', tags.length === 0 ? undefined : tags),
+                  )
                 }
-                value={(form.tags ?? []).join(', ')}
+                values={form.tags ?? []}
               />
             </Field>
             <label className="flex items-end gap-2 pb-1 text-sm text-body">
@@ -417,4 +490,28 @@ function splitList(value: string): string[] {
     .split(',')
     .map((entry) => entry.trim())
     .filter((entry) => entry !== '');
+}
+
+/**
+ * 쉼표로 구분하는 목록 칸. 친 글자를 그대로 보여 주고, 목록은 따로 넘긴다. 목록에서 다시 글자를
+ * 만들어 보여 주면 친 쉼표와 공백이 바로 사라져 두 번째 이름을 칠 수 없다(NOR-204).
+ */
+function ListInput({
+  values,
+  onChange,
+}: {
+  readonly values: readonly string[];
+  readonly onChange: (values: string[]) => void;
+}) {
+  const [text, setText] = useState(() => values.join(', '));
+  return (
+    <input
+      className="w-full rounded border border-border-strong px-2 py-1 text-sm"
+      onChange={(event) => {
+        setText(event.target.value);
+        onChange(splitList(event.target.value));
+      }}
+      value={text}
+    />
+  );
 }
