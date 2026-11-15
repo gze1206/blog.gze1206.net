@@ -1,0 +1,32 @@
+# 댓글 서버 Comentario (NOR-200, ADR 0019). 호스트의 /srv/comments/deploy 에 둔다.
+# 공개 포트를 열지 않는다. 공용 edge Caddy 가 edge 네트워크의 alias "comentario" 로 프록시한다.
+name: comments
+
+services:
+  comentario:
+    image: registry.gitlab.com/comentario/comentario@${COMENTARIO_DIGEST:?COMENTARIO_DIGEST 가 필요하다}
+    user: '${COMMENTS_UID:?}:${COMMENTS_GID:?}'
+    environment:
+      BASE_URL: https://comments.gze1206.net/
+      SECRETS_FILE: /run/comentario/secrets.yaml
+      HOST: 0.0.0.0
+      # root 가 아니고 권한도 모두 버리므로 1024 아래 포트를 열 수 없다.
+      PORT: '8080'
+    volumes:
+      - /srv/comments/data:/data
+      - ./secrets.yaml:/run/comentario/secrets.yaml:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid,nodev
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    mem_limit: 256m
+    pids_limit: 128
+    restart: unless-stopped
+    networks:
+      edge:
+        aliases: [comentario]
+
+networks:
+  edge:
+    external: true
