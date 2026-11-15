@@ -41,11 +41,14 @@ export type BookExportPlan =
   | { kind: 'delete'; path: string }
   | { kind: 'noop'; path: string };
 export function planBookExport(input: {
+  /** 작업 공간의 파일 이름(NOR-212). 없으면 문서 내용으로 계산한다(등록 시점의 규칙). */
+  id?: string;
   record: BookDocument;
   current: string | null;
   cover?: { workspacePath: string; info: PublicCover };
 }): BookExportPlan {
-  const id = bookIdOf(input.record);
+  const id = input.id ?? bookIdOf(input.record);
+  if (!isBookId(id)) throw new Error('invalid book id');
   const path = `${BLOG_LAYOUT.booksDir}/${id}.json`;
   if (input.record.visible === false)
     return { kind: input.current === null ? 'noop' : 'delete', path };
