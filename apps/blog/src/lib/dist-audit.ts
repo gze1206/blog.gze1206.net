@@ -1,4 +1,5 @@
 import { decodeHTML } from 'entities';
+import { inlineScriptHashes } from './csp.ts';
 
 export interface DistFile {
   path: string;
@@ -10,6 +11,8 @@ interface AuditInput {
   draftSlugs: readonly string[];
   draftTitles: readonly string[];
   smoke: boolean;
+  /** 프로덕션 빌드는 `_headers` CSP 에 모든 인라인 스크립트 해시가 있어야 한다 (NOR-201 AC-4). */
+  requireCsp?: boolean;
 }
 interface AuditFinding {
   rule: string;
@@ -127,6 +130,17 @@ export function auditDist(input: AuditInput): AuditFinding[] {
       refs.some((ref) => mermaidAssets.has(ref))
     )
       findings.push({ rule: 'heavy-asset', path: file.path, detail: 'unneeded Mermaid chunk' });
+  }
+  if (input.requireCsp) {
+    const headers = input.assets.find((asset) => asset.path === '_headers')?.content;
+    if (headers == null) {
+      findings.push({ rule: 'csp-missing-headers', path: '_headers', detail: 'missing' });
+    } else {
+      for (const file of input.files)
+        for (const hash of inlineScriptHashes(file.html))
+          if (!headers.includes(hash))
+            findings.push({ rule: 'csp-missing-hash', path: file.path, detail: hash });
+    }
   }
   return findings;
 }

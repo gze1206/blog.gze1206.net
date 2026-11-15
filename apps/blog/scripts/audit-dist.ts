@@ -26,7 +26,7 @@ for (const path of await walk('dist')) {
   else
     assets.push({
       path: name,
-      content: /\.(?:html|xml|json|js|css|txt|svg|webmanifest)$/i.test(name)
+      content: /(?:\.(?:html|xml|json|js|css|txt|svg|webmanifest)|^_headers)$/i.test(name)
         ? await readFile(path, 'utf8')
         : /^pagefind\/.*\.pf_[^/]+$/.test(name)
           ? gunzipSync(await readFile(path)).toString('utf8')
@@ -39,6 +39,7 @@ const findings = auditDist({
   draftSlugs: drafts.map((post) => post.slug),
   draftTitles,
   smoke: isSmokeEnabled({ BLOG_SMOKE: process.env.BLOG_SMOKE }),
+  requireCsp: true,
 });
 if (findings.length) {
   for (const finding of findings)
