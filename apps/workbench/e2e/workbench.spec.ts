@@ -398,3 +398,58 @@ test('NOR-217 AC-3: 발행 검토 diff 를 채색해 보이고 나란히 보기�
   const SP = process.env['DIFF_SHOT'];
   if (SP) await page.screenshot({ path: SP });
 });
+
+test('NOR-219 AC-1 · NOR-219 AC-5: 여러 줄 칸의 빈 줄·공백을 지키고 포트폴리오 이미지를 올린다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '사이트 콘텐츠' }).click();
+  const site = page.getByRole('region', { name: '사이트 콘텐츠' });
+  await site.getByRole('button', { name: 'E2E', exact: true }).click();
+  const skills = site.getByLabel('기술(한 줄에 하나)');
+  await skills.click();
+  await page.keyboard.press('ControlOrMeta+End');
+  await page.keyboard.type('\n\nTypeScript 와 ');
+  await expect(skills).toHaveValue('C#\n\nTypeScript 와 ');
+
+  await site.getByRole('button', { name: '새 포트폴리오' }).click();
+  await site.getByRole('button', { name: '이미지 추가' }).click();
+  await site.getByLabel('이미지 1 파일').setInputFiles({
+    name: 'shot.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      '89504e470d0a1a0a0000000d4948445200000002000000030802000000368849d60000000b49444154789c6360c0020000150001aa6597c40000000049454e44ae426082',
+      'hex',
+    ),
+  });
+  await expect(site.getByLabel('이미지 1 경로')).toHaveValue(
+    /^\/img\/portfolio\/shot-[0-9a-f]{16}\.png$/u,
+  );
+  await expect(site.getByLabel('이미지 1 너비')).toHaveValue('2');
+  await expect(site.getByLabel('이미지 1 높이')).toHaveValue('3');
+  await expect(site.getByRole('img', { name: '이미지 1 미리보기' })).toBeVisible();
+});
+
+test('NOR-219 AC-6: 공개 초안 편집기에서 이미지를 올리면 본문에 넣고 자산으로 고른다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('새 문서 제목').fill('이미지 글');
+  await page.getByRole('button', { name: /공개 글 초안/u }).click();
+  const editor = page.getByLabel('Markdown 문서');
+  await expect(editor).toContainText('title: 이미지 글');
+  await page.getByLabel('Markdown 문서').click();
+  await page.keyboard.press('ControlOrMeta+End');
+  await page.getByLabel('본문 이미지 파일').setInputFiles({
+    name: 'shot.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      '89504e470d0a1a0a0000000d4948445200000002000000030802000000368849d60000000b49444154789c6360c0020000150001aa6597c40000000049454e44ae426082',
+      'hex',
+    ),
+  });
+  await expect(editor.locator('.cm-line').filter({ hasText: 'shot-' })).toContainText(
+    /!\[설명\]\(shot-[0-9a-f]{16}\.png\)/u,
+  );
+  await expect(page.getByRole('checkbox', { name: /shot-[0-9a-f]{16}\.png/u })).toBeChecked();
+});

@@ -24,6 +24,9 @@ interface Props {
   readonly publishAssets?: readonly PublicAssetCandidate[];
   readonly selectedAssetIds?: readonly string[];
   readonly onToggleAsset?: (id: string) => void;
+  /** 공개 초안 본문 이미지를 올린다(NOR-219 AC-6). */
+  readonly onUploadImage?: (file: File) => Promise<string>;
+  readonly onError?: (message: string) => void;
 }
 
 export function Editor({
@@ -38,6 +41,8 @@ export function Editor({
   publishAssets = [],
   selectedAssetIds = [],
   onToggleAsset,
+  onUploadImage,
+  onError,
 }: Props) {
   const [mode, setMode] = useState<EditorMode>('edit');
   return (
@@ -120,7 +125,13 @@ export function Editor({
       ) : null}
       <div className="flex min-h-0 flex-1">
         {mode !== 'preview' ? (
-          <LiveEditor className="flex-1" onChange={onChange} source={source} />
+          <LiveEditor
+            className="flex-1"
+            onChange={onChange}
+            source={source}
+            {...(onUploadImage ? { onUploadImage } : {})}
+            {...(onError ? { onError } : {})}
+          />
         ) : null}
         {mode !== 'edit' ? (
           <PreviewPane

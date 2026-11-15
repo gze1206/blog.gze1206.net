@@ -9,7 +9,10 @@ import {
   type SiteChange,
 } from '../../core/site/siteContent.js';
 
-type SitePublisher = Required<Pick<PublicBlogPublisher, 'listSite' | 'reviewSite' | 'publishSite'>>;
+type SitePublisher = Required<
+  Pick<PublicBlogPublisher, 'listSite' | 'reviewSite' | 'publishSite'>
+> &
+  Pick<PublicBlogPublisher, 'saveSiteImage' | 'readSiteImage'>;
 
 const collectionSchema = z.enum(SITE_COLLECTION_NAMES as [string, ...string[]]);
 const idSchema = z.string().min(1).max(80);
@@ -34,19 +37,22 @@ const changeSchema = z.union([
 ]);
 /** 사이트 콘텐츠 JSON 은 작다. 큰 본문은 읽기 전에 막는다(NOR-208 AC-9). */
 const MAX_BODY = 256 * 1024;
+/** 포트폴리오 이미지는 5MB 까지다(NOR-219). */
+const MAX_IMAGE_BODY = 5 * 1024 * 1024;
 const opaqueIdSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/u);
 
 /** 사이트 콘텐츠 편집·발행 (NOR-208). 원본은 공개 저장소의 JSON 이다. */
 export function createSiteRoutes(publisher: SitePublisher): Hono {
   const routes = new Hono();
 
-  routes.use(
-    '/api/site/*',
+  const limit = (maxSize: number) =>
     bodyLimit({
-      maxSize: MAX_BODY,
+      maxSize,
       onError: (context) => context.json(errorBody('too_large', 'Request body is too large'), 413),
-    }),
-  );
+    });
+  routes.use('/api/site/review', limit(MAX_BODY));
+  routes.use('/api/site/confirm', limit(MAX_BODY));
+  routes.use('/api/site/images', limit(MAX_IMAGE_BODY));
   routes.onError((error, context) => {
     if (error instanceof SiteReviewError)
       return context.json(
@@ -63,6 +69,25 @@ export function createSiteRoutes(publisher: SitePublisher): Hono {
   });
 
   routes.get('/api/site', async (context) => context.json(await publisher.listSite()));
+
+  // 포트폴리오 이미지 올리기·미리보기 (NOR-219 AC-2).
+  routes.post('/api/site/images', async (context) => {
+    if (!publisher.saveSiteImage) return context.json(errorBody('not_found', 'Not found'), 404);
+    const bytes = new Uint8Array(await context.req.arrayBuffer());
+    const name = (context.req.query('name') ?? 'image').slice(0, 200);
+    return context.json(await publisher.saveSiteImage(bytes, name), 201);
+  });
+
+  routes.get('/api/site/images/:name', async (context) => {
+    const image = await publisher.readSiteImage?.(context.req.param('name'));
+    if (!image) return context.json(errorBody('not_found', 'Image not found'), 404);
+    return context.body(new Uint8Array(image.bytes), 200, {
+      'content-type': image.contentType,
+      // 이름에 내용 해시가 있어 바뀌지 않는다.
+      'cache-control': 'private, max-age=86400',
+      'x-content-type-options': 'nosniff',
+    });
+  });
 
   routes.post('/api/site/review', async (context) => {
     const parsed = parseChange(await readJson(context.req.raw));

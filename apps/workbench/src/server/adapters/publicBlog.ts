@@ -74,6 +74,7 @@ export interface BookConfirm {
 }
 
 export interface SiteReview {
+  readonly warnings?: readonly string[];
   readonly reviewId: string;
   readonly baseHead: string;
   readonly branch: string;
@@ -92,6 +93,24 @@ export class SiteReviewError extends Error {
     super(message);
   }
 }
+
+/** 올린 포트폴리오 이미지 (NOR-219). `src` 는 블로그에서 쓸 사이트 경로다. */
+export interface SiteImage {
+  readonly src: string;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** 포트폴리오 이미지를 두는 자리(작업 공간)와 블로그 주소. */
+const SITE_IMAGE_DIRECTORY = 'assets/site/portfolio';
+const SITE_IMAGE_PREFIX = '/img/portfolio/';
+const SITE_IMAGE_NAME = /^[a-z0-9][a-z0-9-]*\.(?:png|jpg|webp)$/u;
+const SITE_IMAGE_TYPES: Record<string, string> = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  webp: 'image/webp',
+};
+const MAX_SITE_IMAGE_BYTES = 5 * 1024 * 1024;
 
 export interface SiteListing {
   readonly commit: string;
@@ -140,6 +159,15 @@ export interface PublicBlogPublisher {
     drafts: readonly { readonly documentId: string; readonly source: string }[],
   ): Promise<PublishStatusReport>;
   listSite?(): Promise<SiteListing>;
+  saveSiteImage?(bytes: Uint8Array, originalName: string): Promise<SiteImage>;
+  savePublicAsset?(
+    documentId: string,
+    bytes: Uint8Array,
+    originalName: string,
+  ): Promise<{ readonly id: string; readonly reference: string; readonly size: number }>;
+  readSiteImage?(
+    name: string,
+  ): Promise<{ readonly bytes: Buffer; readonly contentType: string } | null>;
   reviewSite?(change: SiteChange): Promise<SiteReview>;
   publishSite?(change: SiteChange, confirm: BookConfirm): Promise<PublishResult>;
 }
@@ -628,6 +656,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         review,
         plan,
         fingerprint: contentFingerprint,
+        assets,
       } = await this.createSiteReview(change, clone);
       // 검토한 입력·base 와 다르면 여기서 멈춘다.
       await this.sessions.get(confirm.reviewId, contentFingerprint, review.baseHead);
@@ -640,7 +669,17 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         await this.writeOutput(clone.repositoryRoot, plan.path, plan.content);
         await chmod(path.join(clone.repositoryRoot, plan.path), 0o644);
       }
-      await this.cloneManager.git(clone, ['add', '-A', '--', plan.path]);
+      for (const asset of assets) {
+        await this.writeApprovedAsset(clone.repositoryRoot, asset.bytes, asset.relativePath);
+        await chmod(path.join(clone.repositoryRoot, asset.relativePath), 0o644);
+      }
+      await this.cloneManager.git(clone, [
+        'add',
+        '-A',
+        '--',
+        plan.path,
+        ...assets.map((asset) => asset.relativePath),
+      ]);
       const message =
         plan.kind === 'delete'
           ? `📝 docs(content): ${change.collection} ${change.id} 를 지운다`
@@ -667,7 +706,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         source: plan.kind === 'write' ? plan.content : '',
         diff: review.diff,
         author: `${this.options.author.name} <${this.options.author.email}>`,
-        assets: [],
+        assets: assets.map((asset) => ({ reference: asset.relativePath, bytes: asset.bytes })),
         exporter: {
           bundle: (baseSha, branch) => this.cloneManager.createBundle(clone, baseSha, branch),
           formatPatch: (baseSha, branch) =>
@@ -696,6 +735,118 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     }
   }
 
+  /**
+   * 포트폴리오 이미지를 작업 공간에 둔다 (NOR-219 AC-2). 형식은 내용으로 판별하고, 이름에 내용 해시를
+   * 붙여 같은 이미지는 같은 이름이 되게 한다. 블로그로는 발행할 때 함께 나간다.
+   */
+  public async saveSiteImage(bytes: Uint8Array, originalName: string): Promise<SiteImage> {
+    const { name, size } = imageFileName(bytes, originalName);
+    const relativePath = `${SITE_IMAGE_DIRECTORY}/${name}`;
+    await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
+    const target = await resolveWorkspacePath(this.options.privateRoot, relativePath);
+    await mkdir(path.dirname(target), { recursive: true });
+    await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
+    await writeHashedFile(target, bytes);
+    return { src: `${SITE_IMAGE_PREFIX}${name}`, width: size.width, height: size.height };
+  }
+
+  /**
+   * 공개 초안 본문 이미지를 그 초안의 자산 자리에 둔다 (NOR-219 AC-6). 발행 자산은 파일 이름 하나로
+   * 나가므로(`assets/posts/<slug>/<이름>`) 하위 디렉터리 없이 둔다.
+   */
+  public async savePublicAsset(
+    documentId: string,
+    bytes: Uint8Array,
+    originalName: string,
+  ): Promise<{ readonly id: string; readonly reference: string; readonly size: number }> {
+    if (!/^[A-Za-z0-9_-]{43}$/u.test(documentId))
+      throw new Error('invalid document id for public assets');
+    const { name } = imageFileName(bytes, originalName);
+    const relativePath = `assets/public/${documentId}/${name}`;
+    await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
+    const target = await resolveWorkspacePath(this.options.privateRoot, relativePath);
+    await mkdir(path.dirname(target), { recursive: true });
+    await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
+    await writeHashedFile(target, bytes);
+    return { id: assetId(documentId, name), reference: name, size: bytes.length };
+  }
+
+  /** 올려 둔 포트폴리오 이미지를 읽는다(미리보기). 이 디렉터리의 파일 하나만 내준다. */
+  public async readSiteImage(
+    name: string,
+  ): Promise<{ readonly bytes: Buffer; readonly contentType: string } | null> {
+    if (!SITE_IMAGE_NAME.test(name)) return null;
+    const relativePath = `${SITE_IMAGE_DIRECTORY}/${name}`;
+    try {
+      await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
+      const target = await resolveWorkspacePath(this.options.privateRoot, relativePath);
+      await assertRegularFile(target);
+      return {
+        bytes: await readFile(target),
+        contentType: SITE_IMAGE_TYPES[name.split('.').pop() ?? ''] ?? 'application/octet-stream',
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 포트폴리오가 참조하는 이미지를 확인한다 (NOR-219 AC-3). 작업 공간에 올린 이미지는 블로그에 없거나
+   * 다르면 함께 내보낼 목록에 넣는다. 작업 공간에도 블로그 public/ 에도 없는 경로는 문제로 돌려준다.
+   */
+  private async siteImages(
+    change: SiteChange,
+    repositoryRoot: string,
+  ): Promise<{
+    assets: { relativePath: string; bytes: Buffer; width: number; height: number }[];
+    issues: { path: string; message: string }[];
+    warnings: string[];
+  }> {
+    const assets: { relativePath: string; bytes: Buffer; width: number; height: number }[] = [];
+    const issues: { path: string; message: string }[] = [];
+    const warnings: string[] = [];
+    if (change.collection !== 'portfolio' || 'delete' in change)
+      return { assets, issues, warnings };
+    const references: { field: string; src: string }[] = [];
+    const media = change.data['media'];
+    if (Array.isArray(media))
+      media.forEach((item: unknown, index) => {
+        const src = (item as Record<string, unknown> | null)?.['src'];
+        if (typeof src === 'string') references.push({ field: `media.${index}.src`, src });
+      });
+    const thumbnail = change.data['thumbnail'];
+    if (typeof thumbnail === 'string') references.push({ field: 'thumbnail', src: thumbnail });
+    const seen = new Set<string>();
+    for (const { field, src } of references) {
+      const blogPath = `${BLOG_LAYOUT.publicDir}${src}`;
+      const name = src.startsWith(SITE_IMAGE_PREFIX) ? src.slice(SITE_IMAGE_PREFIX.length) : null;
+      const staged = name === null ? null : await this.readSiteImage(name);
+      if (staged) {
+        if (seen.has(src)) continue;
+        seen.add(src);
+        const blog = await this.readPublicAssetState(repositoryRoot, blogPath);
+        const hash = createHash('sha256').update(staged.bytes).digest('hex');
+        if (!blog.exists || blog.contentHash !== hash) {
+          const size = readImageSize(staged.bytes);
+          assets.push({
+            relativePath: blogPath,
+            bytes: staged.bytes,
+            width: size?.width ?? 0,
+            height: size?.height ?? 0,
+          });
+          const metadata = findImageMetadata(staged.bytes);
+          if (metadata.length > 0)
+            warnings.push(`${src} 에 메타데이터(EXIF 등)가 있습니다: ${metadata.join(', ')}`);
+        }
+        continue;
+      }
+      const exists =
+        isSafeSitePath(src) && (await this.readPublicAssetState(repositoryRoot, blogPath)).exists;
+      if (!exists) issues.push({ path: field, message: `이미지를 찾지 못했습니다: ${src}` });
+    }
+    return { assets, issues, warnings };
+  }
+
   private async createSiteReview(change: SiteChange, clone: EphemeralClone) {
     const issues = validateSiteChange(change);
     if (issues.length > 0) throw new SiteReviewError('invalid site content', 400, issues);
@@ -714,12 +865,21 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       const unknown = unknownKeyIssues(change.collection, change.data, current);
       if (unknown.length > 0) throw new SiteReviewError('invalid site content', 400, unknown);
     }
-    const plan = planSiteChange(change, current);
-    const diff =
-      plan.kind === 'noop'
+    const images = await this.siteImages(change, clone.repositoryRoot);
+    if (images.issues.length > 0)
+      throw new SiteReviewError('invalid site content', 400, images.issues);
+    let plan = planSiteChange(change, current);
+    // JSON 이 같아도 이미지가 새로 들어가면 내보낸다.
+    if (plan.kind === 'noop' && images.assets.length > 0 && current !== null)
+      plan = { kind: 'write', path: plan.path, content: current };
+    let diff =
+      plan.kind === 'noop' || current === (plan.kind === 'write' ? plan.content : null)
         ? ''
         : unifiedDiff(targetPath, current, plan.kind === 'write' ? plan.content : null);
+    for (const asset of images.assets)
+      diff += `이미지 추가/교체: ${asset.relativePath} (${asset.width}×${asset.height}, ${Math.ceil(asset.bytes.length / 1024)} KB)\n`;
     const review = {
+      warnings: images.warnings,
       baseHead,
       branch: `content/site-${change.collection}-${publishRefKey(change.id)}`,
       targetPath,
@@ -728,8 +888,13 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     };
     const fingerprint = createHash('sha256')
       .update(JSON.stringify({ change, plan, review }))
+      .update(
+        images.assets
+          .map((asset) => createHash('sha256').update(asset.bytes).digest('hex'))
+          .join(','),
+      )
       .digest('hex');
-    return { review, plan, fingerprint };
+    return { review, plan, fingerprint, assets: images.assets };
   }
 
   private async createBookReview(id: string, clone: EphemeralClone) {
@@ -1141,6 +1306,61 @@ function fingerprint(prepared: PreparedPublish, state: ReviewState): string {
     .update('\0')
     .update(JSON.stringify(state.destinationStates))
     .digest('hex');
+}
+
+/**
+ * 올린 이미지의 파일 이름 (NOR-219). 형식은 내용으로 판별하고(JPEG·PNG·WebP, 5MB 까지), 원래 이름의 영문·숫자
+ * 조각에 내용 해시 8자를 붙인다. 같은 이미지는 같은 이름이 된다.
+ */
+function imageFileName(
+  bytes: Uint8Array,
+  originalName: string,
+): { name: string; size: { width: number; height: number } } {
+  const size =
+    bytes.length > 0 && bytes.length <= MAX_SITE_IMAGE_BYTES ? readImageSize(bytes) : null;
+  if (!size || !isCompleteImage(bytes, size.type))
+    throw new SiteReviewError('JPEG·PNG·WebP 이미지만 5MB 까지 올릴 수 있습니다.', 400);
+  const extension = size.type === 'jpeg' ? 'jpg' : size.type;
+  const base =
+    path
+      .parse(originalName)
+      .name.normalize('NFC')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/gu, '-')
+      .replace(/^-+|-+$/gu, '')
+      .slice(0, 40) || 'image';
+  const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 16);
+  return { name: `${base}-${hash}.${extension}`, size };
+}
+
+/** 형식의 끝까지 갖춘 파일인지 본다(PNG IEND·JPEG EOI·WebP RIFF 길이). 잘린 파일이 공개되지 않게 한다. */
+function isCompleteImage(bytes: Uint8Array, type: 'jpeg' | 'png' | 'webp'): boolean {
+  const length = bytes.length;
+  if (type === 'png')
+    return (
+      length >= 12 &&
+      Buffer.from(bytes.subarray(length - 8, length - 4)).toString('latin1') === 'IEND'
+    );
+  if (type === 'jpeg')
+    return length >= 4 && bytes[length - 2] === 0xff && bytes[length - 1] === 0xd9;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return length >= 12 && view.getUint32(4, true) + 8 === length;
+}
+
+/**
+ * 해시 이름의 파일을 쓴다. 같은 이름이 이미 있으면 내용이 같을 때만 그대로 두고, 다르면 거절한다
+ * (드문 해시 충돌로 이미 쓰는 이미지가 바뀌지 않게).
+ */
+async function writeHashedFile(target: string, bytes: Uint8Array): Promise<void> {
+  const existing = await readFile(target).catch((error: unknown) => {
+    if (isNodeError(error) && error.code === 'ENOENT') return null;
+    throw error;
+  });
+  if (existing !== null) {
+    if (Buffer.compare(existing, Buffer.from(bytes)) === 0) return;
+    throw new SiteReviewError('같은 이름의 다른 이미지가 이미 있습니다.', 409);
+  }
+  await writeFile(target, bytes, { mode: 0o644, flag: 'wx' });
 }
 
 function sha256(text: string): string {

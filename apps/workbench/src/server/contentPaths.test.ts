@@ -35,3 +35,17 @@ describe('릴레이 허용 경로', () => {
       expect(allowed(path), path).toBe(false);
   });
 });
+
+describe('포트폴리오 이미지 경로', () => {
+  it('NOR-219 AC-4: public/img/portfolio 의 slug 이름 이미지를 받는다', () => {
+    expect(allowed('apps/blog/public/img/portfolio/tera-origin-1a2b3c4d.webp')).toBe(true);
+    expect(allowed('apps/blog/public/img/portfolio/a.jpg')).toBe(true);
+    for (const path of [
+      'apps/blog/public/img/portfolio/a.svg',
+      'apps/blog/public/img/portfolio/Upper.png',
+      'apps/blog/public/img/portfolio/sub/a.png',
+      'apps/blog/public/img/other.png',
+    ])
+      expect(allowed(path), path).toBe(false);
+  });
+});
