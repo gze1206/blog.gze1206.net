@@ -402,6 +402,9 @@ importers:
       '@hono/node-server':
         specifier: ^2.1.0
         version: 2.1.6(hono@4.13.17)
+      diff:
+        specifier: 8.0.4
+        version: 8.0.4
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3

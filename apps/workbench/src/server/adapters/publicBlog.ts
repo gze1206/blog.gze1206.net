@@ -20,6 +20,7 @@ import { EphemeralCloneManager, type EphemeralClone } from './ephemeralClone.js'
 import { PublishOutbox, type PublishExportFormat } from './publishOutbox.js';
 import type { RemotePolicy } from './remotePolicy.js';
 import { PublishSessionRegistry } from './sessionRegistry.js';
+import { unifiedDiff } from '../../core/publishing/diff.js';
 
 export interface PublishDraftInput {
   readonly documentId: string;
@@ -483,7 +484,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       plan.kind === 'noop'
         ? ''
         : plan.kind === 'delete'
-          ? unifiedDeleteDiff(targetPath, current ?? '')
+          ? unifiedDiff(targetPath, current ?? '', null)
           : unifiedDiff(targetPath, current, plan.content);
     if (plan.kind === 'write' && plan.cover) diff += `표지 추가/교체: ${plan.cover.to}\n`;
     if (
@@ -796,36 +797,6 @@ function assertDescendant(candidate: string, root: string, label: string): void 
     path.isAbsolute(relative)
   )
     throw new Error(`${label} is outside its configured root`);
-}
-
-function unifiedDiff(targetPath: string, before: string | null, after: string): string {
-  const beforeLines = lines(before ?? '');
-  const afterLines = lines(after);
-  const oldRange = before === null ? '-0,0' : `-1,${beforeLines.length}`;
-  return [
-    `--- ${before === null ? '/dev/null' : `a/${targetPath}`}`,
-    `+++ b/${targetPath}`,
-    `@@ ${oldRange} +1,${afterLines.length} @@`,
-    ...beforeLines.map((line) => `-${line}`),
-    ...afterLines.map((line) => `+${line}`),
-    '',
-  ].join('\n');
-}
-
-function unifiedDeleteDiff(targetPath: string, before: string): string {
-  const beforeLines = lines(before);
-  return [
-    `--- a/${targetPath}`,
-    '+++ /dev/null',
-    `@@ -1,${beforeLines.length} +0,0 @@`,
-    ...beforeLines.map((line) => `-${line}`),
-    '',
-  ].join('\n');
-}
-
-function lines(source: string): readonly string[] {
-  if (source === '') return [];
-  return source.endsWith('\n') ? source.slice(0, -1).split('\n') : source.split('\n');
 }
 
 async function assertNoSymlinkAncestors(root: string, relativePath: string): Promise<void> {
