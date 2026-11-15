@@ -1,6 +1,24 @@
-import { bookCoverUrl, type DocumentProblem, type DocumentSummary } from './api.js';
+import {
+  bookCoverUrl,
+  type DocumentProblem,
+  type DocumentSummary,
+  type PublishState,
+} from './api.js';
+
+/** 공개 초안의 발행 상태 표시(NOR-209 AC-4). */
+const STATE_LABEL: Record<PublishState, { text: string; className: string }> = {
+  published: { text: '발행됨', className: 'text-accent' },
+  differs: { text: '블로그와 다름', className: 'text-notice-foreground' },
+  unpublished: { text: '미발행', className: 'text-muted' },
+  invalid: { text: '검사 실패', className: 'text-danger' },
+};
 
 interface Props {
+  /** 문서 id 별 발행 상태. 아직 모르면 비어 있다. */
+  readonly statuses?: Readonly<Record<string, PublishState>>;
+  /** 블로그에만 있는 글의 수. */
+  readonly blogOnly?: number;
+  readonly onImport?: () => void;
   readonly documents: readonly DocumentSummary[];
   /** 읽지 못한 파일. 비어 있으면 아무것도 그리지 않는다. */
   readonly problems: readonly DocumentProblem[];
@@ -8,7 +26,15 @@ interface Props {
   readonly onSelect: (id: string) => void;
 }
 
-export function DocumentList({ documents, problems, selectedId, onSelect }: Props) {
+export function DocumentList({
+  documents,
+  problems,
+  selectedId,
+  onSelect,
+  statuses = {},
+  blogOnly = 0,
+  onImport,
+}: Props) {
   /*
     책이 하나도 없으면 표지 자리를 만들지 않는다. 책이 섞여 있을 때만 모든 줄이 같은 자리에서
     시작하도록 빈 자리를 둔다 — 책 줄만 밀려 있으면 목록의 왼쪽이 들쭉날쭉해 보인다.
@@ -26,6 +52,16 @@ export function DocumentList({ documents, problems, selectedId, onSelect }: Prop
         </h2>
         <span className="text-xs text-muted">{documents.length}</span>
       </div>
+      {blogOnly > 0 ? (
+        <p className="mb-3 rounded-md border border-border bg-surface px-3 py-2 text-xs text-muted-strong">
+          블로그에만 있는 글 {blogOnly}개{' '}
+          {onImport ? (
+            <button className="text-accent underline" onClick={onImport} type="button">
+              가져오기
+            </button>
+          ) : null}
+        </p>
+      ) : null}
       <div className="grid gap-1">
         {documents.length === 0 ? (
           <p className="py-3 text-sm text-muted">아직 문서가 없습니다.</p>
@@ -41,7 +77,10 @@ export function DocumentList({ documents, problems, selectedId, onSelect }: Prop
             {hasBooks ? <Cover document={document} /> : null}
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm text-foreground">{document.title}</span>
-              <span className="block font-mono text-[11px] text-muted">{document.kind}</span>
+              <span className="block font-mono text-[11px] text-muted">
+                {document.kind}
+                <StateBadge state={statuses[document.id]} />
+              </span>
             </span>
           </button>
         ))}
@@ -70,6 +109,12 @@ export function DocumentList({ documents, problems, selectedId, onSelect }: Prop
       ) : null}
     </section>
   );
+}
+
+function StateBadge({ state }: { readonly state: PublishState | undefined }) {
+  if (state === undefined) return null;
+  const label = STATE_LABEL[state];
+  return <span className={`ml-2 font-sans ${label.className}`}>{label.text}</span>;
 }
 
 /**

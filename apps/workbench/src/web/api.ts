@@ -529,3 +529,21 @@ export async function confirmSite(
     body: JSON.stringify({ ...change, confirmPublish: true, reviewId }),
   });
 }
+
+/** 공개 초안의 발행 상태(NOR-209). */
+export type PublishState = 'published' | 'differs' | 'unpublished' | 'invalid';
+export interface PublishStatusData {
+  readonly documents: readonly {
+    readonly documentId: string;
+    readonly slug: string | null;
+    readonly status: PublishState;
+  }[];
+  readonly blogOnly: readonly {
+    readonly slug: string;
+    readonly title: string;
+    readonly repoPath: string;
+  }[];
+}
+export async function loadPublishStatus(): Promise<PublishStatusData> {
+  return request('/api/publish/status');
+}

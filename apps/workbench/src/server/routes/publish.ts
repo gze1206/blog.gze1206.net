@@ -21,6 +21,20 @@ const confirmSchema = reviewSchema.extend({
 export function createPublishRoutes(store: FileStore, publisher: PublicBlogPublisher): Hono {
   const routes = new Hono();
 
+  // 공개 초안의 발행 상태와 블로그에만 있는 글 (NOR-209 AC-3).
+  routes.get('/api/publish/status', async (context) => {
+    if (!publisher.publishStatus) throw new Error('publish status is unavailable');
+    const drafts: { documentId: string; source: string }[] = [];
+    for (const summary of (await store.listDocuments()).documents) {
+      if (summary.kind !== 'public-draft') continue;
+      const entry = await store.readDocument(summary.relativePath);
+      if (entry.document.kind !== 'public-draft' || entry.document.publicEligible !== true)
+        continue;
+      drafts.push({ documentId: encodeDocumentId(summary.relativePath), source: entry.source });
+    }
+    return context.json(await publisher.publishStatus(drafts));
+  });
+
   routes.get('/api/publish/assets/:id', async (context) => {
     const id = context.req.param('id');
     if (!isDocumentId(id)) return context.json(errorBody('invalid_id', 'Invalid document id'), 400);
