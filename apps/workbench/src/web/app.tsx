@@ -10,6 +10,7 @@ import {
   createReview,
   listDocuments,
   listPublishAssets,
+  uploadPublicAsset,
   listTemplates,
   loadReviewContext,
   readDocument,
@@ -365,7 +366,18 @@ export function App() {
               onDelete={() => void removeSelected()}
               onSave={() => void save()}
               {...(selected.kind === 'public-draft'
-                ? { onReviewPublish: () => void review() }
+                ? {
+                    onReviewPublish: () => void review(),
+                    onUploadImage: async (file: File) => {
+                      const uploaded = await uploadPublicAsset(selected.id, file);
+                      setPublishAssets(await listPublishAssets(selected.id));
+                      setSelectedAssetIds((current) =>
+                        current.includes(uploaded.id) ? current : [...current, uploaded.id],
+                      );
+                      return uploaded.reference;
+                    },
+                    onError: setError,
+                  }
                 : {})}
               onToggleAsset={(id) =>
                 setSelectedAssetIds((current) =>

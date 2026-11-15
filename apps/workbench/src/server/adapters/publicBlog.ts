@@ -160,6 +160,11 @@ export interface PublicBlogPublisher {
   ): Promise<PublishStatusReport>;
   listSite?(): Promise<SiteListing>;
   saveSiteImage?(bytes: Uint8Array, originalName: string): Promise<SiteImage>;
+  savePublicAsset?(
+    documentId: string,
+    bytes: Uint8Array,
+    originalName: string,
+  ): Promise<{ readonly id: string; readonly reference: string; readonly size: number }>;
   readSiteImage?(
     name: string,
   ): Promise<{ readonly bytes: Buffer; readonly contentType: string } | null>;
@@ -735,20 +740,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
    * 붙여 같은 이미지는 같은 이름이 되게 한다. 블로그로는 발행할 때 함께 나간다.
    */
   public async saveSiteImage(bytes: Uint8Array, originalName: string): Promise<SiteImage> {
-    if (bytes.length === 0 || bytes.length > MAX_SITE_IMAGE_BYTES)
-      throw new SiteReviewError('JPEG·PNG·WebP 이미지만 5MB 까지 올릴 수 있습니다.', 400);
-    const size = readImageSize(bytes);
-    if (!size) throw new SiteReviewError('JPEG·PNG·WebP 이미지만 5MB 까지 올릴 수 있습니다.', 400);
-    const extension = size.type === 'jpeg' ? 'jpg' : size.type;
-    const base =
-      path
-        .parse(originalName)
-        .name.normalize('NFC')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/gu, '-')
-        .replace(/^-+|-+$/gu, '')
-        .slice(0, 40) || 'image';
-    const name = `${base}-${createHash('sha256').update(bytes).digest('hex').slice(0, 8)}.${extension}`;
+    const { name, size } = imageFileName(bytes, originalName);
     const relativePath = `${SITE_IMAGE_DIRECTORY}/${name}`;
     await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
     const target = await resolveWorkspacePath(this.options.privateRoot, relativePath);
@@ -756,6 +748,27 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
     await writeFile(target, bytes, { mode: 0o644 });
     return { src: `${SITE_IMAGE_PREFIX}${name}`, width: size.width, height: size.height };
+  }
+
+  /**
+   * 공개 초안 본문 이미지를 그 초안의 자산 자리에 둔다 (NOR-219 AC-6). 발행 자산은 파일 이름 하나로
+   * 나가므로(`assets/posts/<slug>/<이름>`) 하위 디렉터리 없이 둔다.
+   */
+  public async savePublicAsset(
+    documentId: string,
+    bytes: Uint8Array,
+    originalName: string,
+  ): Promise<{ readonly id: string; readonly reference: string; readonly size: number }> {
+    if (!/^[A-Za-z0-9_-]{43}$/u.test(documentId))
+      throw new Error('invalid document id for public assets');
+    const { name } = imageFileName(bytes, originalName);
+    const relativePath = `assets/public/${documentId}/${name}`;
+    await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
+    const target = await resolveWorkspacePath(this.options.privateRoot, relativePath);
+    await mkdir(path.dirname(target), { recursive: true });
+    await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
+    await writeFile(target, bytes, { mode: 0o644 });
+    return { id: assetId(documentId, name), reference: name, size: bytes.length };
   }
 
   /** 올려 둔 포트폴리오 이미지를 읽는다(미리보기). 이 디렉터리의 파일 하나만 내준다. */
@@ -1293,6 +1306,30 @@ function fingerprint(prepared: PreparedPublish, state: ReviewState): string {
     .update('\0')
     .update(JSON.stringify(state.destinationStates))
     .digest('hex');
+}
+
+/**
+ * 올린 이미지의 파일 이름 (NOR-219). 형식은 내용으로 판별하고(JPEG·PNG·WebP, 5MB 까지), 원래 이름의 영문·숫자
+ * 조각에 내용 해시 8자를 붙인다. 같은 이미지는 같은 이름이 된다.
+ */
+function imageFileName(
+  bytes: Uint8Array,
+  originalName: string,
+): { name: string; size: { width: number; height: number } } {
+  const size =
+    bytes.length > 0 && bytes.length <= MAX_SITE_IMAGE_BYTES ? readImageSize(bytes) : null;
+  if (!size) throw new SiteReviewError('JPEG·PNG·WebP 이미지만 5MB 까지 올릴 수 있습니다.', 400);
+  const extension = size.type === 'jpeg' ? 'jpg' : size.type;
+  const base =
+    path
+      .parse(originalName)
+      .name.normalize('NFC')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/gu, '-')
+      .replace(/^-+|-+$/gu, '')
+      .slice(0, 40) || 'image';
+  const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 8);
+  return { name: `${base}-${hash}.${extension}`, size };
 }
 
 function sha256(text: string): string {

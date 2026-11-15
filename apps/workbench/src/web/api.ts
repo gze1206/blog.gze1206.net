@@ -581,3 +581,27 @@ export function siteImagePreview(src: string): { primary: string; fallback: stri
     fallback,
   };
 }
+
+/** 공개 초안 본문 이미지를 올린다(NOR-219 AC-6). 본문에 넣을 파일 이름과 자산 id 를 돌려받는다. */
+export async function uploadPublicAsset(
+  documentId: string,
+  file: File,
+): Promise<{ readonly id: string; readonly reference: string; readonly size: number }> {
+  const response = await fetch(
+    `/api/publish/assets/${encodeURIComponent(documentId)}?name=${encodeURIComponent(file.name)}`,
+    {
+      method: 'POST',
+      headers: { 'content-type': file.type || 'application/octet-stream' },
+      body: file,
+    },
+  );
+  const payload = (await response.json().catch(() => null)) as {
+    id?: string;
+    reference?: string;
+    size?: number;
+    error?: { message?: string };
+  } | null;
+  if (!response.ok || payload?.reference === undefined || payload.id === undefined)
+    throw new Error(payload?.error?.message ?? '이미지를 올리지 못했습니다.');
+  return { id: payload.id, reference: payload.reference, size: payload.size ?? 0 };
+}
