@@ -449,7 +449,7 @@ test('NOR-219 AC-1 · NOR-219 AC-5: 여러 줄 칸의 빈 줄·공백을 지키�
     ),
   });
   await expect(site.getByLabel('이미지 1 경로')).toHaveValue(
-    /^\/img\/portfolio\/shot-[0-9a-f]{16}\.png$/u,
+    /^\/img\/portfolio\/shot-[0-9a-f]{16}\.webp$/u,
   );
   await expect(site.getByLabel('이미지 1 너비')).toHaveValue('2');
   await expect(site.getByLabel('이미지 1 높이')).toHaveValue('3');
@@ -478,9 +478,9 @@ test('NOR-219 AC-6: 공개 초안 편집기에서 이미지를 올리면 본문�
     ),
   });
   await expect(editor.locator('.cm-line').filter({ hasText: 'shot-' })).toContainText(
-    /!\[설명\]\(shot-[0-9a-f]{16}\.png\)/u,
+    /!\[설명\]\(shot-[0-9a-f]{16}\.webp\)/u,
   );
-  await expect(page.getByRole('checkbox', { name: /shot-[0-9a-f]{16}\.png/u })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: /shot-[0-9a-f]{16}\.webp/u })).toBeChecked();
 });
 
 test('NOR-220 AC-4: 발행한 항목은 반영 대기로 보이고 다시 검토할 수 없다', async ({ page }) => {
