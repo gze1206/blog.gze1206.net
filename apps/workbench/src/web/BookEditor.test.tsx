@@ -110,3 +110,39 @@ it('NOR-206 AC-9: 문서 편집기에는 서식 도구 막대가 있다', async 
   for (const label of ['굵게', '기울임', '제목', '목록', '인용', '코드', '링크'])
     expect(html).toContain(`aria-label="${label}"`);
 });
+
+it('NOR-209 AC-4: 문서 목록은 공개 초안의 발행 상태와 블로그에만 있는 글을 알린다', async () => {
+  const { DocumentList } = await import('./DocumentList.js');
+  const documents = [
+    {
+      id: 'a',
+      relativePath: 'drafts/a.md',
+      label: 'a',
+      title: '발행한 글',
+      kind: 'public-draft',
+      updatedAt: '2026-08-12',
+    },
+    {
+      id: 'b',
+      relativePath: 'drafts/b.md',
+      label: 'b',
+      title: '고친 글',
+      kind: 'public-draft',
+      updatedAt: '2026-08-12',
+    },
+  ] as const;
+  const html = renderToStaticMarkup(
+    <DocumentList
+      blogOnly={2}
+      documents={documents as never}
+      onImport={() => undefined}
+      onSelect={() => undefined}
+      problems={[]}
+      selectedId={null}
+      statuses={{ a: 'published', b: 'differs' }}
+    />,
+  );
+  expect(html).toContain('발행됨');
+  expect(html).toContain('블로그와 다름');
+  expect(html).toContain('블로그에만 있는 글 2개');
+});

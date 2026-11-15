@@ -22,6 +22,7 @@ import type { RemotePolicy } from './remotePolicy.js';
 import { PublishSessionRegistry } from './sessionRegistry.js';
 import { unifiedDiff } from '../../core/publishing/diff.js';
 import { publishRefKey } from '../../core/publishing/refKey.js';
+import { preservePublishedFormat } from '../../core/publishing/preserve.js';
 import {
   SITE_COLLECTION_NAMES,
   planSiteChange,
@@ -96,6 +97,21 @@ export interface SiteListing {
   readonly problems: readonly { readonly path: string; readonly message: string }[];
 }
 
+export type PublishState = 'published' | 'differs' | 'unpublished' | 'invalid';
+
+export interface PublishStatusReport {
+  readonly documents: readonly {
+    readonly documentId: string;
+    readonly slug: string | null;
+    readonly status: PublishState;
+  }[];
+  readonly blogOnly: readonly {
+    readonly slug: string;
+    readonly title: string;
+    readonly repoPath: string;
+  }[];
+}
+
 export interface PublicAssetCandidate {
   readonly id: string;
   readonly reference: string;
@@ -118,6 +134,9 @@ export interface PublicBlogPublisher {
   publish(input: ConfirmPublishInput): Promise<PublishResult>;
   reviewBook?(id: string): Promise<BookReview>;
   publishBook?(id: string, confirm: BookConfirm): Promise<PublishResult>;
+  publishStatus?(
+    drafts: readonly { readonly documentId: string; readonly source: string }[],
+  ): Promise<PublishStatusReport>;
   listSite?(): Promise<SiteListing>;
   reviewSite?(change: SiteChange): Promise<SiteReview>;
   publishSite?(change: SiteChange, confirm: BookConfirm): Promise<PublishResult>;
@@ -174,6 +193,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
   private readonly outbox: PublishOutbox;
   private readonly sessions: PublishSessionRegistry;
   private readonly sitePublishing = new Set<string>();
+  private readonly statusInFlight = new Map<string, Promise<PublishStatusReport>>();
 
   public constructor(private readonly options: PublicBlogAdapterOptions) {
     this.cloneManager = new EphemeralCloneManager({
@@ -232,6 +252,79 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     }
   }
 
+  /**
+   * 공개 초안마다 블로그와 비교한 발행 상태 (NOR-209 AC-3).
+   *
+   * 새로 받은 main 하나에서, 지금 발행하면 나올 파일(표기 보존까지 거친 것)을 블로그의 파일과 견준다.
+   * 발행 검사를 통과하지 못하는 초안은 `invalid` 다. 어느 초안과도 slug 가 맞지 않는 블로그 글은 따로 돌려준다.
+   */
+  public async publishStatus(
+    drafts: readonly { readonly documentId: string; readonly source: string }[],
+  ): Promise<PublishStatusReport> {
+    // 상태 조회는 clone 과 변환을 모두 한다. 같은 입력으로 동시에 오면 진행 중인 것을 함께 기다린다.
+    const key = createHash('sha256').update(JSON.stringify(drafts)).digest('hex');
+    const running = this.statusInFlight.get(key);
+    if (running) return running;
+    const task = this.computePublishStatus(drafts).finally(() => this.statusInFlight.delete(key));
+    this.statusInFlight.set(key, task);
+    return task;
+  }
+
+  private async computePublishStatus(
+    drafts: readonly { readonly documentId: string; readonly source: string }[],
+  ): Promise<PublishStatusReport> {
+    const clone = await this.cloneManager.create();
+    try {
+      const documents: PublishStatusReport['documents'][number][] = [];
+      const slugs = new Set<string>();
+      for (const draft of drafts) {
+        let slug: string | null = null;
+        try {
+          slug = parseDocument(draft.source).slug ?? null;
+        } catch {
+          slug = null;
+        }
+        if (slug) slugs.add(slug);
+        let status: PublishState;
+        try {
+          const inspected = await this.inspectAssets(draft.documentId);
+          const prepared = await this.prepare({
+            documentId: draft.documentId,
+            source: draft.source,
+            assetIds: inspected.map((asset) => asset.id),
+          });
+          const targetPath = `${POSTS_DIRECTORY}/${prepared.transformed.metadata.slug}.mdoc`;
+          const current = await this.readOutput(clone.repositoryRoot, targetPath);
+          status =
+            current === null
+              ? 'unpublished'
+              : preservePublishedFormat(current, prepared.transformed.source) === current
+                ? 'published'
+                : 'differs';
+        } catch {
+          status = 'invalid';
+        }
+        documents.push({ documentId: draft.documentId, slug, status });
+      }
+      const postsDirectory = path.join(clone.repositoryRoot, POSTS_DIRECTORY);
+      const blogOnly: { slug: string; title: string; repoPath: string }[] = [];
+      for (const entry of await readdir(postsDirectory, { withFileTypes: true }).catch(() => [])) {
+        if (!entry.isFile() || !/\.(?:md|mdoc)$/u.test(entry.name)) continue;
+        const repoPath = `${POSTS_DIRECTORY}/${entry.name}`;
+        const post = describePost(
+          repoPath,
+          entry.name,
+          await readFile(path.join(postsDirectory, entry.name), 'utf8'),
+        );
+        if (!slugs.has(post.slug)) blogOnly.push({ slug: post.slug, title: post.title, repoPath });
+      }
+      blogOnly.sort((left, right) => left.slug.localeCompare(right.slug));
+      return { documents, blogOnly };
+    } finally {
+      await this.cloneManager.remove(clone.sessionDir);
+    }
+  }
+
   public async review(input: PublishDraftInput): Promise<PublishReview> {
     const prepared = await this.prepare(input);
     const clone = await this.cloneManager.create();
@@ -264,7 +357,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       const contentFingerprint = fingerprint(prepared, reviewState);
       await this.sessions.get(input.reviewId, contentFingerprint, review.baseHead);
       await this.beginPublish(clone, review.branch);
-      await this.writeOutput(clone.repositoryRoot, review.targetPath, prepared.transformed.source);
+      await this.writeOutput(clone.repositoryRoot, review.targetPath, reviewState.source);
       for (const asset of prepared.assets) {
         await this.writeApprovedAsset(
           clone.repositoryRoot,
@@ -293,7 +386,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         commit,
         commitMessage,
         targetPath: review.targetPath,
-        source: prepared.transformed.source,
+        source: reviewState.source,
         diff: review.diff,
         author: `${this.options.author.name} <${this.options.author.email}>`,
         assets: prepared.assets.map((asset) => ({
@@ -816,8 +909,10 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         ),
       ),
     ]);
-    const diff = unifiedDiff(targetPath, existing, prepared.transformed.source);
+    const source = preservePublishedFormat(existing, prepared.transformed.source);
+    const diff = existing === source ? '' : unifiedDiff(targetPath, existing, source);
     return {
+      source,
       review: {
         baseHead,
         branch: `content/${prepared.transformed.metadata.slug}`,
@@ -974,13 +1069,15 @@ interface PublicAssetDestinationState {
 }
 interface ReviewState {
   readonly review: Omit<PublishReview, 'reviewId'>;
+  /** 실제로 쓸 파일 내용. 블로그에 있는 글이면 원래 표기를 지킨 것이다(NOR-209 AC-2). */
+  readonly source: string;
   readonly destinationStates: readonly PublicAssetDestinationState[];
 }
 
 function fingerprint(prepared: PreparedPublish, state: ReviewState): string {
   const { review } = state;
   return createHash('sha256')
-    .update(prepared.transformed.source)
+    .update(state.source)
     .update('\0')
     .update(JSON.stringify(prepared.transformed.assets))
     .update('\0')

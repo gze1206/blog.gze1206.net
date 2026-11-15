@@ -5,6 +5,8 @@ import {
   createDocument,
   deleteDocument,
   listTrash,
+  loadPublishStatus,
+  type PublishStatusData,
   createReview,
   listDocuments,
   listPublishAssets,
@@ -47,6 +49,7 @@ export function App() {
   const [addingBook, setAddingBook] = useState(false);
   /** 사이트 콘텐츠 화면(NOR-208). 문서를 고르면 문서가 앞선다. */
   const [siteOpen, setSiteOpen] = useState(false);
+  const [publishStatus, setPublishStatus] = useState<PublishStatusData | null>(null);
   /** 책은 폼으로 다루는 것이 기본이고, 원본 마크다운은 필요할 때 연다. */
   const [editingSource, setEditingSource] = useState(false);
   const [selected, setSelected] = useState<DocumentEntry | null>(null);
@@ -70,6 +73,10 @@ export function App() {
     setDocuments(nextDocuments.documents);
     setDocumentProblems(nextDocuments.problems);
     setTrash(nextTrash);
+    // 발행 상태는 블로그를 새로 받아 비교하므로 느리다. 목록을 막지 않고 따로 채운다(NOR-209).
+    void loadPublishStatus()
+      .then(setPublishStatus)
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -291,6 +298,11 @@ export function App() {
         </header>
         <TemplateGallery busy={busy} onCreate={create} templates={templates} />
         <DocumentList
+          blogOnly={publishStatus?.blogOnly.length ?? 0}
+          onImport={() => setImporting(true)}
+          statuses={Object.fromEntries(
+            (publishStatus?.documents ?? []).map((item) => [item.documentId, item.status]),
+          )}
           documents={documents}
           onSelect={(id) => {
             setSiteOpen(false);
