@@ -83,20 +83,24 @@ systemd-analyze security workspace-backup.service
 저장소 자격이 없고, 릴레이 계정만 deploy key 를 갖는다. 절차는
 [tailnet-workbench.md](./tailnet-workbench.md) "확정한 커밋을 공개 블로그로 보내기".
 
-| 무엇      | 값                                                                                |
-| --------- | --------------------------------------------------------------------------------- |
-| 실행 계정 | 시스템 계정 `workbench-relay`. outbox 는 `CAP_DAC_READ_SEARCH` 로 읽기만 한다     |
-| 상태      | `/var/lib/workbench-relay` (clone, `ledger`, `.ssh`)                              |
-| 자격      | 이 저장소의 write deploy key. main 은 ruleset(필수 체크·강제 push 금지)이 막는다  |
-| 관문      | base 가 main 의 조상, bundle 커밋 일치, 바뀐 경로가 모두 `content-paths.regex` 안 |
+| 무엇        | 값                                                                                             |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| 실행 계정   | 시스템 계정 `workbench-relay`. outbox 는 `CAP_DAC_READ_SEARCH` 로 읽기만 한다                  |
+| 상태        | `/var/lib/workbench-relay` (clone, `ledger`, `.ssh`)                                           |
+| 자격        | 이 저장소의 write deploy key. main 은 ruleset(필수 체크·강제 push 금지)이 막는다               |
+| 관문        | base 가 main 의 조상, bundle 커밋 일치, 바뀐 경로가 모두 `content-paths.regex` 안·일반 파일만  |
+| 내보내는 것 | 받은 이력이 아니라 최종 트리로 base 위에 새로 만든 커밋 하나(중간 커밋·작성자·메시지는 버린다) |
 
 ```sh
 sudo useradd --system --home-dir /var/lib/workbench-relay --create-home --shell /usr/sbin/nologin workbench-relay
 sudo -u workbench-relay install -d -m 0700 /var/lib/workbench-relay/.ssh
 sudo -u workbench-relay ssh-keygen -t ed25519 -N '' -C workbench-relay -f /var/lib/workbench-relay/.ssh/blog_deploy
-ssh-keyscan github.com | sudo -u workbench-relay tee /var/lib/workbench-relay/.ssh/known_hosts >/dev/null
+ssh-keyscan -t ed25519,rsa,ecdsa github.com | sudo -u workbench-relay tee /var/lib/workbench-relay/.ssh/known_hosts >/dev/null
+# 받은 호스트 키 지문이 GitHub 이 공개한 값(`gh api meta --jq .ssh_key_fingerprints`)과 같은지 대조한다.
+sudo -u workbench-relay ssh-keygen -lf /var/lib/workbench-relay/.ssh/known_hosts
 # 공개 키를 저장소 deploy key(쓰기 허용)로 등록한 뒤:
 sudo install -m 0755 publish-relay.sh /usr/local/lib/workbench/
+sudo install -m 0755 relay-helper.py /usr/local/lib/workbench/
 sudo install -m 0644 content-paths.regex /usr/local/lib/workbench/
 sudo install -m 0644 publish-relay.service publish-relay.timer /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now publish-relay.timer

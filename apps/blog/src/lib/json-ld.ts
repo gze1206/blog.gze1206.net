@@ -45,3 +45,18 @@ export function buildBreadcrumbJsonLd(
     })),
   };
 }
+
+/**
+ * `<script type="application/ld+json">` 안에 넣을 문자열 (NOR-210 AC-9).
+ *
+ * 그대로 `JSON.stringify` 하면 frontmatter 의 `</script>` 가 태그를 닫는다. 글은 워크벤치에서 자동으로
+ * 병합되므로, `<`·`>`·`&` 와 줄 구분 문자를 유니코드 이스케이프로 바꾼다. JSON 으로는 같은 값이다.
+ */
+export function serializeJsonLd(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</gu, '\\u003c')
+    .replace(/>/gu, '\\u003e')
+    .replace(/&/gu, '\\u0026')
+    .replace(/\u2028/gu, '\\u2028')
+    .replace(/\u2029/gu, '\\u2029');
+}

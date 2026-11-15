@@ -131,6 +131,13 @@ export function auditDist(input: AuditInput): AuditFinding[] {
     )
       findings.push({ rule: 'heavy-asset', path: file.path, detail: 'unneeded Mermaid chunk' });
   }
+  // 글 본문은 워크벤치에서 자동 병합된다(NOR-210). 빌드 뒤 CSP 가 인라인 해시를 모으므로, 본문에서 온
+  // 스크립트와 이벤트 속성은 여기서 빌드를 실패시킨다(AC-10).
+  for (const file of input.files) {
+    const body = postBody(file.html);
+    if (body !== null && (/<script\b/iu.test(body) || /<[a-z][^>]*\son[a-z]+\s*=/iu.test(body)))
+      findings.push({ rule: 'content-script', path: file.path, detail: 'post body' });
+  }
   if (input.requireCsp) {
     const headers = input.assets.find((asset) => asset.path === '_headers')?.content;
     if (headers == null) {
@@ -143,4 +150,12 @@ export function auditDist(input: AuditInput): AuditFinding[] {
     }
   }
   return findings;
+}
+
+/** 글 상세의 본문 영역. 레이아웃이 `post-body` 와 `article__after` 사이에 본문을 둔다. */
+function postBody(html: string): string | null {
+  const start = html.search(/<div class="post-body\b/u);
+  if (start === -1) return null;
+  const end = html.indexOf('<div class="article__after"', start);
+  return html.slice(start, end === -1 ? undefined : end);
 }

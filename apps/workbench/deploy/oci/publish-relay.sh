@@ -2,21 +2,29 @@
 # 워크벤치가 확정한 발행을 공개 블로그의 content/* 브랜치로 보낸다 (NOR-210).
 #
 # 신뢰 경계: outbox 는 컨테이너가 쓰는 곳이라 내용을 믿지 않는다. 이 스크립트가 관문이다.
-#   - 매니페스트의 base 가 origin/main 의 조상이어야 한다.
-#   - bundle 은 매니페스트의 커밋과 같아야 한다. format-patch 는 base 위에 적용한다.
-#   - base 에서 바뀐 경로는 모두 content-paths.regex 안이어야 하고, 심볼릭 링크·서브모듈·병합 커밋은 받지 않는다.
+#   - 매니페스트(JSON·이름·크기·심볼릭 링크 여부)를 relay-helper.py 로 엄격히 읽는다.
+#   - base 가 origin/main 의 조상이어야 한다. bundle 은 매니페스트의 커밋과 같아야 한다(fsck 를 켠다).
+#   - base 에서 최종 트리까지 바뀐 경로는 모두 content-paths.regex 안이고 일반 파일(100644)이어야 한다.
+#   - push 하는 것은 받은 이력이 아니라 **최종 트리로 base 위에 새로 만든 커밋 하나**다. 중간 커밋·작성자·
+#     메시지(TDD trailer 등)는 GitHub 에 가지 않는다.
 # content/** 에서 도는 GitHub 워크플로는 그 브랜치의 파일로 실행되므로, 브랜치에 무엇이 들어가는지는 여기서 정한다.
-# outbox 는 고치지 않는다. 처리한 매니페스트는 ledger 에 남기고 다시 처리하지 않는다.
-set -euo pipefail
+# 매니페스트 하나가 잘못돼도 거절로 남기고 다음 것을 처리한다. outbox 는 고치지 않는다.
+set -uo pipefail
 umask 077
 
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUTBOX="${RELAY_OUTBOX:-/srv/workbench/private-workspace/.workbench/publish-outbox}"
 STATE="${RELAY_STATE:-/var/lib/workbench-relay}"
 REMOTE="${RELAY_REMOTE:-git@github.com:gze1206/blog.gze1206.net.git}"
-PATHS="${RELAY_PATHS:-/usr/local/lib/workbench/content-paths.regex}"
+PATHS="${RELAY_PATHS:-$HERE/content-paths.regex}"
+HELPER="$HERE/relay-helper.py"
+MAX_EXPORT_BYTES=$((20 * 1024 * 1024))
 REPO="$STATE/blog"
 LEDGER="$STATE/ledger"
 INCOMING=refs/relay/incoming
+export GIT_AUTHOR_NAME="${RELAY_AUTHOR_NAME:-workbench-relay}"
+export GIT_AUTHOR_EMAIL="${RELAY_AUTHOR_EMAIL:-workbench-relay@users.noreply.github.com}"
+export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME" GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
 
 if [ -n "${RELAY_SSH_KEY:-}" ]; then
   export GIT_SSH_COMMAND="ssh -i $RELAY_SSH_KEY -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$STATE/.ssh/known_hosts"
@@ -30,83 +38,74 @@ fi
 trap 'rm -rf "$STATE/.lock"' EXIT
 
 touch "$LEDGER"
+G() { git -C "$REPO" -c core.hooksPath=/dev/null -c fetch.fsckObjects=true -c transfer.fsckObjects=true "$@"; }
 if [ ! -d "$REPO/.git" ]; then
-  git clone -q "$REMOTE" "$REPO"
+  git clone -q "$REMOTE" "$REPO" || exit 1
 fi
-G() { git -C "$REPO" -c core.hooksPath=/dev/null "$@"; }
-G fetch -q --prune origin main
+G fetch -q --prune origin main || exit 1
 
-record() { printf '%s\n' "$*" >>"$LEDGER"; }
-field() { python3 -c 'import json,sys; v=json.load(open(sys.argv[1])).get(sys.argv[2]); print("" if v is None else v)' "$1" "$2"; }
+record() { printf '%s %s\n' "$1" "$2" >>"$LEDGER"; }
+seen() { awk -v name="$1" '$1 == name { found = 1 } END { exit !found }' "$LEDGER"; }
 
-# base..incoming 가 내보내도 되는 변경인지 본다. 이유를 stdout 에 쓰고 실패를 돌려준다.
-check_changes() {
-  local base=$1
-  if ! G merge-base --is-ancestor "$base" "$INCOMING"; then echo "not-descendant"; return 1; fi
-  if [ -n "$(G rev-list --merges "$base..$INCOMING")" ]; then echo "merge-commit"; return 1; fi
-  local line mode path
-  while IFS= read -r line; do
-    [ -z "$line" ] && continue
-    mode=$(printf '%s' "$line" | cut -d' ' -f2)
-    path=${line#*$'\t'}
-    if [ "$mode" = 120000 ] || [ "$mode" = 160000 ]; then echo "link:$path"; return 1; fi
-    if ! printf '%s\n' "$path" | grep -qE -f "$PATHS"; then echo "path:$path"; return 1; fi
-  done < <(G diff --raw --no-renames "$base" "$INCOMING")
+# $1 매니페스트 경로, $2 ledger 키(파일 이름), $3 산출물 이름(.json 을 뗀 것)
+process() {
+  local file=$1 name=$2 stem=$3
+  if [ -L "$file" ] || [ ! -f "$file" ]; then record "$name" "rejected not-regular"; return; fi
+  local fields reason
+  if ! fields=$(python3 "$HELPER" manifest "$file"); then record "$name" "rejected ${fields:-bad-manifest}"; return; fi
+  local base format ref commit source_branch
+  { read -r base; read -r format; read -r ref; read -r commit; read -r source_branch; } <<<"$fields"
+  local export="$OUTBOX/$ref"
+  if [ -L "$export" ] || [ ! -f "$export" ]; then record "$name" "rejected missing-export"; return; fi
+  if [ "$(wc -c <"$export")" -gt "$MAX_EXPORT_BYTES" ]; then record "$name" "rejected too-large"; return; fi
+  if ! G merge-base --is-ancestor "$base" origin/main 2>/dev/null; then record "$name" "stale base-not-in-main"; return; fi
+
+  G update-ref -d "$INCOMING" 2>/dev/null
+  if [ "$format" = bundle ]; then
+    if ! G bundle verify -q "$export" >/dev/null 2>&1 \
+      || ! G fetch -q "$export" "$source_branch:$INCOMING" 2>/dev/null \
+      || [ "$(G rev-parse "$INCOMING" 2>/dev/null)" != "$commit" ]; then
+      record "$name" "rejected bad-bundle"; return
+    fi
+  else
+    if ! G checkout -q --detach "$base" 2>/dev/null || ! G am -q --keep-cr "$export" >/dev/null 2>&1; then
+      G am --abort >/dev/null 2>&1
+      record "$name" "rejected bad-patch"; return
+    fi
+    G update-ref "$INCOMING" HEAD
+  fi
+
+  # 최종 트리만 본다. 중간 커밋은 가져가지 않으므로 검사할 필요도 없다.
+  local tree diff
+  if ! tree=$(G rev-parse --verify "$INCOMING^{tree}" 2>/dev/null); then record "$name" "rejected bad-tree"; return; fi
+  diff=$(mktemp)
+  if ! G diff --raw -z --no-renames "$base" "$tree" >"$diff"; then rm -f "$diff"; record "$name" "rejected bad-diff"; return; fi
+  if ! reason=$(python3 "$HELPER" check "$PATHS" <"$diff"); then rm -f "$diff"; record "$name" "rejected $reason"; return; fi
+  rm -f "$diff"
+
+  local squashed branch
+  branch="content/$(printf '%s' "$stem" | tr 'A-Z' 'a-z')"
+  if ! squashed=$(G commit-tree "$tree" -p "$base" -m "📝 content: ${stem} 발행" -m "워크벤치 발행을 릴레이가 옮겼다(NOR-210). 원본 커밋 ${commit}."); then
+    record "$name" "rejected commit-failed"; return
+  fi
+  # push 가 실패하면 기록하지 않는다(네트워크 등). 다음 실행이 다시 시도하고, 이번 실행은 다음 것으로 넘어간다.
+  if ! G push -q origin "$squashed:refs/heads/$branch"; then
+    echo "push 실패: $name" >&2
+    return
+  fi
+  record "$name" "ok $branch"
 }
 
 shopt -s nullglob
-for manifest in "$OUTBOX"/*.json; do
-  name=$(basename "$manifest" .json)
-  if grep -q "^$name\.json " "$LEDGER"; then continue; fi
-  branch="content/$(printf '%s' "$name" | tr 'A-Z' 'a-z')"
-  if ! [[ $name =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then record "$name.json rejected bad-name"; continue; fi
-
-  base=$(field "$manifest" baseSha)
-  format=$(field "$manifest" exportFormat)
-  ref=$(field "$manifest" exportRef)
-  commit=$(field "$manifest" commit)
-  source_branch=$(field "$manifest" branch)
-  if ! [[ $base =~ ^[0-9a-f]{40}$ ]] || ! [[ $ref =~ ^[A-Za-z0-9._-]+\.(bundle|patch)$ ]] || [ ! -f "$OUTBOX/$ref" ]; then
-    record "$name.json rejected bad-manifest"
+for file in "$OUTBOX"/*.json; do
+  base_name=$(basename "$file")
+  # 이름부터 검증한다. 개행·공백이 든 이름은 ledger 를 어지럽힌다.
+  if ! [[ $base_name =~ ^[A-Za-z0-9][A-Za-z0-9._-]*\.json$ ]]; then
+    echo "이상한 이름을 건너뛴다" >&2
     continue
   fi
-  if ! G merge-base --is-ancestor "$base" origin/main 2>/dev/null; then
-    record "$name.json stale base-not-in-main"
-    continue
-  fi
-
-  G update-ref -d "$INCOMING" 2>/dev/null || true
-  case "$format" in
-    bundle)
-      if ! [[ $source_branch =~ ^content/[A-Za-z0-9._-]+$ ]] \
-        || ! G bundle verify -q "$OUTBOX/$ref" >/dev/null 2>&1 \
-        || ! G fetch -q "$OUTBOX/$ref" "$source_branch:$INCOMING" 2>/dev/null \
-        || [ "$(G rev-parse "$INCOMING")" != "$commit" ]; then
-        record "$name.json rejected bad-bundle"
-        continue
-      fi
-      ;;
-    format-patch)
-      G checkout -q --detach "$base"
-      if ! G am -q --keep-cr "$OUTBOX/$ref" >/dev/null 2>&1; then
-        G am --abort >/dev/null 2>&1 || true
-        record "$name.json rejected bad-patch"
-        continue
-      fi
-      G update-ref "$INCOMING" HEAD
-      ;;
-    *)
-      record "$name.json rejected bad-format"
-      continue
-      ;;
-  esac
-
-  if ! reason=$(check_changes "$base"); then
-    record "$name.json rejected $reason"
-    continue
-  fi
-  # push 가 실패하면(네트워크 등) 기록하지 않는다. 다음 실행이 다시 시도한다.
-  G push -q origin "$INCOMING:refs/heads/$branch"
-  record "$name.json ok $branch"
+  seen "$base_name" && continue
+  process "$file" "$base_name" "${base_name%.json}"
 done
-G update-ref -d "$INCOMING" 2>/dev/null || true
+G update-ref -d "$INCOMING" 2>/dev/null
+exit 0
