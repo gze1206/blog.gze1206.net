@@ -337,3 +337,26 @@ test('NOR-206 AC-6·8: 라이브 편집기는 커서가 떠난 줄의 표시 문
   await expect(page.getByRole('button', { name: '저장됨' })).toBeDisabled();
   expect(saved).toContain('## 라이브 제목\n\n본문 **굵은말**\n\n끝');
 });
+
+test('NOR-206 AC-8: 다른 문서를 연 뒤 실행 취소해도 이전 문서 내용이 돌아오지 않는다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('새 문서 제목').fill('취소 첫 문서');
+  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  const editor = page.getByLabel('Markdown 문서');
+  await expect(editor).toContainText('title: 취소 첫 문서');
+  await appendToEditor(page, '\n첫 문서에만 있는 줄');
+  await page.getByRole('button', { name: '저장', exact: true }).click();
+  await expect(page.getByRole('button', { name: '저장됨' })).toBeDisabled();
+
+  await page.getByLabel('새 문서 제목').fill('취소 둘째 문서');
+  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  await expect(editor).toContainText('title: 취소 둘째 문서');
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+z');
+  await page.keyboard.press('ControlOrMeta+z');
+  await expect(editor).toContainText('title: 취소 둘째 문서');
+  await expect(editor).not.toContainText('첫 문서에만 있는 줄');
+  await expect(page.getByRole('button', { name: '저장됨' })).toBeDisabled();
+});

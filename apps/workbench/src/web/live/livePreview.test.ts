@@ -77,3 +77,28 @@ describe('서식 명령', () => {
     expect(unwrapped.state.doc.toString()).toBe('가 나다 라');
   });
 });
+
+describe('원본 보존과 장식 범위', () => {
+  it('NOR-206 AC-8: CRLF 원본은 편집기 상태를 거쳐도 그대로 돌아온다', async () => {
+    const mod = await import('./livePreview.js');
+    expect(mod).toHaveProperty('createSourceState');
+    const source = '---\r\ntitle: 글\r\n---\r\n# 제목\r\n\r\n본문';
+    const state = mod.createSourceState(source, []);
+    expect(mod.sourceOf(state)).toBe(source);
+    const edited = state.update({ changes: { from: state.doc.length, insert: '!' } }).state;
+    expect(mod.sourceOf(edited)).toBe(`${source}!`);
+    expect(mod.sourceOf(mod.createSourceState('가\n나', []))).toBe('가\n나');
+  });
+
+  it('NOR-206 AC-6: 숨김 범위는 줄을 넘지 않는다', async () => {
+    const mod = await import('./livePreview.js');
+    const doc = '[링크](https://example.com "첫 줄\n둘째 줄") 뒤\n\n끝';
+    const state = EditorState.create({
+      doc,
+      selection: EditorSelection.cursor(doc.length),
+      extensions: [mod.markdownLanguage()],
+    });
+    for (const item of mod.previewDecorations(state).filter((entry) => entry.kind === 'hide'))
+      expect(state.doc.lineAt(item.from).number).toBe(state.doc.lineAt(item.to).number);
+  });
+});
