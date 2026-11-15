@@ -12,12 +12,7 @@
     "AWS (ECS, RDB, Terraform)",
     "Docker + Compose"
   ],
-  "links": [
-    {
-      "repo": "https://store.steampowered.com/app/5151850/Boss_Toss/",
-      "demo": "https://store.steampowered.com/app/5379410/Boss_Toss_Demo/"
-    }
-  ],
+  "links": [{ "demo": "https://store.steampowered.com/app/5151850/Boss_Toss/" }],
   "role": "PM / 인프라&아키텍처 담당 / 서버 개발 보조 / 클라 개발 보조",
   "period": "2026.04 ~ 2026.12",
   "highlights": [
