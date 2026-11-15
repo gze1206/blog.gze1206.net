@@ -379,3 +379,19 @@ describe('블로그에 이미 있는 자산', () => {
       expect(() => unsafe(reference), reference).toThrow('unresolved asset reference');
   });
 });
+
+it('NOR-219 AC-7: 고른 자산을 본문이 참조하지 않으면 거절한다', () => {
+  expect(() =>
+    transformPublicDraft({
+      source: `${validDraft}\n본문에 그림이 없다.\n`,
+      privateRoot: '/srv/private-workbench',
+      assets: [
+        {
+          draftReference: 'shot.png',
+          privatePath: '/srv/private-workbench/assets/public/x/shot.png',
+          publicPath: 'assets/posts/safe-publish/shot.png',
+        },
+      ],
+    }),
+  ).toThrow('unreferenced asset');
+});

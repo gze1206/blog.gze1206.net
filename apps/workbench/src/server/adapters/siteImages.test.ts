@@ -13,7 +13,7 @@ import { LoopbackTestRemotePolicy } from '../../../test/fixtures/loopbackRemoteP
 const exec = promisify(execFile);
 // 2x3 PNG 머리. 크기 판별에는 IHDR 까지면 된다.
 const PNG = Buffer.from(
-  '89504e470d0a1a0a0000000d494844520000000200000003080600000000000000',
+  '89504e470d0a1a0a0000000d4948445200000002000000030802000000368849d60000000b49444154789c6360c0020000150001aa6597c40000000049454e44ae426082',
   'hex',
 );
 const PORTFOLIO = 'apps/blog/src/content/portfolio';
@@ -73,7 +73,7 @@ it('NOR-219 AC-2: 이미지를 저장하고 경로·크기를 돌려준다', { t
       width: number;
       height: number;
     };
-    expect(saved.src).toMatch(/^\/img\/portfolio\/origin-[0-9a-f]{8}\.png$/u);
+    expect(saved.src).toMatch(/^\/img\/portfolio\/origin-[0-9a-f]{16}\.png$/u);
     expect(saved).toMatchObject({ width: 2, height: 3 });
     const read = (await f.adapter['readSiteImage']?.(saved.src.split('/').pop())) as {
       bytes: Buffer;
@@ -141,7 +141,7 @@ it(
         reference: string;
         id: string;
       };
-      expect(saved.reference).toMatch(/^shot-[0-9a-f]{8}\.png$/u);
+      expect(saved.reference).toMatch(/^shot-[0-9a-f]{16}\.png$/u);
       const assets = (await f.adapter['listAssets']?.(documentId)) as {
         id: string;
         reference: string;
@@ -158,3 +158,16 @@ it(
     }
   },
 );
+
+it('NOR-219 AC-7: 끝이 잘린 이미지는 받지 않는다', { timeout: 30000 }, async () => {
+  const f = await fixture();
+  try {
+    const truncated = PNG.subarray(0, PNG.length - 12);
+    await expect(f.adapter['saveSiteImage']?.(truncated, 'cut.png')).rejects.toThrow();
+    await expect(
+      f.adapter['savePublicAsset']?.('a'.repeat(43), truncated, 'cut.png'),
+    ).rejects.toThrow();
+  } finally {
+    await f.close();
+  }
+});
