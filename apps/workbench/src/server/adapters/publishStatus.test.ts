@@ -150,3 +150,47 @@ it('NOR-209 AC-5: 동시에 온 발행 상태 조회는 한 번만 계산한다'
     await rm(root, { recursive: true, force: true });
   }
 });
+
+it(
+  'NOR-218 AC-2: 새로 받은 main 의 public 에 있는 이미지만 허용한다',
+  { timeout: 30000 },
+  async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'publish-status-public-'));
+    const source = path.join(root, 'source');
+    const workspace = path.join(root, 'workspace');
+    await mkdir(path.join(source, 'apps/blog/public/img'), { recursive: true });
+    await mkdir(path.join(source, POSTS), { recursive: true });
+    await mkdir(workspace);
+    await mkdir(path.join(root, 'work'));
+    await mkdir(path.join(root, 'outbox'));
+    await writeFile(path.join(source, 'apps/blog/public/img/a.png'), 'png');
+    await git(source, 'init', '-b', 'main');
+    await git(source, 'config', 'user.name', 'Fixture');
+    await git(source, 'config', 'user.email', 'fixture@example.test');
+    await git(source, 'add', '.');
+    await git(source, 'commit', '-m', 'initial');
+    const server = await startHttpsGitServer(source);
+    try {
+      const adapter = new PublicBlogAdapter({
+        privateRoot: workspace,
+        remote: server.remote,
+        branch: 'main',
+        workBase: path.join(root, 'work'),
+        outboxRoot: path.join(root, 'outbox'),
+        author: { name: 'Fixture', email: 'fixture@example.test' },
+        remotePolicy: new LoopbackTestRemotePolicy(server.certificateAuthority),
+      });
+      const status = await adapter.publishStatus([
+        { documentId: id('kept'), source: draft('kept', '![그림](/img/a.png)') },
+        { documentId: id('gone'), source: draft('gone', '![그림](/img/missing.png)') },
+      ]);
+      expect(status.documents.map((document) => document.status)).toEqual([
+        'unpublished',
+        'invalid',
+      ]);
+    } finally {
+      await server.close();
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+);

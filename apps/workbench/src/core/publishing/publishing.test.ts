@@ -349,3 +349,33 @@ draft: false
     ]);
   });
 });
+
+describe('블로그에 이미 있는 자산', () => {
+  const source = `${validDraft}\n![그림](/img/a.png)\n`;
+  const run = (existing?: readonly string[]) =>
+    transformPublicDraft({
+      source,
+      privateRoot: '/srv/private-workbench',
+      assets: [],
+      ...(existing === undefined ? {} : { existingPublicAssets: new Set(existing) }),
+    } as Parameters<typeof transformPublicDraft>[0]);
+
+  it('NOR-218 AC-1: 블로그 public 에 있는 사이트 경로는 허용하고 그대로 둔다', () => {
+    expect(() => run(['/img/a.png'])).not.toThrow();
+    expect(run(['/img/a.png']).source).toContain('![그림](/img/a.png)');
+  });
+
+  it('NOR-218 AC-1: 없는 경로나 안전하지 않은 경로는 거절한다', () => {
+    expect(() => run()).toThrow('unresolved asset reference');
+    expect(() => run(['/img/b.png'])).toThrow('unresolved asset reference');
+    const unsafe = (reference: string) =>
+      transformPublicDraft({
+        source: `${validDraft}\n![그림](${reference})\n`,
+        privateRoot: '/srv/private-workbench',
+        assets: [],
+        existingPublicAssets: new Set([reference]),
+      } as Parameters<typeof transformPublicDraft>[0]);
+    for (const reference of ['/img/../secret.png', '/img//a.png'])
+      expect(() => unsafe(reference), reference).toThrow('unresolved asset reference');
+  });
+});
