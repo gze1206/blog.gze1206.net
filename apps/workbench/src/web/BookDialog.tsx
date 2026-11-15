@@ -132,7 +132,7 @@ export function BookDialog({ onClose, onCreated }: Props) {
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-scrim p-6 pt-[8vh]">
       <div className="flex max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
         <header className="border-b border-border px-5 py-4">
-          <h2 className="font-serif text-xl">책 등록</h2>
+          <h2 className="font-bold tracking-[-0.02em] text-xl">책 등록</h2>
           <p className="mt-1 text-sm text-muted">
             제목과 저자만 있으면 됩니다. ISBN 이 있으면 나머지를 채워 볼 수 있습니다.
           </p>

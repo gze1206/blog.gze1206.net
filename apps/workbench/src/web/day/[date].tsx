@@ -148,7 +148,7 @@ export function DayPage({
     <div className="mx-auto w-full max-w-5xl overflow-y-auto px-8 py-10">
       <header className="mb-7">
         <p className="font-mono text-xs tracking-widest text-accent uppercase">Today</p>
-        <h1 className="mt-1 font-serif text-3xl">{date} 일일 로그</h1>
+        <h1 className="mt-1 font-bold tracking-[-0.02em] text-3xl">{date} 일일 로그</h1>
       </header>
       {loadedDate === date && reviewSuggestion ? (
         <ReviewPrompt
@@ -162,7 +162,7 @@ export function DayPage({
       <QuickCapture busy={busy} onCapture={capture} />
       <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_22rem]">
         <section aria-label="오늘 불렛" className="rounded-xl border border-border bg-surface p-5">
-          <h2 className="font-serif text-xl">오늘의 불렛</h2>
+          <h2 className="font-bold tracking-[-0.02em] text-xl">오늘의 불렛</h2>
           <ul className="mt-4 space-y-2" data-testid="day-bullets">
             {bullets.map((bullet) => (
               <li

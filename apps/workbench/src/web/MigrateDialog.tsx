@@ -35,7 +35,9 @@ export function MigrateDialog({
         className="w-full max-w-md rounded-xl bg-surface p-6 shadow-xl"
         role="dialog"
       >
-        <h2 className="font-serif text-2xl">{intentional ? '의식적 이월' : '간편 이월'}</h2>
+        <h2 className="font-bold tracking-[-0.02em] text-2xl">
+          {intentional ? '의식적 이월' : '간편 이월'}
+        </h2>
         <p className="mt-3 text-sm text-muted-strong">{bullet.text}</p>
         <label className="mt-5 block text-sm font-medium">
           대상 날짜

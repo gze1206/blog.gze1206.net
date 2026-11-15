@@ -88,7 +88,7 @@ export function ImportDialog({ onClose, onImported }: Props) {
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-scrim p-6 pt-[8vh]">
       <div className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
         <header className="border-b border-border px-5 py-4">
-          <h2 className="font-serif text-xl">블로그에서 가져오기</h2>
+          <h2 className="font-bold tracking-[-0.02em] text-xl">블로그에서 가져오기</h2>
           <p className="mt-1 text-sm text-muted">
             가져올 글을 고르세요. 같은 slug 가 이미 있으면 어떻게 할지 함께 정합니다.
           </p>

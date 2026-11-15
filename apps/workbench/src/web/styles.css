@@ -8,7 +8,6 @@
   --font-sans:
     'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI',
     'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-  --font-serif: 'Noto Serif KR', ui-serif, Georgia, 'Apple SD Gothic Neo', serif;
   /* 고정폭 폰트에는 한글이 없다. 한글 대체가 없으면 Windows 는 굴림체로 그린다(NOR-202). */
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Consolas, 'Pretendard Variable', 'Pretendard',
@@ -59,10 +58,10 @@
     @apply text-body max-w-3xl text-[0.9375rem] leading-8;
   }
   .preview h1 {
-    @apply text-foreground mt-2 mb-4 font-serif text-3xl;
+    @apply text-foreground mt-2 mb-4 text-3xl font-bold tracking-[-0.02em];
   }
   .preview h2 {
-    @apply text-foreground mt-8 mb-3 font-serif text-2xl;
+    @apply text-foreground mt-8 mb-3 text-2xl font-bold tracking-[-0.02em];
   }
   .preview h3 {
     @apply text-foreground mt-6 mb-2 text-lg font-semibold;
@@ -97,7 +96,7 @@
     @apply border-border-strong text-muted-strong border-l-2 pl-4;
   }
   .preview figure.bookquote blockquote {
-    @apply border-accent text-body font-serif;
+    @apply border-accent text-body;
   }
   .preview figcaption {
     @apply text-muted mt-2 text-xs;

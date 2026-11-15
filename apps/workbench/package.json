@@ -24,7 +24,6 @@
     "@codemirror/language": "6.13.1",
     "@codemirror/state": "6.7.6",
     "@codemirror/view": "6.43.15",
-    "@fontsource/noto-serif-kr": "5.3.0",
     "@gze1206/theme": "workspace:*",
     "@hono/node-server": "^2.1.0",
     "@lezer/highlight": "1.2.5",

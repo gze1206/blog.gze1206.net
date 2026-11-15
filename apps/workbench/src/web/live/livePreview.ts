@@ -235,12 +235,12 @@ const theme = EditorView.theme({
   '.cm-line': { padding: '0' },
   '&.cm-focused': { outline: 'none' },
   '.cm-lp-h1': {
-    fontFamily: 'var(--font-serif)',
+    fontFamily: 'var(--font-bold tracking-[-0.02em])',
     fontSize: '1.875rem',
     color: 'var(--theme-foreground)',
   },
   '.cm-lp-h2': {
-    fontFamily: 'var(--font-serif)',
+    fontFamily: 'var(--font-bold tracking-[-0.02em])',
     fontSize: '1.5rem',
     color: 'var(--theme-foreground)',
   },
