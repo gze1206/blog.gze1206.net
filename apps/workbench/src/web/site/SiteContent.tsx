@@ -20,6 +20,7 @@ import {
   type Row,
   type SiteField,
 } from './siteForm.js';
+import { DiffView } from '../diff/DiffView.js';
 
 const COLLECTIONS: readonly { id: SiteCollection; label: string }[] = [
   { id: 'profile', label: '프로필' },
@@ -371,12 +372,7 @@ export function SiteContent() {
                     ? '바뀐 것이 없습니다.'
                     : `${review.data.kind === 'delete' ? '삭제' : '쓰기'}: ${review.data.targetPath}`}
                 </p>
-                <pre
-                  aria-label="사이트 콘텐츠 diff"
-                  className="mt-2 max-h-96 overflow-auto rounded-lg bg-foreground p-5 font-mono text-xs whitespace-pre text-background"
-                >
-                  {review.data.diff}
-                </pre>
+                <DiffView diff={review.data.diff} label="사이트 콘텐츠 diff" />
                 <button
                   className="mt-3 rounded-md bg-foreground px-4 py-2 text-background disabled:bg-border-strong"
                   disabled={review.data.kind === 'noop' || busy || result !== null}

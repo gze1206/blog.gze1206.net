@@ -379,3 +379,22 @@ test('NOR-208 AC-6·7: 사이트 콘텐츠를 폼으로 고치고 검토한 뒤 
   await site.getByRole('button', { name: '검토' }).click();
   await expect(site.getByRole('alert')).toContainText('role');
 });
+
+test('NOR-217 AC-3: 발행 검토 diff 를 채색해 보이고 나란히 보기로 바꾼다', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '사이트 콘텐츠' }).click();
+  const site = page.getByRole('region', { name: '사이트 콘텐츠' });
+  await site.getByRole('button', { name: 'E2E 시리즈' }).click();
+  await site.getByLabel('설명').fill('나란히 확인');
+  await site.getByRole('button', { name: '검토' }).click();
+  const diff = site.getByLabel('사이트 콘텐츠 diff');
+  await expect(diff.locator('.diff-add')).toContainText('나란히 확인');
+  await expect(diff.locator('.diff-del')).toContainText('"description": "설명"');
+  await site.getByRole('button', { name: '나란히', exact: true }).click();
+  await expect(diff.locator('td.diff-del').first()).toBeVisible();
+  await expect(diff.locator('tr').filter({ has: page.locator('td.diff-del') })).toContainText(
+    '나란히 확인',
+  );
+  const SP = process.env['DIFF_SHOT'];
+  if (SP) await page.screenshot({ path: SP });
+});

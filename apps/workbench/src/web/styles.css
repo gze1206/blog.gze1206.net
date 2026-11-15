@@ -122,3 +122,41 @@
     @apply border-border border px-3 py-1.5 text-left;
   }
 }
+
+/* 발행 검토 diff (NOR-217). 라이트·다크 모두 읽히도록 반투명 배경을 쓴다. */
+.diff-view .diff-num {
+  width: 3rem;
+  padding: 0 0.5rem;
+  text-align: right;
+  color: var(--color-muted);
+  user-select: none;
+  vertical-align: top;
+  white-space: nowrap;
+}
+.diff-view .diff-text {
+  padding: 0 0.75rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--color-foreground);
+}
+.diff-view .diff-add {
+  background-color: rgb(46 160 67 / 0.18);
+}
+.diff-view .diff-del {
+  background-color: rgb(248 81 73 / 0.18);
+}
+.diff-view .diff-hunk,
+.diff-view .diff-hunk .diff-text {
+  background-color: rgb(56 139 253 / 0.1);
+  color: var(--color-muted-strong);
+}
+.diff-view .diff-file .diff-text {
+  color: var(--color-muted-strong);
+  font-weight: 600;
+}
+.diff-view .diff-note .diff-text {
+  color: var(--color-notice-foreground);
+}
+.diff-view .diff-empty {
+  background-color: var(--color-surface-sunken);
+}
