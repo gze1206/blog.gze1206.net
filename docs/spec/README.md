@@ -51,7 +51,8 @@
 | NOR-204 | [책 편집에서 표지 바꾸기와 역자 입력](./workbench/NOR-204-book-cover-translators.md)                       | done        |
 | NOR-205 | [워크벤치 문서 삭제(휴지통)](./workbench/NOR-205-document-trash.md)                                        | done        |
 | NOR-210 | [발행을 PR 로 자동 전달하고 CI 통과 시 자동 병합](./workbench/NOR-210-publish-relay.md)                    | in-progress |
-| NOR-212 | [책장으로 내보내기의 책 id 를 파일 이름으로 고정](./workbench/NOR-212-book-export-id.md)                   | in-progress |
+| NOR-212 | [책장으로 내보내기의 책 id 를 파일 이름으로 고정](./workbench/NOR-212-book-export-id.md)                   | done        |
+| NOR-213 | [발행 검토 diff 를 실제 줄 diff 로, 책 JSON 을 Prettier 형식으로](./workbench/NOR-213-review-diff.md)      | in-progress |
 
 ### 저장소 공통 (`repo/`)
 

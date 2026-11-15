@@ -34,7 +34,40 @@ export function serializePublicBook(book: PublicBook): string {
     if (value !== undefined)
       ordered[key] = value instanceof Date ? value.toISOString().slice(0, 10) : value;
   }
-  return `${JSON.stringify(ordered, null, 2)}\n`;
+  return `${formatJson(ordered, 0)}\n`;
+}
+
+const PRINT_WIDTH = 100;
+
+/**
+ * 저장소 Prettier(json, printWidth 100)와 같은 모양으로 쓴다 (NOR-213). 객체는 펼치고, 배열은 한 줄에
+ * 들어가면 한 줄로 쓴다. 블로그 CI 의 format:check 를 통과해야 자동 병합(NOR-210)이 된다.
+ */
+function formatJson(value: unknown, indent: number, prefix = ''): string {
+  const pad = ' '.repeat(indent);
+  const inner = ' '.repeat(indent + 2);
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '[]';
+    const items = value.map((item) => formatJson(item, indent + 2));
+    const inline = `[${items.join(', ')}]`;
+    if (
+      !items.some((item) => item.includes('\n')) &&
+      pad.length + prefix.length + inline.length + 1 <= PRINT_WIDTH
+    )
+      return inline;
+    return `[\n${items.map((item) => `${inner}${item}`).join(',\n')}\n${pad}]`;
+  }
+  if (value !== null && typeof value === 'object') {
+    const entries = Object.entries(value).filter(([, item]) => item !== undefined);
+    if (entries.length === 0) return '{}';
+    return `{\n${entries
+      .map(([key, item]) => {
+        const head = `${JSON.stringify(key)}: `;
+        return `${inner}${head}${formatJson(item, indent + 2, head)}`;
+      })
+      .join(',\n')}\n${pad}}`;
+  }
+  return JSON.stringify(value);
 }
 export type BookExportPlan =
   | { kind: 'write'; path: string; content: string; cover?: { from: string; to: string } }
