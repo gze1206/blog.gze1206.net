@@ -479,3 +479,10 @@ export async function restoreTrash(id: string): Promise<void> {
 export async function purgeTrash(id: string): Promise<void> {
   await request(`/api/trash/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
+
+/** 문서 미리보기 (NOR-206). 저장하지 않은 원본을 보낸다. */
+export async function previewDocument(
+  source: string,
+): Promise<{ readonly html: string; readonly warnings: readonly string[] }> {
+  return request('/api/preview', { method: 'POST', body: JSON.stringify({ source }) });
+}

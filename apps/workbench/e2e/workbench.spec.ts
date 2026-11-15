@@ -285,3 +285,17 @@ test('NOR-204 AC-4: 쉼표로 구분하는 칸에 여러 이름을 그대로 칠
   await authors.pressSequentially('유발 하라리, 공저자');
   await expect(authors).toHaveValue('유발 하라리, 공저자');
 });
+
+test('NOR-206 AC-5: 저장하지 않은 내용도 나란히 보기에서 렌더해 보여 준다', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('새 문서 제목').fill('미리보기 확인');
+  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  const editor = page.getByLabel('Markdown 문서');
+  await expect(editor).toContainText('title: 미리보기 확인');
+  await editor.fill(`${await editor.inputValue()}\n## 미리보기 제목\n\n- **굵은** 항목\n`);
+  await page.getByRole('button', { name: '나란히' }).click();
+  const preview = page.getByRole('region', { name: '미리보기' });
+  await expect(preview.getByRole('heading', { name: '미리보기 제목' })).toBeVisible();
+  await expect(preview.locator('strong')).toHaveText('굵은');
+  await expect(editor).toBeVisible();
+});

@@ -52,3 +52,73 @@
     @apply border-border bg-surface text-foreground placeholder:text-muted focus:border-accent w-full rounded-md border px-3 py-2 text-sm outline-none;
   }
 }
+
+/* 문서 미리보기 (NOR-206). 블로그 글 본문과 비슷한 읽기 모양. */
+@layer components {
+  .preview {
+    @apply text-body max-w-3xl text-[0.9375rem] leading-8;
+  }
+  .preview h1 {
+    @apply text-foreground mt-2 mb-4 font-serif text-3xl;
+  }
+  .preview h2 {
+    @apply text-foreground mt-8 mb-3 font-serif text-2xl;
+  }
+  .preview h3 {
+    @apply text-foreground mt-6 mb-2 text-lg font-semibold;
+  }
+  .preview p,
+  .preview ul,
+  .preview ol,
+  .preview pre,
+  .preview figure,
+  .preview aside {
+    @apply my-4;
+  }
+  .preview ul {
+    @apply list-disc pl-6;
+  }
+  .preview ol {
+    @apply list-decimal pl-6;
+  }
+  .preview a {
+    @apply text-accent underline;
+  }
+  .preview code {
+    @apply bg-surface-sunken rounded px-1 font-mono text-[0.85em];
+  }
+  .preview pre {
+    @apply bg-surface-sunken overflow-x-auto rounded-md p-4 font-mono text-sm leading-6;
+  }
+  .preview pre code {
+    @apply bg-transparent p-0;
+  }
+  .preview blockquote {
+    @apply border-border-strong text-muted-strong border-l-2 pl-4;
+  }
+  .preview figure.bookquote blockquote {
+    @apply border-accent text-body font-serif;
+  }
+  .preview figcaption {
+    @apply text-muted mt-2 text-xs;
+  }
+  .preview aside.callout {
+    @apply border-accent/40 bg-accent-soft rounded-md border px-4 py-3;
+  }
+  .preview .callout__title {
+    @apply text-accent-strong my-0 font-semibold;
+  }
+  .preview .embed {
+    @apply border-border rounded-md border px-4 py-3 text-sm;
+  }
+  .preview img {
+    @apply max-w-full rounded;
+  }
+  .preview table {
+    @apply my-4 w-full border-collapse text-sm;
+  }
+  .preview th,
+  .preview td {
+    @apply border-border border px-3 py-1.5 text-left;
+  }
+}
