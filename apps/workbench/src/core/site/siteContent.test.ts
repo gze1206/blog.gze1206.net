@@ -109,3 +109,32 @@ describe('사이트 콘텐츠 검수 반영', () => {
     expect(unknownKeyIssues('portfolio', data, null).map((i) => i.path)).toEqual(['id', 'secret']);
   });
 });
+
+describe('이름 바꾸기', () => {
+  it('NOR-220 AC-1: 경력·포트폴리오만, 다른 slug 로만 이름을 바꾼다', async () => {
+    const { validateSiteChange } = await site();
+    const data = { title: 't', summary: 's', stack: ['a'] };
+    const issues = (change: Record<string, unknown>) =>
+      validateSiteChange(change as never).map((issue) => issue.path);
+    expect(
+      issues({ collection: 'portfolio', id: 'boss-toss', renameFrom: 'blog-v4', data }),
+    ).toEqual([]);
+    expect(
+      issues({
+        collection: 'series',
+        id: 'b',
+        renameFrom: 'a',
+        data: { name: 'n', slug: 'b', description: 'd' },
+      }),
+    ).toEqual(['renameFrom']);
+    expect(issues({ collection: 'portfolio', id: 'a', renameFrom: 'a', data })).toEqual([
+      'renameFrom',
+    ]);
+    expect(issues({ collection: 'portfolio', id: 'a', renameFrom: 'Bad Name', data })).toEqual([
+      'renameFrom',
+    ]);
+    expect(issues({ collection: 'portfolio', id: 'a', renameFrom: 'b', delete: true })).toEqual([
+      'renameFrom',
+    ]);
+  });
+});
