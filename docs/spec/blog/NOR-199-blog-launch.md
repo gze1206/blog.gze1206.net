@@ -19,12 +19,13 @@
 ### 브랜치
 
 - **AC-1** `BLOG_LAYOUT.publishBranch` 는 `'main'` 이다.
-- **AC-2** `isProductionDeploy` 는 `CF_PAGES=1` 이고 `CF_PAGES_BRANCH` 가 `publishBranch` 일 때만 참이다. 다른 브랜치(예: `v4`)의 Pages 배포는 preview 다.
+- **AC-2** Cloudflare Pages 빌드(`CF_PAGES=1`)는 브랜치와 무관하게 `BLOG_SMOKE=1` 을 거부한다. preview(`*.pages.dev`)도 공개 주소이고, smoke 빌드는 로컬 e2e 에서만 쓴다. (런칭 뒤 보안 검수로 갱신: 처음에는 `publishBranch` 배포만 막았다. 그러면 Production branch 설정이 틀리거나 preview 에서 smoke 가 공개될 수 있었다.)
 - **AC-3** 워크벤치 compose 의 `PUBLIC_BLOG_BRANCH` 기본값과 `.env.example` 은 `main` 이다. e2e fixture 는 `BLOG_LAYOUT.publishBranch` 를 쓴다.
 
 ### 도메인 확인
 
 - **AC-4** `checkDomains(fetch)` 는 정본 `https://gze1206.net/` 이 200 이고 `<link rel="canonical">` 이 정본 호스트를 가리키는지 확인한다.
-- **AC-5** `checkDomains` 는 `www.`·`blog.` 호스트의 경로·쿼리가 붙은 URL 이 301 로 같은 경로·쿼리의 정본 URL 에 가는지 확인한다. 302, 다른 경로, 다른 호스트는 실패다.
+- **AC-5** `checkDomains` 는 `www.`·`blog.` 호스트에서 확인 경로(`probes`, 루트 `/` 와 경로·쿼리가 붙은 글 주소)마다 301 로 같은 경로·쿼리의 정본 URL 에 가는지 확인한다. 302, 다른 경로, 다른 호스트는 실패다.
 - **AC-6** `checkDomains` 는 옛 사이트 sitemap 에 있던 경로(`/blog/<slug>/` 등, `legacy-paths.txt`)가 정본 호스트에서 200 인지 확인한다. 옛 사이트와 새 사이트는 글 경로 형식이 같으므로 경로 리다이렉트는 두지 않는다.
-- **AC-7** `pnpm check:domains` 는 실패 항목을 모두 출력하고 하나라도 실패하면 0 이 아닌 코드로 끝난다. 네트워크를 쓰므로 `verify` 와 CI 에는 넣지 않는다.
+- **AC-7** 네트워크 오류와 해석할 수 없는 `Location`·canonical 도 실패 항목으로 남기고 나머지를 계속 확인한다. `pnpm check:domains` 는 실패 항목을 모두 출력하고 하나라도 실패하면 0 이 아닌 코드로 끝난다. 네트워크를 쓰므로 `verify` 와 CI 에는 넣지 않는다.
+- **AC-8** `checkDomains` 는 이전 호스트에 악의적인 경로(`hostileProbes`, 예: `//evil.example/x?next=https://evil.example`)를 보내고, 301 의 `Location` 이 정본 origin 에 머무는지 확인한다. 경로 정규화(`//` → `/`)는 Cloudflare 가 하므로 경로 일치는 보지 않는다.
