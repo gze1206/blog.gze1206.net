@@ -10,7 +10,11 @@
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
   /* 제목 전용. 본문까지 세리프로 두면 한글 서브셋 청크를 글 전체 분량만큼 받게 된다(NOR-149). */
   --font-serif: 'Noto Serif KR', ui-serif, Georgia, 'Apple SD Gothic Neo', 'Nanum Myeongjo', serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* 고정폭 폰트에는 한글이 없다. 한글 대체를 generic monospace 앞에 두지 않으면 Windows 는 굴림체로
+     그린다(NOR-202). */
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Pretendard Variable', 'Pretendard',
+    'Apple SD Gothic Neo', 'Malgun Gothic', monospace;
   --color-background: var(--theme-background);
   --color-foreground: var(--theme-foreground);
   --color-body: var(--theme-body);
@@ -183,10 +187,11 @@ body {
 
 .list-page__eyebrow {
   color: var(--theme-accent);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  /* 한글 라벨이다. 영문 eyebrow 용 넓은 자간은 한글을 흩어 놓는다(NOR-202). */
+  letter-spacing: 0.02em;
 }
 
 .skip-link {
@@ -428,10 +433,11 @@ summary:focus-visible {
 .home-door__ordinal {
   margin-bottom: auto;
   color: var(--theme-accent);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  /* 한글 라벨이다. 영문 eyebrow 용 넓은 자간은 한글을 흩어 놓는다(NOR-202). */
+  letter-spacing: 0.02em;
 }
 
 .home-door__title {
@@ -737,8 +743,8 @@ summary:focus-visible {
 
 .shelf__count {
   color: var(--theme-muted);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
   font-weight: 400;
   letter-spacing: 0;
 }
@@ -841,7 +847,7 @@ summary:focus-visible {
   border-radius: 0.2rem 0 0 0.2rem;
   background: var(--theme-accent);
   color: var(--theme-accent-foreground);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -1052,10 +1058,11 @@ summary:focus-visible {
 
 .article-taxonomy__label {
   color: var(--theme-accent);
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  /* 한글 라벨이다. 영문 eyebrow 용 넓은 자간은 한글을 흩어 놓는다(NOR-202). */
+  letter-spacing: 0.02em;
 }
 
 .category-badge {
@@ -1845,10 +1852,11 @@ pre.astro-code:hover > .code-copy-btn {
 
 .taxonomy-map__title {
   color: var(--theme-accent);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  /* 한글 라벨이다. 영문 eyebrow 용 넓은 자간은 한글을 흩어 놓는다(NOR-202). */
+  letter-spacing: 0.02em;
 }
 
 .taxonomy-map__hint {

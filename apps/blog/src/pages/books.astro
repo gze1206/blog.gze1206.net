@@ -60,9 +60,11 @@ const linkableTagSlugs = new Set(tagGroups.map((group) => group.slug));
                       decoding="async"
                     />
                   ) : (
-                    /* 표지가 없는 책. 읽는 사람에게는 그림이 아니라 글자이므로 이미지로 흉내내지 않는다. */
+                    /* 표지가 없는 책. 이미지로 흉내내지 않고 글자로 그린다. 같은 제목·저자가 바로 아래 본문에
+                       있으므로 보조 기술에는 숨긴다(NOR-202). */
                     <div
                       class={`book-card__blank book-card__blank--t${spineTone(book.data.title)}`}
+                      aria-hidden="true"
                     >
                       <p class="book-card__blank-title">{spineTitle(book.data.title)}</p>
                       <p class="book-card__blank-author">{book.data.authors[0]}</p>
