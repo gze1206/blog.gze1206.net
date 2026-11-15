@@ -1,11 +1,26 @@
 {
   "id": "blog-v4",
-  "title": "블로그 v4",
+  "title": "Boss Toss",
   "summary": "AI·SW 마에스트로 17기 '광기의 폭풍'팀에서 개발한 파티 스타일 협력 탄막 레이드 게임입니다. 제로베이스부터 기술스택을 선정하고 구조를 설계하고 인프라를 쌓아올려 인플루언서 마케팅 및 Steam Next Fest 출품 등을 진행했습니다.",
-  "stack": ["Unity"],
+  "stack": [
+    "Unity",
+    "C#",
+    "ASP.NET Core",
+    "MagicOnion",
+    "VContainer",
+    "UniTask",
+    "AWS (ECS, RDB, Terraform)",
+    "Docker + Compose"
+  ],
   "links": [{ "repo": "https://store.steampowered.com/app/5151850/Boss_Toss/" }],
   "role": "PM / 인프라&아키텍처 담당 / 서버 개발 보조 / 클라 개발 보조",
   "period": "2026.04 ~ 2026.12",
-  "highlights": [],
-  "media": []
+  "highlights": [
+    "전체 기술스택 선정",
+    "내부 개발 인프라 구축 (CI/CD, tailscale, 개발용 OCI 및 미니PC)",
+    "운영 인프라 설계 (OTEL을 통한 Aspire Dashboard-개발용-, Grafana Cloud-서비스용- 연동 등)",
+    "기초 시스템 아키텍처 설계"
+  ],
+  "media": [],
+  "thumbnail": "/img/portfolio/thumbnail-b-bosses-e6deb677dd5f7993.png"
 }
