@@ -118,7 +118,7 @@ export function BookNotes({ documentId, bookId, list, items, onChanged, onError 
   return (
     <section aria-labelledby={`${list}-title`} className="min-h-0 flex-1">
       <div className="flex items-baseline justify-between">
-        <h3 className="font-serif text-sm" id={`${list}-title`}>
+        <h3 className="font-bold tracking-[-0.02em] text-sm" id={`${list}-title`}>
           {labels.title} <span className="ml-1 font-mono text-xs text-muted">{items.length}</span>
         </h3>
         <button

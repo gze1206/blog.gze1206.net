@@ -267,7 +267,9 @@ export function App() {
               <p className="text-accent font-mono text-[11px] tracking-[0.22em] uppercase">
                 Private
               </p>
-              <h1 className="text-foreground mt-1 font-serif text-2xl">Workbench</h1>
+              <h1 className="text-foreground mt-1 font-bold tracking-[-0.02em] text-2xl">
+                Workbench
+              </h1>
             </div>
             <ThemeToggle />
           </div>

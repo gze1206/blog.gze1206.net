@@ -17,7 +17,7 @@ export function ReviewPanel({
       className="rounded-xl border border-notice-foreground/30 bg-notice/60 p-5"
     >
       <div className="flex items-baseline justify-between">
-        <h2 className="font-serif text-xl">지난 미완료 검토</h2>
+        <h2 className="font-bold tracking-[-0.02em] text-xl">지난 미완료 검토</h2>
         <span className="font-mono text-xs text-muted">자동 이월 없음</span>
       </div>
       {bullets.length ? (

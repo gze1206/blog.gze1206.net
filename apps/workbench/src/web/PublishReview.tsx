@@ -26,7 +26,7 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
             <p className="font-mono text-[11px] tracking-[0.18em] text-accent uppercase">
               Dry run · no Git changes
             </p>
-            <h2 id="publish-review-title" className="mt-1 font-serif text-3xl">
+            <h2 id="publish-review-title" className="mt-1 font-bold tracking-[-0.02em] text-3xl">
               공개 발행 검토
             </h2>
           </div>

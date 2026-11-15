@@ -42,7 +42,7 @@ export function PublicQuotes({ excerpts, title, authors }: Props) {
               className="border-accent bg-surface-sunken rounded-r border-l-2 px-4 py-3"
               key={quote.id ?? index}
             >
-              <blockquote className="text-body font-serif text-sm whitespace-pre-wrap">
+              <blockquote className="text-body text-sm whitespace-pre-wrap">
                 {quote.text}
               </blockquote>
               <p className="text-muted mt-1 text-xs">
