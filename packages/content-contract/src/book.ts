@@ -17,6 +17,8 @@ export const bookQuoteSchema = z
     id: z.string().regex(/^[0-7][0-9A-HJKMNP-TV-Z]{25}$/u),
     text: z.string().min(1),
     page: z.number().int().positive().optional(),
+    /** 그 구절에 남긴 내 메모(NOR-230). 내가 쓴 말이라 구절 누적 상한에 넣지 않는다. */
+    memo: z.string().min(1).max(1000).optional(),
   })
   .strict();
 

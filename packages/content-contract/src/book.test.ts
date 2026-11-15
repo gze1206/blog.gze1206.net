@@ -104,4 +104,24 @@ describe('NOR-215 공개 구절', () => {
     expect(strictBookSchema.safeParse({ ...base, quotes }).success).toBe(false);
     expect(strictBookSchema.safeParse({ ...base, quotes: quotes.slice(0, 1) }).success).toBe(true);
   });
+
+  it('NOR-230 AC-1: 구절은 1~1,000자 메모를 받고, 메모는 누적 2,000자에 들지 않는다', () => {
+    const quote = (n: number, text: string, memo?: string) => ({
+      id: id(n),
+      text,
+      ...(memo === undefined ? {} : { memo }),
+    });
+    expect(
+      strictBookSchema.safeParse({ ...base, quotes: [quote(1, '구절', '내 생각')] }).success,
+    ).toBe(true);
+    expect(strictBookSchema.safeParse({ ...base, quotes: [quote(1, '구절', '')] }).success).toBe(
+      false,
+    );
+    expect(
+      strictBookSchema.safeParse({ ...base, quotes: [quote(1, '구절', '가'.repeat(1001))] })
+        .success,
+    ).toBe(false);
+    const full = [quote(1, '가'.repeat(1000), '메'.repeat(900)), quote(2, '나'.repeat(1000), '모')];
+    expect(strictBookSchema.safeParse({ ...base, quotes: full }).success).toBe(true);
+  });
 });

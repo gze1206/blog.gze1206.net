@@ -16,4 +16,17 @@ describe('BookNotes', () => {
     expect(html).toContain('공개');
     expect(html).toContain('type="checkbox"');
   });
+
+  it('NOR-230 AC-5: 구절 메모 칸은 공개 구절이면 메모도 공개된다고 알린다', () => {
+    const html = renderToStaticMarkup(
+      <BookNotes
+        documentId="doc"
+        list="excerpts"
+        items={[]}
+        onChanged={() => undefined}
+        onError={() => undefined}
+      />,
+    );
+    expect(html).toContain('공개 구절이면 메모도 블로그에 함께 나갑니다');
+  });
 });

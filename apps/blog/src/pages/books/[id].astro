@@ -124,6 +124,12 @@ const description = data.oneLiner ?? `${byline}${imprint ? ` (${imprint})` : ''}
               <li class="book-quote" id={`q-${quote.id}`}>
                 <blockquote>{quote.text}</blockquote>
                 {quote.page !== undefined && <p class="book-quote__page">p. {quote.page}</p>}
+                {quote.memo !== undefined && (
+                  <p class="book-quote__memo">
+                    <span class="book-quote__memo-label">내 메모</span>
+                    {quote.memo}
+                  </p>
+                )}
               </li>
             ))}
           </ul>
