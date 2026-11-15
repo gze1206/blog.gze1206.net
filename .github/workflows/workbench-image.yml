@@ -27,6 +27,9 @@ env:
 
 jobs:
   publish:
+    # 수동 실행(workflow_dispatch)도 main 이나 workbench-v* 태그에서만 게시한다.
+    # 다른 브랜치의 코드로 만든 이미지가 정식 패키지에 올라가지 않게 한다 (NOR-199 보안 검수).
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/workbench-v')
     # 대상 호스트가 arm64 다. 에뮬레이션 대신 arm64 러너에서 네이티브로 빌드한다.
     runs-on: ubuntu-24.04-arm
     permissions:
