@@ -16,7 +16,8 @@ function fakeFetch(routes: Record<string, Route>) {
 const options = {
   canonical: 'https://gze1206.net',
   aliases: ['www.gze1206.net', 'blog.gze1206.net'],
-  probe: '/blog/hello/?ref=check',
+  probes: ['/', '/blog/hello/?ref=check'],
+  hostileProbes: ['//evil.example/x?next=https://evil.example'],
   legacyPaths: ['/blog/hello/'],
 };
 
@@ -24,18 +25,23 @@ const canonicalPage =
   '<html><head><link rel="canonical" href="https://gze1206.net/"></head></html>';
 
 function healthyRoutes(): Record<string, Route> {
-  return {
+  const routes: Record<string, Route> = {
     'https://gze1206.net/': { status: 200, body: canonicalPage },
-    'https://www.gze1206.net/blog/hello/?ref=check': {
-      status: 301,
-      location: 'https://gze1206.net/blog/hello/?ref=check',
-    },
-    'https://blog.gze1206.net/blog/hello/?ref=check': {
-      status: 301,
-      location: 'https://gze1206.net/blog/hello/?ref=check',
-    },
     'https://gze1206.net/blog/hello/': { status: 200 },
   };
+  for (const alias of ['https://www.gze1206.net', 'https://blog.gze1206.net']) {
+    routes[`${alias}/`] = { status: 301, location: 'https://gze1206.net/' };
+    routes[`${alias}/blog/hello/?ref=check`] = {
+      status: 301,
+      location: 'https://gze1206.net/blog/hello/?ref=check',
+    };
+    // Cloudflare 는 `//` 를 `/` 로 정규화한다. 정본 origin 에 머물면 통과다.
+    routes[`${alias}//evil.example/x?next=https://evil.example`] = {
+      status: 301,
+      location: 'https://gze1206.net/evil.example/x?next=https://evil.example',
+    };
+  }
+  return routes;
 }
 
 describe('checkDomains', () => {
@@ -98,7 +104,7 @@ describe('checkDomains', () => {
     const mod = await import('./check.ts');
     expect(mod).toHaveProperty('checkDomains');
     const failures = await mod.checkDomains(fakeFetch({}).fetchFn, options);
-    expect(failures).toHaveLength(4);
+    expect(failures).toHaveLength(8);
   });
 
   it('NOR-199 AC-7: 네트워크 오류(DNS 실패 등)도 던지지 않고 실패 항목으로 모은다', async () => {
@@ -107,8 +113,49 @@ describe('checkDomains', () => {
     const rejecting = async (input: string): Promise<Response> => {
       throw new Error(`fetch failed: ${input}`);
     };
-    await expect(mod.checkDomains(rejecting, options)).resolves.toHaveLength(4);
+    await expect(mod.checkDomains(rejecting, options)).resolves.toHaveLength(8);
     const failures = await mod.checkDomains(rejecting, options);
     expect(failures[0]).toContain('fetch failed');
+  });
+
+  it('NOR-199 AC-5: 확인 경로마다 이전 호스트의 301 을 확인한다', async () => {
+    const mod = await import('./check.ts');
+    expect(mod).toHaveProperty('checkDomains');
+    const routes = healthyRoutes();
+    routes['https://blog.gze1206.net/'] = { status: 200 };
+    const failures = await mod.checkDomains(fakeFetch(routes).fetchFn, options);
+    expect(failures).toEqual([expect.stringContaining('https://blog.gze1206.net/')]);
+  });
+
+  it('NOR-199 AC-8: 악의적인 경로의 Location 은 정본 origin 에 머물러야 한다', async () => {
+    const mod = await import('./check.ts');
+    expect(mod).toHaveProperty('checkDomains');
+    const healthy = fakeFetch(healthyRoutes());
+    expect(await mod.checkDomains(healthy.fetchFn, options)).toEqual([]);
+    expect(healthy.calls.map((call) => call.url)).toContain(
+      'https://www.gze1206.net//evil.example/x?next=https://evil.example',
+    );
+    for (const location of ['https://evil.example/x', '//evil.example/x', 'http://gze1206.net/x']) {
+      const routes = healthyRoutes();
+      routes['https://www.gze1206.net//evil.example/x?next=https://evil.example'] = {
+        status: 301,
+        location,
+      };
+      const failures = await mod.checkDomains(fakeFetch(routes).fetchFn, options);
+      expect(failures).toEqual([expect.stringContaining('www.gze1206.net//evil.example')]);
+    }
+  });
+
+  it('NOR-199 AC-7: 해석할 수 없는 Location·canonical 도 실패로 남기고 계속한다', async () => {
+    const mod = await import('./check.ts');
+    expect(mod).toHaveProperty('checkDomains');
+    const routes = healthyRoutes();
+    routes['https://gze1206.net/'] = {
+      status: 200,
+      body: '<link rel="canonical" href="http://[">',
+    };
+    routes['https://www.gze1206.net/'] = { status: 301, location: 'http://[' };
+    const run = mod.checkDomains(fakeFetch(routes).fetchFn, options);
+    await expect(run).resolves.toHaveLength(2);
   });
 });
