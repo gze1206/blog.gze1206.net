@@ -50,6 +50,15 @@
   --theme-danger: #a33a2c;
   /* 코드 면. 종이보다 한 단계 가라앉혀 본문과 다른 종류의 내용임을 보인다. */
   --theme-code-surface: #f2eee7;
+  /* 코드 구문 강조(NOR-229). 코드 면 위에서 4.5:1 을 넘는다. */
+  --theme-code-keyword: #6d28d9;
+  --theme-code-string: #166534;
+  --theme-code-number: #9a3412;
+  --theme-code-comment: #6b6459;
+  --theme-code-type: #0e7490;
+  --theme-code-definition: #1d4ed8;
+  --theme-code-property: #0f766e;
+  --theme-code-operator: #475569;
 }
 
 .dark {
@@ -74,4 +83,13 @@
   --theme-danger: #e5a598;
   /* 다크에서는 Tokyo Night 의 배경을 그대로 쓴다 — 이미 페이지와 또렷이 구분된다. */
   --theme-code-surface: #1a1b26;
+  /* 코드 구문 강조(NOR-229). Tokyo Night 계열. */
+  --theme-code-keyword: #bb9af7;
+  --theme-code-string: #9ece6a;
+  --theme-code-number: #ff9e64;
+  --theme-code-comment: #8189b0;
+  --theme-code-type: #2ac3de;
+  --theme-code-definition: #7aa2f7;
+  --theme-code-property: #73daca;
+  --theme-code-operator: #89ddff;
 }
