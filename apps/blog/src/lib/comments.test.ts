@@ -6,6 +6,7 @@ describe('comments', () => {
     expect(mod).toHaveProperty('commentsEmbed');
     expect(mod.commentsEmbed('hello')).toEqual({
       scriptSrc: 'https://comments.gze1206.net/comentario.js',
+      integrity: 'sha384-LYPL1k9kCcfh4ZPBcswQmv3+cpWNdOKY2o+n/PV1uXIOgtS9ineQX7SBxONqjvhU',
       pageId: '/blog/hello',
       lang: 'ko',
     });

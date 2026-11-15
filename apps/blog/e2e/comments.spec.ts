@@ -37,7 +37,10 @@ test('NOR-200 AC-3: 글 상세는 댓글 영역을 두고 가까워질 때 스�
   await expect(page.locator(`script[src="${SCRIPT}"]`)).toHaveCount(0);
 
   await section.scrollIntoViewIfNeeded();
-  await expect(page.locator(`script[src="${SCRIPT}"]`)).toHaveCount(1);
+  const script = page.locator(`script[src="${SCRIPT}"]`);
+  await expect(script).toHaveCount(1);
+  await expect(script).toHaveAttribute('integrity', /^sha384-/u);
+  await expect(script).toHaveAttribute('crossorigin', 'anonymous');
   await page.mouse.wheel(0, -2000);
   await section.scrollIntoViewIfNeeded();
   await expect(page.locator(`script[src="${SCRIPT}"]`)).toHaveCount(1);
