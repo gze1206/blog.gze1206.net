@@ -88,7 +88,7 @@ describe('public post contract', () => {
     ).toThrow();
   });
 
-  it('coerces Blog v4 timestamp date inputs to deterministic UTC calendar dates', () => {
+  it('NOR-209 AC-1: 날짜 문자열(시각 포함)을 자르지 않고 그대로 둔다', () => {
     expect(
       parsePublishedPost({
         title: '공개 글',
@@ -100,7 +100,10 @@ describe('public post contract', () => {
         updatedAt: '2026-08-12T09:00:00.000Z',
         draft: false,
       }),
-    ).toMatchObject({ publishedAt: '2026-08-13', updatedAt: '2026-08-12' });
+    ).toMatchObject({
+      publishedAt: '2026-08-12T23:30:00-04:00',
+      updatedAt: '2026-08-12T09:00:00.000Z',
+    });
   });
 });
 
@@ -295,14 +298,14 @@ describe('transformPublicDraft', () => {
     expect(transformed.source).not.toContain('dir//assets');
   });
 
-  it('accepts timestamp frontmatter and emits canonical date-only values', () => {
+  it('NOR-209 AC-1: 시각이 있는 frontmatter 는 시각을 그대로 발행한다', () => {
     const source = validDraft
       .replace('updatedAt: 2026-08-12', 'updatedAt: 2026-08-12T09:00:00.000Z')
       .replace('publishedAt: 2026-08-12', 'publishedAt: 2026-08-12T23:30:00-04:00');
 
     expect(
       transformPublicDraft({ source, privateRoot: '/srv/private-workbench', assets: [] }).source,
-    ).toContain('publishedAt: 2026-08-13\nupdatedAt: 2026-08-12');
+    ).toContain('publishedAt: 2026-08-12T23:30:00-04:00\nupdatedAt: 2026-08-12T09:00:00.000Z');
   });
 
   it('deterministically emits the exact public post schema and rewrites approved assets', () => {
