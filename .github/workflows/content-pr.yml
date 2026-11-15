@@ -27,7 +27,8 @@ jobs:
         id: scope
         run: |
           git show origin/main:apps/workbench/deploy/oci/content-paths.regex > "$RUNNER_TEMP/paths.regex"
-          outside=$(git diff --name-only origin/main...HEAD | grep -vE -f "$RUNNER_TEMP/paths.regex" || true)
+          # 한글 경로를 8진수 따옴표로 바꾸지 않게 quotePath 를 끈다(NOR-214).
+          outside=$(git -c core.quotePath=false diff --name-only origin/main...HEAD | grep -vE -f "$RUNNER_TEMP/paths.regex" || true)
           if [ -n "$outside" ]; then
             printf '허용 목록 밖의 변경:\n%s\n' "$outside"
             echo "allowed=false" >> "$GITHUB_OUTPUT"
