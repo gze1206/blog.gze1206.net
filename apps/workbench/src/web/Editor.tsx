@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import type { PublicAssetCandidate } from './api.js';
+import { LiveEditor } from './live/LiveEditor.js';
 import { PreviewPane } from './PreviewPane.js';
 
 type EditorMode = 'edit' | 'split' | 'preview';
@@ -119,13 +120,7 @@ export function Editor({
       ) : null}
       <div className="flex min-h-0 flex-1">
         {mode !== 'preview' ? (
-          <textarea
-            aria-label="Markdown 문서"
-            className="min-h-0 min-w-0 flex-1 resize-none bg-background p-6 font-mono text-sm leading-7 text-foreground outline-none"
-            onChange={(event) => onChange(event.target.value)}
-            spellCheck={false}
-            value={source}
-          />
+          <LiveEditor className="flex-1" onChange={onChange} source={source} />
         ) : null}
         {mode !== 'edit' ? (
           <PreviewPane
