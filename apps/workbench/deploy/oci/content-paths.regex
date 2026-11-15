@@ -1,0 +1,4 @@
+^apps/blog/src/content/posts/[^/]+\.(md|mdoc)$
+^apps/blog/src/content/books/[^/]+\.json$
+^apps/blog/public/assets/posts/[^/]+/[^/]+$
+^apps/blog/public/assets/books/[^/]+$

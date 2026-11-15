@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import type { PublishResult, PublishReviewData } from './api.js';
+import { PublishHandoff } from './PublishHandoff.js';
 
 interface Props {
   readonly review: PublishReviewData;
@@ -95,7 +96,7 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
             onClick={onConfirm}
             type="button"
           >
-            {publishing ? '산출물 생성 중…' : 'outbox 산출물 생성'}
+            {publishing ? '발행 중…' : '발행'}
           </button>
         </footer>
         {result ? (
@@ -103,19 +104,7 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
             className="mt-4 rounded-lg border border-accent/40 bg-accent-soft p-4 text-sm text-accent-strong"
             role="status"
           >
-            <p>
-              outbox에 <code className="font-mono">{result.exportRef}</code> 산출물이
-              준비되었습니다. 앱은 push하지 않았습니다.
-            </p>
-            <p className="mt-2">
-              push 전 전체 clone에서 최신 상태를 받은 뒤 base 정합성을 확인하세요.
-            </p>
-            <pre className="mt-2 overflow-auto rounded bg-surface/70 p-3 font-mono text-xs whitespace-pre-wrap">{`git fetch origin\ngit merge-base --is-ancestor ${result.baseSha} origin/main`}</pre>
-            {result.exportFormat === 'bundle' ? (
-              <pre className="mt-2 overflow-auto rounded bg-surface/70 p-3 font-mono text-xs whitespace-pre-wrap">{`git bundle verify ${result.exportRef}\ngit fetch ${result.exportRef} ${result.branch}:${result.branch}`}</pre>
-            ) : (
-              <pre className="mt-2 overflow-auto rounded bg-surface/70 p-3 font-mono text-xs whitespace-pre-wrap">{`git switch -c ${result.branch} ${result.baseSha}\ngit am ${result.exportRef}`}</pre>
-            )}
+            <PublishHandoff exportRef={result.exportRef} />
           </section>
         ) : null}
       </div>

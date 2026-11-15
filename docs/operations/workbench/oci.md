@@ -77,6 +77,34 @@ journalctl -u workspace-backup.service -n 20
 systemd-analyze security workspace-backup.service
 ```
 
+## 발행 릴레이 (NOR-210)
+
+워크벤치가 확정한 발행을 공개 블로그의 `content/*` 브랜치로 보내는 호스트 서비스다. 컨테이너에는 공개
+저장소 자격이 없고, 릴레이 계정만 deploy key 를 갖는다. 절차는
+[tailnet-workbench.md](./tailnet-workbench.md) "확정한 커밋을 공개 블로그로 보내기".
+
+| 무엇      | 값                                                                                |
+| --------- | --------------------------------------------------------------------------------- |
+| 실행 계정 | 시스템 계정 `workbench-relay`. outbox 는 `CAP_DAC_READ_SEARCH` 로 읽기만 한다     |
+| 상태      | `/var/lib/workbench-relay` (clone, `ledger`, `.ssh`)                              |
+| 자격      | 이 저장소의 write deploy key. main 은 ruleset(필수 체크·강제 push 금지)이 막는다  |
+| 관문      | base 가 main 의 조상, bundle 커밋 일치, 바뀐 경로가 모두 `content-paths.regex` 안 |
+
+```sh
+sudo useradd --system --home-dir /var/lib/workbench-relay --create-home --shell /usr/sbin/nologin workbench-relay
+sudo -u workbench-relay install -d -m 0700 /var/lib/workbench-relay/.ssh
+sudo -u workbench-relay ssh-keygen -t ed25519 -N '' -C workbench-relay -f /var/lib/workbench-relay/.ssh/blog_deploy
+ssh-keyscan github.com | sudo -u workbench-relay tee /var/lib/workbench-relay/.ssh/known_hosts >/dev/null
+# 공개 키를 저장소 deploy key(쓰기 허용)로 등록한 뒤:
+sudo install -m 0755 publish-relay.sh /usr/local/lib/workbench/
+sudo install -m 0644 content-paths.regex /usr/local/lib/workbench/
+sudo install -m 0644 publish-relay.service publish-relay.timer /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now publish-relay.timer
+```
+
+저장소 설정: Allow auto-merge 켬, Actions 의 "Allow GitHub Actions to create and approve pull requests" 켬.
+콘텐츠 경로를 넓힐 때는 `content-paths.regex` 를 고치고 호스트에도 다시 설치한다(워크플로는 main 의 것을 읽는다).
+
 ## 이미지 갱신
 
 CI 가 `main` push(워크벤치·계약 패키지 변경 시)나 `workbench-v*` 태그에서 arm64 이미지를 게시하고 실행

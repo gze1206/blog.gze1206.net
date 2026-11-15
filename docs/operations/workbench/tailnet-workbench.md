@@ -149,42 +149,20 @@ docker compose logs --tail=100 workbench
 docker compose down
 ```
 
-## 확정한 커밋을 공개 블로그로 보내기
+## 확정한 커밋을 공개 블로그로 보내기 (NOR-210)
 
-앱은 push 하지 않는다. 확정(confirm) 은 outbox 에 산출물 하나를 남기는 것으로 끝나고, 그것을
-공개 블로그로 보내는 일은 사람이 앱 밖에서 한다. 화면이 보여 주는 절차와 아래가 같다.
+앱은 push 하지 않는다. 확정(confirm) 은 outbox 에 산출물 하나를 남기는 것으로 끝난다. 그다음은 호스트의
+**발행 릴레이**가 맡는다([oci.md](./oci.md) "발행 릴레이").
 
-먼저 **base 정합성**을 확인한다. 발행을 준비한 뒤 공개 블로그가 앞서 나갔다면 그 산출물은
-그대로 얹을 수 없다.
+1. 릴레이(`workbench-relay` 계정, 1분마다)가 새 매니페스트를 읽는다. base 가 `origin/main` 의 조상인지,
+   bundle 이 매니페스트의 커밋과 같은지, 바뀐 경로가 모두 콘텐츠 허용 목록(`content-paths.regex`) 안인지
+   보고, 통과한 것만 deploy key 로 `content/<산출물 이름>` 브랜치에 push 한다.
+2. GitHub 의 `content-pr` 워크플로가 main 으로 가는 PR 을 열고, 경로가 허용 목록(main 의 것) 안이면 자동
+   병합을 켠다. CI 의 필수 체크는 같은 push 에서 돈다.
+3. 체크가 모두 통과하면 merge commit 으로 병합되고 브랜치가 지워진다. Pages 가 main 을 배포한다.
 
-```sh
-cd /path/to/blog.gze1206.net        # 앱 밖의 사람 clone
-git fetch origin
-git merge-base --is-ancestor <baseSha> origin/main   # 실패하면 재검토·재발행
-```
-
-그다음 산출물 형식에 따라 갈린다. 형식은 confirm 응답의 `exportFormat` 에 있다.
-
-```sh
-# bundle — 커밋 객체가 그대로 들어 있다
-git bundle verify <exportRef>
-git fetch <exportRef> content/<slug>:content/<slug>
-
-# format-patch — base 에서 새 브랜치를 만들고 패치를 얹는다
-git switch -c content/<slug> <baseSha>
-git am <exportRef>
-```
-
-내용을 다시 확인한 뒤에만 push 한다.
-
-```sh
-git switch content/<slug>
-git log --stat origin/main..HEAD
-git push origin content/<slug>
-```
-
-보낸 산출물은 outbox 에서 지운다. 남겨 두면 다음 백업이 이미 보낸 커밋을 미push 산출물로
-오해하게 된다.
+base 가 낡았으면(`stale`) 릴레이는 push 하지 않는다. 화면에서 다시 검토·발행한다. 처리 결과는
+`/var/lib/workbench-relay/ledger` 에 한 줄씩 남는다(`ok`·`stale`·`rejected <이유>`).
 
 ## 상시 clone 은퇴 (마이그레이션)
 
