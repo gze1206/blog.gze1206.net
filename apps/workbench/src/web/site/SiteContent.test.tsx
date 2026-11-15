@@ -49,3 +49,24 @@ it('NOR-219 AC-1: 칸은 입력한 글(빈 줄·끝 공백)을 그대로 보인�
   expect(html).toContain('>C#\n\n</textarea>');
   expect(html).toContain('>첫 문단\n\n</textarea>');
 });
+
+it('NOR-219 AC-5: 포트폴리오 폼은 이미지 행과 썸네일에 올리기와 미리보기를 둔다', async () => {
+  const mod = await import('./SiteContent.js');
+  const html = renderToStaticMarkup(
+    <mod.SiteForm
+      collection="portfolio"
+      data={{
+        title: '작업',
+        summary: '요약',
+        stack: ['C#'],
+        media: [{ src: '/img/portfolio/a-12345678.png', alt: '화면', width: 2, height: 3 }],
+        thumbnail: '/img/portfolio/a-12345678.png',
+      }}
+      onChange={() => undefined}
+    />,
+  );
+  expect(html).toContain('aria-label="이미지 1 파일"');
+  expect(html).toContain('aria-label="썸네일 파일"');
+  expect(html).toContain('alt="이미지 1 미리보기"');
+  expect(html).toContain('src="/api/site/images/a-12345678.png"');
+});

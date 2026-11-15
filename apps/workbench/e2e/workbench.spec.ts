@@ -399,7 +399,7 @@ test('NOR-217 AC-3: 발행 검토 diff 를 채색해 보이고 나란히 보기�
   if (SP) await page.screenshot({ path: SP });
 });
 
-test('NOR-219 AC-1·5: 여러 줄 칸의 빈 줄·공백을 지키고 포트폴리오 이미지를 올린다', async ({
+test('NOR-219 AC-1 · NOR-219 AC-5: 여러 줄 칸의 빈 줄·공백을 지키고 포트폴리오 이미지를 올린다', async ({
   page,
 }) => {
   await page.goto('/');
