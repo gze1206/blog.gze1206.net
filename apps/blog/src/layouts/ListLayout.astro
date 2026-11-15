@@ -32,7 +32,7 @@ const { title, description, eyebrow, heading, lead, icon } = Astro.props;
       {eyebrow && <p class="list-page__eyebrow">{eyebrow}</p>}
       <h1
         class:list={[
-          'display-serif mt-2 text-3xl sm:text-4xl',
+          'display-heading mt-2 text-3xl sm:text-4xl',
           { 'tag-icon tag-icon--heading': icon === 'tag' },
         ]}
       >
