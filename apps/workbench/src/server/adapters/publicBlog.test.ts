@@ -298,6 +298,29 @@ async function git(root: string, ...args: string[]): Promise<string> {
 }
 
 describe('NOR-196 책 내보내기', { timeout: 30_000 }, () => {
+  it('NOR-214 AC-2: 한글 id 책의 산출물·브랜치 이름은 ASCII 다', async () => {
+    const fixture = await createFixture();
+    try {
+      await mkdir(path.join(fixture.privateRoot, 'books'), { recursive: true });
+      await writeFile(
+        path.join(fixture.privateRoot, 'books/니체의-초월자.md'),
+        '---\ntitle: 니체의 초월자\nkind: book\ncreatedAt: 2026-01-01\nupdatedAt: 2026-01-01\nauthors: [니체]\nstatus: finished\nformat: paper\nsource: purchase\n---\n',
+      );
+      const adapter = fixture.adapter();
+      const review = await Reflect.apply(Reflect.get(adapter, 'reviewBook'), adapter, [
+        '니체의-초월자',
+      ]);
+      expect(review.branch).toMatch(/^content\/[A-Za-z0-9._-]+$/u);
+      const result = await Reflect.apply(Reflect.get(adapter, 'publishBook'), adapter, [
+        '니체의-초월자',
+        { confirmPublish: true, reviewId: review.reviewId },
+      ]);
+      expect(result.outboxRef).toMatch(/^[A-Za-z0-9][A-Za-z0-9._-]*\.json$/u);
+    } finally {
+      await fixture.close();
+    }
+  });
+
   it('NOR-212 AC-1: 파일 이름과 다른 ISBN·제목을 가진 책도 파일 이름으로 내보낸다', async () => {
     const fixture = await createFixture();
     try {

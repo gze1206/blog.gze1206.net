@@ -61,8 +61,8 @@ process() {
   local fields reason
   if ! reason=$(python3 "$HELPER" copy "$file" "$work/manifest.json" 65536); then record "$name" "rejected $reason"; return; fi
   if ! fields=$(python3 "$HELPER" manifest "$work/manifest.json"); then record "$name" "rejected ${fields:-bad-manifest}"; return; fi
-  local base format ref commit source_branch
-  { read -r base; read -r format; read -r ref; read -r commit; read -r source_branch; } <<<"$fields"
+  local base format ref commit _branch
+  { read -r base; read -r format; read -r ref; read -r commit; read -r _branch; } <<<"$fields"
   local export="$work/export"
   if ! reason=$(python3 "$HELPER" copy "$OUTBOX/$ref" "$export" "$MAX_EXPORT_BYTES"); then record "$name" "rejected $reason"; return; fi
   if ! G merge-base --is-ancestor "$base" origin/main 2>/dev/null; then record "$name" "stale base-not-in-main"; return; fi
@@ -70,7 +70,8 @@ process() {
   G update-ref -d "$INCOMING" 2>/dev/null
   if [ "$format" = bundle ]; then
     if ! G bundle verify -q "$export" >/dev/null 2>&1 \
-      || ! G fetch -q "$export" "$source_branch:$INCOMING" 2>/dev/null \
+      || ! G bundle list-heads "$export" 2>/dev/null | awk '{print $1}' | grep -qx "$commit" \
+      || ! G fetch -q "$export" "$commit:$INCOMING" 2>/dev/null \
       || [ "$(G rev-parse "$INCOMING" 2>/dev/null)" != "$commit" ]; then
       record "$name" "rejected bad-bundle"; return
     fi
@@ -82,6 +83,7 @@ process() {
     G update-ref "$INCOMING" HEAD
   fi
 
+  # 매니페스트의 브랜치 이름(_branch)은 쓰지 않는다. bundle 은 커밋으로 가져온다(NOR-214).
   # 최종 트리만 본다. 중간 커밋은 가져가지 않으므로 검사할 필요도 없다.
   local tree diff
   if ! tree=$(G rev-parse --verify "$INCOMING^{tree}" 2>/dev/null); then record "$name" "rejected bad-tree"; return; fi

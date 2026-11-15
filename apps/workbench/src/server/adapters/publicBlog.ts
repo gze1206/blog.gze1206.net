@@ -21,6 +21,7 @@ import { PublishOutbox, type PublishExportFormat } from './publishOutbox.js';
 import type { RemotePolicy } from './remotePolicy.js';
 import { PublishSessionRegistry } from './sessionRegistry.js';
 import { unifiedDiff } from '../../core/publishing/diff.js';
+import { publishRefKey } from '../../core/publishing/refKey.js';
 
 export interface PublishDraftInput {
   readonly documentId: string;
@@ -495,11 +496,8 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       )
     )
       diff += '기존 표지 삭제\n';
-    const branchKey =
-      id
-        .normalize('NFC')
-        .replace(/[^\p{L}\p{N}_-]/gu, '')
-        .slice(0, 64) || 'book';
+    // 브랜치 이름은 ASCII 로 만든다. 릴레이가 영문·숫자 이름만 받는다(NOR-214).
+    const branchKey = publishRefKey(id);
     const metadata = coverBytes ? findImageMetadata(coverBytes) : [];
     const warnings = metadata.length
       ? [`표지에 메타데이터(EXIF 등)가 있습니다: ${metadata.join(', ')}`]
