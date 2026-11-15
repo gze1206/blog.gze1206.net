@@ -23,6 +23,8 @@ import { PublishSessionRegistry } from './sessionRegistry.js';
 import { unifiedDiff } from '../../core/publishing/diff.js';
 import { publishRefKey } from '../../core/publishing/refKey.js';
 import { preservePublishedFormat } from '../../core/publishing/preserve.js';
+import { parseAssetReferences } from '../../core/publishing/references.js';
+import { isSafeSitePath } from '../../core/publishing/validate.js';
 import {
   SITE_COLLECTION_NAMES,
   planSiteChange,
@@ -288,11 +290,14 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         let status: PublishState;
         try {
           const inspected = await this.inspectAssets(draft.documentId);
-          const prepared = await this.prepare({
-            documentId: draft.documentId,
-            source: draft.source,
-            assetIds: inspected.map((asset) => asset.id),
-          });
+          const prepared = await this.prepare(
+            {
+              documentId: draft.documentId,
+              source: draft.source,
+              assetIds: inspected.map((asset) => asset.id),
+            },
+            await this.existingPublicAssets(clone.repositoryRoot, draft.source),
+          );
           const targetPath = `${POSTS_DIRECTORY}/${prepared.transformed.metadata.slug}.mdoc`;
           const current = await this.readOutput(clone.repositoryRoot, targetPath);
           status =
@@ -328,9 +333,12 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
   }
 
   public async review(input: PublishDraftInput): Promise<PublishReview> {
-    const prepared = await this.prepare(input);
     const clone = await this.cloneManager.create();
     try {
+      const prepared = await this.prepare(
+        input,
+        await this.existingPublicAssets(clone.repositoryRoot, input.source),
+      );
       const reviewState = await this.createReview(prepared, clone);
       const session = this.sessions.register({
         cloneDir: clone.sessionDir,
@@ -353,7 +361,10 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       repositoryRoot: path.join(preliminary.cloneDir, 'repository'),
     };
     try {
-      const prepared = await this.prepare(input);
+      const prepared = await this.prepare(
+        input,
+        await this.existingPublicAssets(clone.repositoryRoot, input.source),
+      );
       const reviewState = await this.createReview(prepared, clone);
       const { review } = reviewState;
       const contentFingerprint = fingerprint(prepared, reviewState);
@@ -859,7 +870,36 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     }
   }
 
-  private async prepare(input: PublishDraftInput): Promise<PreparedPublish> {
+  /**
+   * 초안이 참조하는 사이트 경로 중 새로 받은 main 의 `public/` 에 일반 파일로 있는 것 (NOR-218).
+   * 심볼릭 링크로 된 파일이나 상위 디렉터리는 받지 않는다.
+   */
+  private async existingPublicAssets(repositoryRoot: string, source: string): Promise<Set<string>> {
+    const found = new Set<string>();
+    let content: string;
+    try {
+      content = parseFrontmatter(source).content;
+    } catch {
+      return found;
+    }
+    for (const { reference } of parseAssetReferences(content)) {
+      if (found.has(reference) || !isSafeSitePath(reference)) continue;
+      const relativePath = `${BLOG_LAYOUT.publicDir}${reference}`;
+      try {
+        await assertNoSymlinkAncestors(repositoryRoot, relativePath);
+        const fileStat = await lstat(path.join(repositoryRoot, relativePath));
+        if (fileStat.isFile() && !fileStat.isSymbolicLink()) found.add(reference);
+      } catch {
+        // 없거나 읽을 수 없으면 허용하지 않는다. 검사가 거절한다.
+      }
+    }
+    return found;
+  }
+
+  private async prepare(
+    input: PublishDraftInput,
+    existingPublicAssets: ReadonlySet<string> = new Set(),
+  ): Promise<PreparedPublish> {
     const inspected = await this.inspectAssets(input.documentId);
     const byId = new Map(inspected.map((asset) => [asset.id, asset]));
     const selected = input.assetIds.map((id) => byId.get(id));
@@ -893,6 +933,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         publicPath: `assets/posts/${draftSlug(input.source)}/${reference}`,
       })),
       privateRoot: this.options.privateRoot,
+      existingPublicAssets,
     };
     return { transformed: transformPublicDraft(transformInput), assets };
   }
