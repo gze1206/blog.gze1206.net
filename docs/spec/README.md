@@ -47,6 +47,7 @@
 | NOR-148 | [GHCR 이미지 배포·임시 발행 워크스페이스 스펙](./workbench/2026-08-13-workbench-ghcr-ephemeral-publish.md) | done        |
 | NOR-189 | [워크벤치 읽은 책 관리 명세](./workbench/NOR-189-book-management.md)                                       | done        |
 | NOR-203 | [워크벤치 디자인 정비와 라이트/다크 테마](./workbench/NOR-203-design-theme.md)                             | in-progress |
+| NOR-205 | [워크벤치 문서 삭제(휴지통)](./workbench/NOR-205-document-trash.md)                                        | in-progress |
 
 ### 저장소 공통 (`repo/`)
 
