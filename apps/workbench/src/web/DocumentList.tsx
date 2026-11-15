@@ -13,6 +13,94 @@ const STATE_LABEL: Record<PublishState, { text: string; className: string }> = {
   invalid: { text: '검사 실패', className: 'text-danger' },
 };
 
+/** 문서 종류의 읽는 이름(NOR-221). */
+const KIND_LABEL: Record<string, string> = {
+  capture: '빠른 메모',
+  journal: '일지',
+  note: '노트',
+  'private-post': '비공개 글',
+  'public-draft': '공개 글',
+  'weekly-review': '주간 회고',
+  'monthly-review': '월간 회고',
+  book: '책',
+};
+
+/** 문서 유형 묶음(NOR-221 AC-2). 블로그 글은 그 안에서 카테고리별로 다시 묶는다. */
+const TYPE_GROUPS: readonly { key: string; label: string; kinds: readonly string[] }[] = [
+  { key: 'blog', label: '블로그 글', kinds: ['public-draft'] },
+  { key: 'private', label: '비공개 글', kinds: ['private-post'] },
+  { key: 'memo', label: '메모', kinds: ['capture', 'note'] },
+  { key: 'review', label: '회고', kinds: ['weekly-review', 'monthly-review'] },
+  { key: 'journal', label: '일지', kinds: ['journal'] },
+  { key: 'book', label: '책', kinds: ['book'] },
+];
+
+const NO_CATEGORY = '카테고리 없음';
+
+/** 블로그 글을 카테고리별로 나눈다. 이름 순이고, 카테고리 없음은 맨 끝이다. */
+function byCategory(documents: readonly DocumentSummary[]): [string, DocumentSummary[]][] {
+  const map = new Map<string, DocumentSummary[]>();
+  for (const document of documents) {
+    const key = document.category?.trim() || NO_CATEGORY;
+    map.set(key, [...(map.get(key) ?? []), document]);
+  }
+  return [...map].sort(([left], [right]) =>
+    left === NO_CATEGORY ? 1 : right === NO_CATEGORY ? -1 : left.localeCompare(right),
+  );
+}
+
+/** 접고 펼 수 있는 묶음. 처음에는 펼쳐 둔다. */
+function Group({
+  label,
+  count,
+  nested = false,
+  children,
+}: {
+  readonly label: string;
+  readonly count: number;
+  readonly nested?: boolean;
+  readonly children: React.ReactNode;
+}) {
+  return (
+    <details
+      aria-label={`${label} ${count}개`}
+      className={`group ${nested ? 'ml-2' : ''}`}
+      open
+      role="group"
+    >
+      <summary
+        className={`flex cursor-pointer items-baseline justify-between rounded px-2 py-1 hover:bg-surface-sunken ${
+          nested ? 'text-[11px] text-muted' : 'text-xs font-semibold text-muted-strong'
+        }`}
+      >
+        <span>
+          <span
+            aria-hidden="true"
+            className="mr-1 inline-block -rotate-90 transition-transform group-open:rotate-0"
+          >
+            ▾
+          </span>
+          {label}
+        </span>
+        <span className="font-normal text-muted">{count}</span>
+      </summary>
+      <div className="mt-1 grid gap-1">{children}</div>
+    </details>
+  );
+}
+
+/** 블로그에 나가 있는(발행됨·블로그와 다름) 공개 글인가. */
+function isPublished(state: PublishState | undefined): boolean {
+  return state === 'published' || state === 'differs';
+}
+
+/** 목록에 보일 종류 이름. 공개 글은 블로그와 비교한 상태로 부른다. */
+function kindLabel(document: DocumentSummary, state: PublishState | undefined): string {
+  if (document.kind === 'public-draft' && state !== undefined)
+    return isPublished(state) ? '발행된 글' : '공개 초안';
+  return KIND_LABEL[document.kind] ?? document.kind;
+}
+
 interface Props {
   /** 문서 id 별 발행 상태. 아직 모르면 비어 있다. */
   readonly statuses?: Readonly<Record<string, PublishState>>;
@@ -40,6 +128,40 @@ export function DocumentList({
     시작하도록 빈 자리를 둔다 — 책 줄만 밀려 있으면 목록의 왼쪽이 들쭉날쭉해 보인다.
   */
   const hasBooks = documents.some((document) => document.kind === 'book');
+  // 문서 유형별로 묶고, 블로그 글은 카테고리별로 한 번 더 묶는다(NOR-221 AC-2).
+  const groups = TYPE_GROUPS.map((group) => ({
+    ...group,
+    items: documents.filter((document) => group.kinds.includes(document.kind)),
+  }))
+    .concat([
+      {
+        key: 'other',
+        label: '기타',
+        kinds: [],
+        items: documents.filter(
+          (document) => !TYPE_GROUPS.some((group) => group.kinds.includes(document.kind)),
+        ),
+      },
+    ])
+    .filter((group) => group.items.length > 0);
+  const row = (document: DocumentSummary) => (
+    <button
+      aria-pressed={selectedId === document.id}
+      className="flex items-center gap-2.5 rounded-md px-3 py-2 text-left hover:bg-surface-sunken aria-pressed:bg-border"
+      key={document.id}
+      onClick={() => onSelect(document.id)}
+      type="button"
+    >
+      {hasBooks ? <Cover document={document} /> : null}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm text-foreground">{document.title}</span>
+        <span className="block text-[11px] text-muted">
+          {kindLabel(document, statuses[document.id])}
+          <StateBadge state={statuses[document.id]} />
+        </span>
+      </span>
+    </button>
+  );
 
   return (
     <section aria-labelledby="documents-title" className="pt-6">
@@ -62,29 +184,23 @@ export function DocumentList({
           ) : null}
         </p>
       ) : null}
-      <div className="grid gap-1">
-        {documents.length === 0 ? (
-          <p className="py-3 text-sm text-muted">아직 문서가 없습니다.</p>
-        ) : null}
-        {documents.map((document) => (
-          <button
-            aria-pressed={selectedId === document.id}
-            className="flex items-center gap-2.5 rounded-md px-3 py-2 text-left hover:bg-surface-sunken aria-pressed:bg-border"
-            key={document.id}
-            onClick={() => onSelect(document.id)}
-            type="button"
-          >
-            {hasBooks ? <Cover document={document} /> : null}
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm text-foreground">{document.title}</span>
-              <span className="block font-mono text-[11px] text-muted">
-                {document.kind}
-                <StateBadge state={statuses[document.id]} />
-              </span>
-            </span>
-          </button>
-        ))}
-      </div>
+      {documents.length === 0 ? (
+        <p className="py-3 text-sm text-muted">아직 문서가 없습니다.</p>
+      ) : (
+        <div className="grid gap-2">
+          {groups.map((group) => (
+            <Group key={group.key} label={group.label} count={group.items.length}>
+              {group.key === 'blog'
+                ? byCategory(group.items).map(([category, items]) => (
+                    <Group count={items.length} key={category} label={category} nested>
+                      {items.map(row)}
+                    </Group>
+                  ))
+                : group.items.map(row)}
+            </Group>
+          ))}
+        </div>
+      )}
       {problems.length > 0 ? (
         /*
          * 읽지 못한 파일을 조용히 감추지 않는다. 감추면 사용자는 파일이 사라진 줄 알고,

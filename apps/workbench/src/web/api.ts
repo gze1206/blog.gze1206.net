@@ -20,6 +20,7 @@ export interface DocumentSummary {
   readonly updatedAt: string;
   /** 책의 표지 경로(작업 공간 기준). `bookCoverUrl` 로 주소를 만든다. */
   readonly cover?: string;
+  readonly category?: string;
 }
 
 /**

@@ -273,6 +273,10 @@ export class ServerFileStore implements FileStore, DocumentTrash {
             updatedAt: document.document.updatedAt,
             // 목록에서 표지를 보이려면 여기서 실어 보내야 한다. 파일을 다시 열게 하지 않는다.
             ...(document.document.cover === undefined ? {} : { cover: document.document.cover }),
+            // 블로그 글은 목록에서 카테고리별로 묶는다(NOR-221).
+            ...(typeof document.document.category === 'string' && document.document.category !== ''
+              ? { category: document.document.category }
+              : {}),
           });
         } catch (error) {
           problems.push({ relativePath, message: describeProblem(error) });

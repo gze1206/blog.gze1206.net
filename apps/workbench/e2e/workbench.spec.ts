@@ -10,10 +10,15 @@ test('creates and edits a document without sending a filesystem path', async ({ 
   await page.goto('/');
 
   await expect(page.getByRole('heading', { name: 'Workbench' })).toBeVisible();
-  await expect(page.getByRole('button', { name: /빠른 메모/u })).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: 'Templates' }).getByRole('button', { name: /빠른 메모/u }),
+  ).toBeVisible();
 
   await page.getByLabel('새 문서 제목').fill('Quick capture');
-  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  await page
+    .getByRole('region', { name: 'Templates' })
+    .getByRole('button', { name: /빠른 메모/u })
+    .click();
   expect(createPayload).toEqual({ templateId: 'capture', title: 'Quick capture' });
 
   const editor = page.getByLabel('Markdown 문서');
@@ -23,10 +28,16 @@ test('creates and edits a document without sending a filesystem path', async ({ 
   await expect(page.getByRole('button', { name: '저장됨' })).toBeDisabled();
   await expect(page.getByRole('button', { name: /Quick capture/u })).toBeVisible();
 
-  await page.getByRole('button', { name: /주간 회고/u }).click();
+  await page
+    .getByRole('region', { name: 'Templates' })
+    .getByRole('button', { name: /주간 회고/u })
+    .click();
   await expect(page.getByRole('alert')).toContainText('YYYY-Www');
   await page.getByLabel('회고 기간').fill('2026-W33');
-  await page.getByRole('button', { name: /주간 회고/u }).click();
+  await page
+    .getByRole('region', { name: 'Templates' })
+    .getByRole('button', { name: /주간 회고/u })
+    .click();
   await expect(editor).toContainText('period: 2026-W33');
   await expect(editor.locator('.cm-lp-h1')).toHaveText('2026-W33 주간 회고');
 });
@@ -163,7 +174,7 @@ test('reviews a public draft before explicitly creating an outbox publish artifa
     if (request.url().endsWith('/api/publish/confirm')) confirmPayload = request.postDataJSON();
   });
   await page.goto('/');
-  await page.getByRole('button', { name: /Asset publish public-draft/u }).click();
+  await page.getByRole('button', { name: /^Asset publish/u }).click();
   await page.getByLabel('images/flow.png (14 B)').check();
   await page.getByRole('button', { name: '발행 검토' }).click();
 
@@ -206,7 +217,7 @@ test('NOR-196 AC-16: 공개 구절을 글 발행 검토에서 펼친다', async 
       patches.push(request.postDataJSON());
   });
   await page.goto('/');
-  await page.getByRole('button', { name: /인용 테스트 book/u }).click();
+  await page.getByRole('button', { name: /인용 테스트.*책/u }).click();
   for (const value of [true, false, true]) {
     const refreshed = page.waitForResponse(
       (response) =>
@@ -222,7 +233,7 @@ test('NOR-196 AC-16: 공개 구절을 글 발행 검토에서 펼친다', async 
     expect.objectContaining({ text: '공개할 문장', public: false }),
     expect.objectContaining({ text: '공개할 문장', public: true }),
   ]);
-  await page.getByRole('button', { name: /Quote test public-draft/u }).click();
+  await page.getByRole('button', { name: /^Quote test/u }).click();
   await page.getByRole('button', { name: '발행 검토' }).click();
   await expect(page.getByLabel('통합 diff')).toContainText('{% bookquote book=');
 });
@@ -259,7 +270,10 @@ test('NOR-205 AC-5: 문서를 지우면 휴지통으로 가고 복원하면 돌�
   page.on('dialog', (dialog) => void dialog.accept());
   await page.goto('/');
   await page.getByLabel('새 문서 제목').fill('지울 문서');
-  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  await page
+    .getByRole('region', { name: 'Templates' })
+    .getByRole('button', { name: /빠른 메모/u })
+    .click();
   const remove = page.getByRole('button', { name: '삭제', exact: true });
   await expect(remove).toBeVisible();
   await remove.click();
@@ -291,7 +305,10 @@ test('NOR-204 AC-4: 쉼표로 구분하는 칸에 여러 이름을 그대로 칠
 test('NOR-206 AC-5: 저장하지 않은 내용도 나란히 보기에서 렌더해 보여 준다', async ({ page }) => {
   await page.goto('/');
   await page.getByLabel('새 문서 제목').fill('미리보기 확인');
-  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  await page
+    .getByRole('region', { name: 'Templates' })
+    .getByRole('button', { name: /빠른 메모/u })
+    .click();
   const editor = page.getByLabel('Markdown 문서');
   await expect(editor).toContainText('title: 미리보기 확인');
   await appendToEditor(page, '\n## 미리보기 제목\n\n- **굵은** 항목\n');
@@ -320,7 +337,10 @@ test('NOR-206 AC-6·8: 라이브 편집기는 커서가 떠난 줄의 표시 문
   });
   await page.goto('/');
   await page.getByLabel('새 문서 제목').fill('라이브 확인');
-  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  await page
+    .getByRole('region', { name: 'Templates' })
+    .getByRole('button', { name: /빠른 메모/u })
+    .click();
   const editor = page.getByLabel('Markdown 문서');
   await expect(editor).toContainText('title: 라이브 확인');
   await appendToEditor(page, '\n## 라이브 제목\n\n본문 ');
@@ -343,7 +363,10 @@ test('NOR-206 AC-8: 다른 문서를 연 뒤 실행 취소해도 이전 문서 �
 }) => {
   await page.goto('/');
   await page.getByLabel('새 문서 제목').fill('취소 첫 문서');
-  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  await page
+    .getByRole('region', { name: 'Templates' })
+    .getByRole('button', { name: /빠른 메모/u })
+    .click();
   const editor = page.getByLabel('Markdown 문서');
   await expect(editor).toContainText('title: 취소 첫 문서');
   await appendToEditor(page, '\n첫 문서에만 있는 줄');
@@ -351,7 +374,10 @@ test('NOR-206 AC-8: 다른 문서를 연 뒤 실행 취소해도 이전 문서 �
   await expect(page.getByRole('button', { name: '저장됨' })).toBeDisabled();
 
   await page.getByLabel('새 문서 제목').fill('취소 둘째 문서');
-  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  await page
+    .getByRole('region', { name: 'Templates' })
+    .getByRole('button', { name: /빠른 메모/u })
+    .click();
   await expect(editor).toContainText('title: 취소 둘째 문서');
   await editor.click();
   await page.keyboard.press('ControlOrMeta+z');
@@ -435,7 +461,10 @@ test('NOR-219 AC-6: 공개 초안 편집기에서 이미지를 올리면 본문�
 }) => {
   await page.goto('/');
   await page.getByLabel('새 문서 제목').fill('이미지 글');
-  await page.getByRole('button', { name: /공개 글 초안/u }).click();
+  await page
+    .getByRole('region', { name: 'Templates' })
+    .getByRole('button', { name: /공개 글 초안/u })
+    .click();
   const editor = page.getByLabel('Markdown 문서');
   await expect(editor).toContainText('title: 이미지 글');
   await page.getByLabel('Markdown 문서').click();

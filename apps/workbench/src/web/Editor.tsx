@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import type { PublicAssetCandidate } from './api.js';
+import type { PublicAssetCandidate, PublishState } from './api.js';
 import { LiveEditor } from './live/LiveEditor.js';
 import { PreviewPane } from './PreviewPane.js';
 
@@ -26,6 +26,8 @@ interface Props {
   readonly onToggleAsset?: (id: string) => void;
   /** 공개 초안 본문 이미지를 올린다(NOR-219 AC-6). */
   readonly onUploadImage?: (file: File) => Promise<string>;
+  /** 공개 글의 발행 상태(NOR-221). 블로그에 나가 있으면 머리에 알린다. */
+  readonly publishState?: PublishState;
   readonly onError?: (message: string) => void;
 }
 
@@ -43,14 +45,20 @@ export function Editor({
   onToggleAsset,
   onUploadImage,
   onError,
+  publishState,
 }: Props) {
+  const published = publishState === 'published' || publishState === 'differs';
   const [mode, setMode] = useState<EditorMode>('edit');
   return (
     <section className="flex min-h-0 flex-1 flex-col" aria-label="문서 편집기">
       <header className="flex h-16 items-center justify-between border-b border-border px-6">
         <div>
           <h2 className="text-sm font-medium text-foreground">{title}</h2>
-          <p className="text-xs text-muted">Markdown + YAML frontmatter</p>
+          <p className="text-xs text-muted">
+            {published
+              ? `블로그에 발행된 글 · ${publishState === 'published' ? '블로그와 같음' : '블로그와 다름'}`
+              : 'Markdown + YAML frontmatter'}
+          </p>
         </div>
         <div className="flex gap-2">
           <div
@@ -87,7 +95,7 @@ export function Editor({
               onClick={onReviewPublish}
               type="button"
             >
-              발행 검토
+              {published ? '다시 발행 검토' : '발행 검토'}
             </button>
           ) : null}
           <button
