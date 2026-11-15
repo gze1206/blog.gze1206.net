@@ -135,6 +135,11 @@ export function auditDist(input: AuditInput): AuditFinding[] {
   // 스크립트와 이벤트 속성은 여기서 빌드를 실패시킨다(AC-10).
   for (const file of input.files) {
     const body = postBody(file.html);
+    // 글 페이지인데 본문 경계를 못 찾으면 검사 범위가 어긋난 것이다. 조용히 넘기지 않는다.
+    if (body === null && file.html.includes('<div class="article__after"')) {
+      findings.push({ rule: 'content-script', path: file.path, detail: 'post body not found' });
+      continue;
+    }
     if (body !== null && (/<script\b/iu.test(body) || /<[a-z][^>]*\son[a-z]+\s*=/iu.test(body)))
       findings.push({ rule: 'content-script', path: file.path, detail: 'post body' });
   }

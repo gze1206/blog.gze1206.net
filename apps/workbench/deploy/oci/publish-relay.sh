@@ -44,20 +44,27 @@ if [ ! -d "$REPO/.git" ]; then
 fi
 G fetch -q --prune origin main || exit 1
 
-record() { printf '%s %s\n' "$1" "$2" >>"$LEDGER"; }
+# 사유는 고정 코드만 받는다. 입력에서 온 글자가 섞이면 ledger 줄을 위조할 수 있다.
+record() {
+  local status=$2
+  [[ $status =~ ^(ok\ content/[a-z0-9._-]+|stale\ [a-z-]+|rejected\ [a-z-]+)$ ]] || status="rejected unknown"
+  printf '%s %s\n' "$1" "$status" >>"$LEDGER"
+}
 seen() { awk -v name="$1" '$1 == name { found = 1 } END { exit !found }' "$LEDGER"; }
 
 # $1 매니페스트 경로, $2 ledger 키(파일 이름), $3 산출물 이름(.json 을 뗀 것)
 process() {
   local file=$1 name=$2 stem=$3
-  if [ -L "$file" ] || [ ! -f "$file" ]; then record "$name" "rejected not-regular"; return; fi
+  # 검사와 읽기 사이에 바꿔치기하지 못하게, 한 번 열어 릴레이 쪽 사본으로만 다룬다.
+  local work="$STATE/work"
+  rm -rf "$work" && mkdir -p "$work"
   local fields reason
-  if ! fields=$(python3 "$HELPER" manifest "$file"); then record "$name" "rejected ${fields:-bad-manifest}"; return; fi
+  if ! reason=$(python3 "$HELPER" copy "$file" "$work/manifest.json" 65536); then record "$name" "rejected $reason"; return; fi
+  if ! fields=$(python3 "$HELPER" manifest "$work/manifest.json"); then record "$name" "rejected ${fields:-bad-manifest}"; return; fi
   local base format ref commit source_branch
   { read -r base; read -r format; read -r ref; read -r commit; read -r source_branch; } <<<"$fields"
-  local export="$OUTBOX/$ref"
-  if [ -L "$export" ] || [ ! -f "$export" ]; then record "$name" "rejected missing-export"; return; fi
-  if [ "$(wc -c <"$export")" -gt "$MAX_EXPORT_BYTES" ]; then record "$name" "rejected too-large"; return; fi
+  local export="$work/export"
+  if ! reason=$(python3 "$HELPER" copy "$OUTBOX/$ref" "$export" "$MAX_EXPORT_BYTES"); then record "$name" "rejected $reason"; return; fi
   if ! G merge-base --is-ancestor "$base" origin/main 2>/dev/null; then record "$name" "stale base-not-in-main"; return; fi
 
   G update-ref -d "$INCOMING" 2>/dev/null
