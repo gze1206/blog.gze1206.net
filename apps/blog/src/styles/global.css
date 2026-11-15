@@ -1036,9 +1036,22 @@ summary:focus-visible {
   color: var(--theme-muted);
 }
 
-.tag-chip::before {
-  color: var(--theme-muted);
-  content: '#';
+/* 태그 아이콘 (NOR-223). `#` 를 붙이면 `C#` 태그가 `#C#` 로 보인다. 아이콘은 장식이라 content 를
+   비워 스크린 리더가 읽지 않고, 글자색(currentColor)을 따라 테마·호버 색이 함께 바뀐다.
+   모양은 Lucide `tag`(ISC) 다. */
+.tag-chip::before,
+.tag-icon::before {
+  content: '';
+  display: inline-block;
+  flex: none;
+  width: 0.95em;
+  height: 0.95em;
+  margin-right: 0.3em;
+  vertical-align: -0.125em;
+  background-color: currentColor;
+  opacity: 0.75;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z'/%3E%3Ccircle cx='7.5' cy='7.5' r='1.5' fill='black'/%3E%3C/svg%3E")
+    center / contain no-repeat;
 }
 
 /* --- 목차 (NOR-17, NOR-150) ---

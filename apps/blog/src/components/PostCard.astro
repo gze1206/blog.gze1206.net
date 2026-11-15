@@ -50,9 +50,9 @@ const Heading = `h${headingLevel}` as const;
         <li>
           <a
             href={tagPath(toSlug(tag))}
-            class="bg-surface-sunken text-body hover:bg-accent-soft inline-block rounded-full px-2.5 py-0.5 text-sm"
+            class="tag-icon bg-surface-sunken text-body hover:bg-accent-soft inline-block rounded-full px-2.5 py-0.5 text-sm"
           >
-            #{tag}
+            {tag}
           </a>
         </li>
       ))
