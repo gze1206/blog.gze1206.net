@@ -92,3 +92,9 @@ it('소개·포트폴리오는 고정 경로다', () => {
   expect(aboutPath()).toBe('/about');
   expect(portfolioPath()).toBe('/portfolio');
 });
+
+it('NOR-216 AC-1: bookPath 는 /books/<인코딩한 id> 다', async () => {
+  const mod = await import('./routes');
+  expect(mod).toHaveProperty('bookPath');
+  expect(mod.bookPath('니체의-초월자')).toBe(`/books/${encodeURIComponent('니체의-초월자')}`);
+});
