@@ -33,6 +33,13 @@ const STAGES: readonly ProgressStage[] = [
   'rejected',
   'stale',
 ];
+/** 링크로 그릴 수 있는 PR 주소(NOR-228 AC-8). 서버 응답과 저장소 모두 이 규칙을 지나야 한다. */
+const PULL_URL = /^https:\/\/github\.com\/[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+\/pull\/\d+$/u;
+
+export function isPullUrl(url: unknown): url is string {
+  return typeof url === 'string' && PULL_URL.test(url);
+}
+
 const FINAL: ReadonlySet<ProgressStage> = new Set([
   'merged',
   'failed',
@@ -67,7 +74,7 @@ export function applyProgress(
       ...rest,
       stage: item.stage,
       ...(item.reason === undefined ? {} : { reason: item.reason }),
-      ...(item.pull === undefined ? {} : { pull: item.pull }),
+      ...(item.pull === undefined || !isPullUrl(item.pull.url) ? {} : { pull: item.pull }),
     };
   });
 }
@@ -100,9 +107,6 @@ function isJob(value: unknown): value is PublishJob {
     typeof job.startedAt === 'string' &&
     STAGES.includes(job.stage as ProgressStage) &&
     (job.reason === undefined || typeof job.reason === 'string') &&
-    (pull === undefined ||
-      (typeof pull.number === 'number' &&
-        typeof pull.url === 'string' &&
-        pull.url.startsWith('https://github.com/')))
+    (pull === undefined || (typeof pull.number === 'number' && isPullUrl(pull.url)))
   );
 }

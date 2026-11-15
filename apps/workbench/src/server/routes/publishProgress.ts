@@ -14,6 +14,8 @@ interface Dependencies {
 }
 
 const MAX_REFS = 10;
+/** ledger 는 늘기만 한다. 끝쪽 1MB 만 본다 — 진행 중인 발행은 최근 줄에 있다. */
+const MAX_LEDGER_CHARS = 1024 * 1024;
 
 /** 확정한 발행이 어디까지 왔는지 (NOR-228). */
 export function createPublishProgressRoutes(dependencies: Dependencies): Hono {
@@ -25,7 +27,8 @@ export function createPublishProgressRoutes(dependencies: Dependencies): Hono {
         { error: { code: 'invalid_request', message: 'ref must be 1-10 outbox names' } },
         400,
       );
-    const ledger = parseLedger(await dependencies.readLedger().catch(() => ''));
+    const text = await dependencies.readLedger().catch(() => '');
+    const ledger = parseLedger(text.slice(-MAX_LEDGER_CHARS));
     const progress = await Promise.all(
       [...new Set(refs)].map(async (ref) => {
         const entry = ledger.get(ref);

@@ -44,7 +44,8 @@ touch "$LEDGER"
 mkdir -p "$PUBLIC" && chmod 0755 "$PUBLIC"
 # 임시 파일에 쓰고 rename 한다. 읽는 쪽이 반쯤 쓴 파일을 보지 않는다.
 publish_ledger() {
-  cp "$LEDGER" "$PUBLIC/.ledger.tmp" && chmod 0644 "$PUBLIC/.ledger.tmp" && mv -f "$PUBLIC/.ledger.tmp" "$PUBLIC/ledger"
+  cp "$LEDGER" "$PUBLIC/.ledger.tmp" && chmod 0644 "$PUBLIC/.ledger.tmp" && mv -f "$PUBLIC/.ledger.tmp" "$PUBLIC/ledger" ||
+    echo "ledger 공개 사본을 쓰지 못했다(발행은 계속한다)" >&2
 }
 publish_ledger
 G() { git -C "$REPO" -c core.hooksPath=/dev/null -c fetch.fsckObjects=true -c transfer.fsckObjects=true "$@"; }

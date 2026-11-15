@@ -11,6 +11,7 @@ import {
   addJob,
   applyProgress,
   isFinal,
+  isPullUrl,
   loadJobs,
   removeJob,
   saveJobs,
@@ -165,7 +166,7 @@ export function PublishToasts({ onMerged }: { readonly onMerged?: () => void }) 
                 ))}
               </div>
             )}
-            {job.pull ? (
+            {job.pull && isPullUrl(job.pull.url) ? (
               <a
                 className="mt-2 inline-block text-xs text-accent underline"
                 href={job.pull.url}
