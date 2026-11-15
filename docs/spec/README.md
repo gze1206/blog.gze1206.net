@@ -49,7 +49,8 @@
 | NOR-189 | [워크벤치 읽은 책 관리 명세](./workbench/NOR-189-book-management.md)                                       | done        |
 | NOR-203 | [워크벤치 디자인 정비와 라이트/다크 테마](./workbench/NOR-203-design-theme.md)                             | done        |
 | NOR-204 | [책 편집에서 표지 바꾸기와 역자 입력](./workbench/NOR-204-book-cover-translators.md)                       | done        |
-| NOR-205 | [워크벤치 문서 삭제(휴지통)](./workbench/NOR-205-document-trash.md)                                        | in-progress |
+| NOR-205 | [워크벤치 문서 삭제(휴지통)](./workbench/NOR-205-document-trash.md)                                        | done        |
+| NOR-210 | [발행을 PR 로 자동 전달하고 CI 통과 시 자동 병합](./workbench/NOR-210-publish-relay.md)                    | in-progress |
 
 ### 저장소 공통 (`repo/`)
 
