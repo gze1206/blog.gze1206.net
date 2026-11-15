@@ -8,6 +8,8 @@ interface Props {
   readonly onChange: (source: string) => void;
   readonly onSave: () => void;
   readonly onReviewPublish?: () => void;
+  /** 휴지통으로 옮긴다(NOR-205). */
+  readonly onDelete?: () => void;
   readonly publishAssets?: readonly PublicAssetCandidate[];
   readonly selectedAssetIds?: readonly string[];
   readonly onToggleAsset?: (id: string) => void;
@@ -20,6 +22,7 @@ export function Editor({
   saving,
   onChange,
   onSave,
+  onDelete,
   onReviewPublish,
   publishAssets = [],
   selectedAssetIds = [],
@@ -33,6 +36,16 @@ export function Editor({
           <p className="text-xs text-muted">Markdown + YAML frontmatter</p>
         </div>
         <div className="flex gap-2">
+          {onDelete ? (
+            <button
+              className="text-muted hover:text-danger rounded-md px-3 py-2 text-sm disabled:opacity-40"
+              disabled={saving}
+              onClick={onDelete}
+              type="button"
+            >
+              삭제
+            </button>
+          ) : null}
           {onReviewPublish ? (
             <button
               className="rounded-md border border-border-strong bg-surface px-4 py-2 text-sm text-foreground disabled:text-muted"

@@ -444,3 +444,28 @@ export async function confirmBook(id: string, reviewId: string): Promise<Publish
     body: JSON.stringify({ confirmPublish: true, reviewId }),
   });
 }
+
+/** 휴지통의 문서 하나 (NOR-205). */
+export interface TrashItem {
+  readonly id: string;
+  readonly relativePath: string;
+  readonly title: string;
+  readonly deletedAt: string;
+}
+
+/** 문서를 휴지통으로 옮긴다. 바로 지우지 않는다. */
+export async function deleteDocument(id: string): Promise<void> {
+  await request(`/api/documents/${id}`, { method: 'DELETE' });
+}
+
+export async function listTrash(): Promise<readonly TrashItem[]> {
+  return (await request<{ items: TrashItem[] }>('/api/trash')).items;
+}
+
+export async function restoreTrash(id: string): Promise<void> {
+  await request(`/api/trash/${encodeURIComponent(id)}/restore`, { method: 'POST' });
+}
+
+export async function purgeTrash(id: string): Promise<void> {
+  await request(`/api/trash/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}

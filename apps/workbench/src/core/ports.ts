@@ -67,6 +67,30 @@ export interface FileStore {
   }): Promise<DocumentEntry>;
 }
 
+/** 휴지통의 문서 하나 (NOR-205). */
+export interface TrashEntry {
+  /** 휴지통 안의 파일 이름. 복원·영구 삭제의 열쇠다. */
+  readonly id: string;
+  /** 지우기 전 자리. 복원하면 여기로 돌아간다. */
+  readonly relativePath: string;
+  readonly title: string;
+  readonly deletedAt: string;
+}
+
+/**
+ * 문서를 지우되 되돌릴 수 있게 한다. 휴지통은 `.workbench/trash/` 라 git 백업과 문서 목록에서
+ * 빠진다.
+ */
+export interface DocumentTrash {
+  trashDocument(relativePath: string): Promise<TrashEntry>;
+  listTrash(): Promise<readonly TrashEntry[]>;
+  /** 원래 자리에 문서가 있으면 `TrashConflictError` 로 실패하고 아무것도 바꾸지 않는다. */
+  restoreTrash(id: string): Promise<string>;
+  purgeTrash(id: string): Promise<void>;
+}
+
+export class TrashConflictError extends Error {}
+
 export interface GitRepo {
   status(): Promise<{ readonly clean: boolean; readonly files: readonly string[] }>;
   commit(paths: readonly string[], message: string): Promise<string>;

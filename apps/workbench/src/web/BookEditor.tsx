@@ -19,6 +19,8 @@ interface Props {
   readonly onChanged: () => void;
   readonly onEditSource: () => void;
   readonly onError: (message: string) => void;
+  /** 휴지통으로 옮긴다(NOR-205). */
+  readonly onDelete?: () => void;
 }
 
 const STATUSES = [
@@ -48,7 +50,7 @@ const SOURCES = [
  * 네 가지가 각자의 자리에 있다: **구절**(저자의 말)과 그에 딸린 **메모**, 옮길 문장 없이 남기는
  * **독서 메모**, 그리고 다 읽고 쓰는 **독서 노트**(아래 큰 칸).
  */
-export function BookEditor({ document, onChanged, onEditSource, onError }: Props) {
+export function BookEditor({ document, onChanged, onEditSource, onError, onDelete }: Props) {
   const initial = document.book;
   /*
     다른 책으로 옮겨 가면 폼도 그 책의 것이어야 한다. 그 일은 호출하는 쪽의 `key` 가 하므로
@@ -120,6 +122,16 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
           <p className="text-xs text-muted">읽은 책</p>
         </div>
         <div className="flex gap-2">
+          {onDelete ? (
+            <button
+              className="text-muted hover:text-danger rounded-md px-3 py-2 text-sm disabled:opacity-40"
+              disabled={busy}
+              onClick={onDelete}
+              type="button"
+            >
+              삭제
+            </button>
+          ) : null}
           <button
             type="button"
             className="rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-body disabled:opacity-40"
