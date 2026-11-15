@@ -27,15 +27,15 @@ export function Editor({
 }: Props) {
   return (
     <section className="flex min-h-0 flex-1 flex-col" aria-label="문서 편집기">
-      <header className="flex h-16 items-center justify-between border-b border-stone-200 px-6">
+      <header className="flex h-16 items-center justify-between border-b border-border px-6">
         <div>
-          <h2 className="text-sm font-medium text-stone-900">{title}</h2>
-          <p className="text-xs text-stone-400">Markdown + YAML frontmatter</p>
+          <h2 className="text-sm font-medium text-foreground">{title}</h2>
+          <p className="text-xs text-muted">Markdown + YAML frontmatter</p>
         </div>
         <div className="flex gap-2">
           {onReviewPublish ? (
             <button
-              className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm text-stone-800 disabled:text-stone-400"
+              className="rounded-md border border-border-strong bg-surface px-4 py-2 text-sm text-foreground disabled:text-muted"
               disabled={dirty || saving}
               onClick={onReviewPublish}
               type="button"
@@ -44,7 +44,7 @@ export function Editor({
             </button>
           ) : null}
           <button
-            className="rounded-md bg-stone-900 px-4 py-2 text-sm text-white disabled:bg-stone-300"
+            className="rounded-md bg-foreground px-4 py-2 text-sm text-background disabled:bg-border-strong"
             disabled={!dirty || saving}
             onClick={onSave}
             type="button"
@@ -54,14 +54,12 @@ export function Editor({
         </div>
       </header>
       {onReviewPublish ? (
-        <fieldset className="border-b border-stone-200 px-6 py-3">
-          <legend className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+        <fieldset className="border-b border-border px-6 py-3">
+          <legend className="text-xs font-semibold tracking-wide text-muted uppercase">
             발행 자산
           </legend>
           {publishAssets.length === 0 ? (
-            <p className="mt-1 text-xs text-stone-400">
-              이 초안에 귀속된 공개 가능 자산이 없습니다.
-            </p>
+            <p className="mt-1 text-xs text-muted">이 초안에 귀속된 공개 가능 자산이 없습니다.</p>
           ) : (
             <div className="mt-2 flex flex-wrap gap-3">
               {publishAssets.map((asset) => (
@@ -80,7 +78,7 @@ export function Editor({
       ) : null}
       <textarea
         aria-label="Markdown 문서"
-        className="min-h-0 flex-1 resize-none bg-[#fbfaf6] p-6 font-mono text-sm leading-7 text-stone-800 outline-none"
+        className="min-h-0 flex-1 resize-none bg-background p-6 font-mono text-sm leading-7 text-foreground outline-none"
         onChange={(event) => onChange(event.target.value)}
         spellCheck={false}
         value={source}

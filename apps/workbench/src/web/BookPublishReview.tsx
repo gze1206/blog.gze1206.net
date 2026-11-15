@@ -18,7 +18,7 @@ export function BookPublishReview({
   return (
     <section
       aria-label="책장 내보내기 검토"
-      className="mt-5 rounded-lg border border-stone-200 bg-white p-5 text-sm"
+      className="mt-5 rounded-lg border border-border bg-surface p-5 text-sm"
     >
       <h3 className="font-semibold">책장 내보내기 검토</h3>
       <p>종류: {review.kind === 'noop' ? '바뀐 것 없음' : review.kind}</p>
@@ -29,7 +29,7 @@ export function BookPublishReview({
       ))}
       <pre
         aria-label="책 통합 diff"
-        className="mt-2 max-h-96 overflow-auto rounded-lg bg-stone-950 p-5 font-mono text-xs whitespace-pre text-stone-100"
+        className="mt-2 max-h-96 overflow-auto rounded-lg bg-foreground p-5 font-mono text-xs whitespace-pre text-background"
       >
         {review.diff}
       </pre>
@@ -38,7 +38,7 @@ export function BookPublishReview({
           닫기
         </button>
         <button
-          className="rounded-md bg-stone-900 px-4 py-2 text-white disabled:bg-stone-300"
+          className="rounded-md bg-foreground px-4 py-2 text-background disabled:bg-border-strong"
           type="button"
           disabled={review.kind === 'noop' || busy || result !== null}
           onClick={onConfirm}

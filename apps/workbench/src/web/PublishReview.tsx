@@ -21,40 +21,40 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
       <div className="mx-auto max-w-5xl">
         <header className="flex items-start justify-between gap-8">
           <div>
-            <p className="font-mono text-[11px] tracking-[0.18em] text-emerald-700 uppercase">
+            <p className="font-mono text-[11px] tracking-[0.18em] text-accent uppercase">
               Dry run · no Git changes
             </p>
             <h2 id="publish-review-title" className="mt-1 font-serif text-3xl">
               공개 발행 검토
             </h2>
           </div>
-          <button className="text-sm text-stone-500 hover:text-stone-900" onClick={onClose}>
+          <button className="text-sm text-muted hover:text-foreground" onClick={onClose}>
             편집기로 돌아가기
           </button>
         </header>
 
-        <dl className="mt-7 grid grid-cols-[9rem_1fr] gap-x-4 gap-y-2 rounded-lg border border-stone-200 bg-white p-5 text-sm">
-          <dt className="text-stone-500">제목</dt>
+        <dl className="mt-7 grid grid-cols-[9rem_1fr] gap-x-4 gap-y-2 rounded-lg border border-border bg-surface p-5 text-sm">
+          <dt className="text-muted">제목</dt>
           <dd>{review.metadata.title}</dd>
-          <dt className="text-stone-500">slug</dt>
+          <dt className="text-muted">slug</dt>
           <dd className="font-mono">{review.metadata.slug}</dd>
-          <dt className="text-stone-500">카테고리 / 태그</dt>
+          <dt className="text-muted">카테고리 / 태그</dt>
           <dd>
             {review.metadata.category} · {review.metadata.tags.join(', ')}
           </dd>
-          <dt className="text-stone-500">발행 / 수정일</dt>
+          <dt className="text-muted">발행 / 수정일</dt>
           <dd>
             {review.metadata.publishedAt} / {review.metadata.updatedAt}
           </dd>
-          <dt className="text-stone-500">대상</dt>
+          <dt className="text-muted">대상</dt>
           <dd className="font-mono">{review.targetPath}</dd>
-          <dt className="text-stone-500">자산</dt>
+          <dt className="text-muted">자산</dt>
           <dd>{review.assets.length === 0 ? '없음' : review.assets.join(', ')}</dd>
         </dl>
 
         {(review.quotes ?? []).length > 0 ? (
           <section className="mt-7 text-sm">
-            <h3 className="font-semibold text-stone-700">인용 목록</h3>
+            <h3 className="font-semibold text-body">인용 목록</h3>
             <ul>
               {review.quotes?.map((quote, index) => (
                 <li key={index}>
@@ -65,7 +65,7 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
             </ul>
           </section>
         ) : null}
-        <h3 className="mt-7 text-sm font-semibold text-stone-700">통합 diff</h3>
+        <h3 className="mt-7 text-sm font-semibold text-body">통합 diff</h3>
         {(review.warnings ?? []).map((warning) => (
           <p key={warning} role="alert">
             {warning}
@@ -73,13 +73,13 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
         ))}
         <pre
           aria-label="통합 diff"
-          className="mt-2 max-h-[28rem] overflow-auto rounded-lg bg-stone-950 p-5 font-mono text-xs leading-5 whitespace-pre text-stone-100"
+          className="mt-2 max-h-[28rem] overflow-auto rounded-lg bg-foreground p-5 font-mono text-xs leading-5 whitespace-pre text-background"
         >
           {review.diff}
         </pre>
 
-        <footer className="mt-5 flex items-center justify-between gap-5 rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <label className="flex items-start gap-3 text-sm leading-5 text-stone-700">
+        <footer className="mt-5 flex items-center justify-between gap-5 rounded-lg border border-notice-foreground/30 bg-notice p-4">
+          <label className="flex items-start gap-3 text-sm leading-5 text-body">
             <input
               checked={confirmed}
               className="mt-1"
@@ -90,7 +90,7 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
             검토 내용을 확인했습니다
           </label>
           <button
-            className="rounded-md bg-stone-900 px-4 py-2 text-sm text-white disabled:bg-stone-300"
+            className="rounded-md bg-foreground px-4 py-2 text-sm text-background disabled:bg-border-strong"
             disabled={!confirmed || publishing || result !== null}
             onClick={onConfirm}
             type="button"
@@ -100,7 +100,7 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
         </footer>
         {result ? (
           <section
-            className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950"
+            className="mt-4 rounded-lg border border-accent/40 bg-accent-soft p-4 text-sm text-accent-strong"
             role="status"
           >
             <p>
@@ -110,11 +110,11 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
             <p className="mt-2">
               push 전 전체 clone에서 최신 상태를 받은 뒤 base 정합성을 확인하세요.
             </p>
-            <pre className="mt-2 overflow-auto rounded bg-white/70 p-3 font-mono text-xs whitespace-pre-wrap">{`git fetch origin\ngit merge-base --is-ancestor ${result.baseSha} origin/main`}</pre>
+            <pre className="mt-2 overflow-auto rounded bg-surface/70 p-3 font-mono text-xs whitespace-pre-wrap">{`git fetch origin\ngit merge-base --is-ancestor ${result.baseSha} origin/main`}</pre>
             {result.exportFormat === 'bundle' ? (
-              <pre className="mt-2 overflow-auto rounded bg-white/70 p-3 font-mono text-xs whitespace-pre-wrap">{`git bundle verify ${result.exportRef}\ngit fetch ${result.exportRef} ${result.branch}:${result.branch}`}</pre>
+              <pre className="mt-2 overflow-auto rounded bg-surface/70 p-3 font-mono text-xs whitespace-pre-wrap">{`git bundle verify ${result.exportRef}\ngit fetch ${result.exportRef} ${result.branch}:${result.branch}`}</pre>
             ) : (
-              <pre className="mt-2 overflow-auto rounded bg-white/70 p-3 font-mono text-xs whitespace-pre-wrap">{`git switch -c ${result.branch} ${result.baseSha}\ngit am ${result.exportRef}`}</pre>
+              <pre className="mt-2 overflow-auto rounded bg-surface/70 p-3 font-mono text-xs whitespace-pre-wrap">{`git switch -c ${result.branch} ${result.baseSha}\ngit am ${result.exportRef}`}</pre>
             )}
           </section>
         ) : null}

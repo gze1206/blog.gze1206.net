@@ -1,0 +1,77 @@
+/* 블로그와 워크벤치가 함께 쓰는 색 토큰 (NOR-203). 각 앱은 Tailwind 를 가져온 뒤 이 파일을 가져온다:
+   @import 'tailwindcss'; @import '@gze1206/theme/tokens.css';
+   값을 바꾸면 두 앱이 함께 바뀐다. 대비는 tokens.test.ts 가 지킨다(4.5:1). */
+
+@theme {
+  --color-background: var(--theme-background);
+  --color-foreground: var(--theme-foreground);
+  --color-body: var(--theme-body);
+  --color-surface: var(--theme-surface);
+  --color-surface-sunken: var(--theme-surface-sunken);
+  --color-muted: var(--theme-muted);
+  --color-muted-strong: var(--theme-muted-strong);
+  --color-border: var(--theme-border);
+  --color-border-strong: var(--theme-border-strong);
+  --color-accent: var(--theme-accent);
+  --color-accent-strong: var(--theme-accent-strong);
+  --color-accent-soft: var(--theme-accent-soft);
+  --color-accent-foreground: var(--theme-accent-foreground);
+  --color-notice: var(--theme-notice);
+  --color-notice-foreground: var(--theme-notice-foreground);
+  --color-scrim: var(--theme-scrim);
+  --color-danger: var(--theme-danger);
+}
+
+/* 팔레트 02C Mineral / Warm Paper.
+   따뜻한 무채색 표면 위에 광물 초록을 신호로만 쓴다 — 표면까지 물들이면 독서 공간이
+   테마성 UI 처럼 보인다. 본문·보조 텍스트는 각 배경 위에서 WCAG AA(4.5:1) 를 넘긴다. */
+:root {
+  --theme-background: #fcf9f4;
+  --theme-surface: #fffdf9;
+  --theme-surface-sunken: #f4f0e9;
+  --theme-foreground: #292623;
+  --theme-body: #37322f;
+  --theme-muted: #6b645c;
+  --theme-muted-strong: #554e47;
+  --theme-border: #e4ded5;
+  --theme-border-strong: #d8d1c7;
+  --theme-accent: #3d7364;
+  --theme-accent-strong: #2e6252;
+  --theme-accent-soft: #eaf1e8;
+  --theme-accent-foreground: #fcf9f4;
+  --theme-focus: #3d7364;
+  --theme-shadow: 56 47 38;
+  /* 초안 배지처럼 "아직 공개 상태가 아님"을 알리는 자리. warning 콜아웃과 같은 색을 쓴다. */
+  --theme-notice: #f9efdd;
+  --theme-notice-foreground: #8a5a12;
+  /* 모달 뒤 어둠. 회색이 아니라 잉크색이어야 종이 위에서 자연스럽다. */
+  --theme-scrim: rgb(41 38 35 / 0.5);
+  /* 실패를 알리는 글자. danger 콜아웃과 같은 색이다. */
+  --theme-danger: #a33a2c;
+  /* 코드 면. 종이보다 한 단계 가라앉혀 본문과 다른 종류의 내용임을 보인다. */
+  --theme-code-surface: #f2eee7;
+}
+
+.dark {
+  --theme-background: #211f1d;
+  --theme-surface: #272522;
+  --theme-surface-sunken: #1b1917;
+  --theme-foreground: #efece7;
+  --theme-body: #ddd8d1;
+  --theme-muted: #a49c93;
+  --theme-muted-strong: #c0b9b0;
+  --theme-border: #38342f;
+  --theme-border-strong: #4a453f;
+  --theme-accent: #9fd0bb;
+  --theme-accent-strong: #b6e5cb;
+  --theme-accent-soft: #2a3430;
+  --theme-accent-foreground: #1a1917;
+  --theme-focus: #9fd0bb;
+  --theme-shadow: 0 0 0;
+  --theme-notice: #2a2113;
+  --theme-notice-foreground: #dcb679;
+  --theme-scrim: rgb(12 11 10 / 0.62);
+  --theme-danger: #e5a598;
+  /* 다크에서는 Tokyo Night 의 배경을 그대로 쓴다 — 이미 페이지와 또렷이 구분된다. */
+  --theme-code-surface: #1a1b26;
+}

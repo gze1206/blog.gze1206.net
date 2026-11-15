@@ -60,7 +60,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
   const [result, setResult] = useState<PublishResult | null>(null);
 
   if (form === null) {
-    return <p className="p-8 text-sm text-stone-500">책 정보를 읽지 못했습니다.</p>;
+    return <p className="p-8 text-sm text-muted">책 정보를 읽지 못했습니다.</p>;
   }
 
   const set = <K extends keyof BookUpdate>(key: K, value: BookUpdate[K]) =>
@@ -114,29 +114,29 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
 
   return (
     <section aria-label="책 편집기" className="flex min-h-0 flex-1 flex-col">
-      <header className="flex h-16 items-center justify-between border-b border-stone-200 px-6">
+      <header className="flex h-16 items-center justify-between border-b border-border px-6">
         <div>
-          <h2 className="text-sm font-medium text-stone-900">{form.title}</h2>
-          <p className="text-xs text-stone-400">읽은 책</p>
+          <h2 className="text-sm font-medium text-foreground">{form.title}</h2>
+          <p className="text-xs text-muted">읽은 책</p>
         </div>
         <div className="flex gap-2">
           <button
             type="button"
-            className="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 disabled:opacity-40"
+            className="rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-body disabled:opacity-40"
             disabled={busy || dirty}
             onClick={() => void runReview()}
           >
             {form.visible ? '책장으로 내보내기' : '책장에서 빼기'}
           </button>
           <button
-            className="rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700"
+            className="rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-body"
             onClick={onEditSource}
             type="button"
           >
             원본 고치기
           </button>
           <button
-            className="rounded-md bg-stone-900 px-4 py-2 text-sm text-white disabled:bg-stone-300"
+            className="rounded-md bg-foreground px-4 py-2 text-sm text-background disabled:bg-border-strong"
             disabled={!dirty || busy}
             onClick={() => void save()}
             type="button"
@@ -158,7 +158,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
           />
         ) : null}
         <div className="flex gap-5">
-          <span className="flex h-36 w-24 flex-none items-center justify-center overflow-hidden rounded border border-stone-200 bg-stone-100 text-[11px] text-stone-400">
+          <span className="flex h-36 w-24 flex-none items-center justify-center overflow-hidden rounded border border-border bg-surface-sunken text-[11px] text-muted">
             {cover === null ? (
               '표지 없음'
             ) : (
@@ -169,14 +169,14 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
           <div className="grid min-w-0 flex-1 gap-3">
             <Field label="제목">
               <input
-                className="w-full rounded border border-stone-300 px-2 py-1 text-sm"
+                className="w-full rounded border border-border-strong px-2 py-1 text-sm"
                 onChange={(event) => set('title', event.target.value)}
                 value={form.title}
               />
             </Field>
             <Field label="저자 (쉼표로 구분)">
               <input
-                className="w-full rounded border border-stone-300 px-2 py-1 text-sm"
+                className="w-full rounded border border-border-strong px-2 py-1 text-sm"
                 onChange={(event) => set('authors', splitList(event.target.value))}
                 value={form.authors.join(', ')}
               />
@@ -184,14 +184,14 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
             <div className="grid grid-cols-3 gap-2">
               <Field label="출판사">
                 <input
-                  className="w-full rounded border border-stone-300 px-2 py-1 text-sm"
+                  className="w-full rounded border border-border-strong px-2 py-1 text-sm"
                   onChange={(event) => setOptional('publisher', event.target.value)}
                   value={form.publisher ?? ''}
                 />
               </Field>
               <Field label="출간 연도">
                 <input
-                  className="w-full rounded border border-stone-300 px-2 py-1 font-mono text-sm"
+                  className="w-full rounded border border-border-strong px-2 py-1 font-mono text-sm"
                   inputMode="numeric"
                   onChange={(event) =>
                     setForm((current) => {
@@ -209,7 +209,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
               </Field>
               <Field label="ISBN">
                 <input
-                  className="w-full rounded border border-stone-300 px-2 py-1 font-mono text-sm"
+                  className="w-full rounded border border-border-strong px-2 py-1 font-mono text-sm"
                   onChange={(event) =>
                     setOptional('isbn13', event.target.value.replace(/[^0-9]/gu, ''))
                   }
@@ -240,7 +240,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
             <div className="grid grid-cols-3 gap-2">
               <Field label="시작한 날">
                 <input
-                  className="w-full rounded border border-stone-300 px-2 py-1 text-sm"
+                  className="w-full rounded border border-border-strong px-2 py-1 text-sm"
                   onChange={(event) => setOptional('startedAt', event.target.value)}
                   type="date"
                   value={form.startedAt ?? ''}
@@ -248,7 +248,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
               </Field>
               <Field label="다 읽은 날">
                 <input
-                  className="w-full rounded border border-stone-300 px-2 py-1 text-sm"
+                  className="w-full rounded border border-border-strong px-2 py-1 text-sm"
                   onChange={(event) => setOptional('finishedAt', event.target.value)}
                   type="date"
                   value={form.finishedAt ?? ''}
@@ -256,7 +256,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
               </Field>
               <Field label="별점">
                 <select
-                  className="w-full rounded border border-stone-300 px-2 py-1 text-sm"
+                  className="w-full rounded border border-border-strong px-2 py-1 text-sm"
                   onChange={(event) =>
                     setForm((current) =>
                       current === null
@@ -282,10 +282,10 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 border-t border-stone-200 pt-5">
+        <div className="mt-5 grid gap-3 border-t border-border pt-5">
           <Field label="한 줄 감상 — 블로그에 나가는 유일한 글입니다">
             <input
-              className="w-full rounded border border-stone-300 px-2 py-1 text-sm"
+              className="w-full rounded border border-border-strong px-2 py-1 text-sm"
               onChange={(event) => setOptional('oneLiner', event.target.value)}
               placeholder="비워 두면 목록에 제목과 저자만 남습니다."
               value={form.oneLiner ?? ''}
@@ -294,7 +294,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
           <div className="grid grid-cols-2 gap-3">
             <Field label="태그 (쉼표로 구분)">
               <input
-                className="w-full rounded border border-stone-300 px-2 py-1 text-sm"
+                className="w-full rounded border border-border-strong px-2 py-1 text-sm"
                 onChange={(event) =>
                   setForm((current) => {
                     if (current === null) return current;
@@ -305,7 +305,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
                 value={(form.tags ?? []).join(', ')}
               />
             </Field>
-            <label className="flex items-end gap-2 pb-1 text-sm text-stone-700">
+            <label className="flex items-end gap-2 pb-1 text-sm text-body">
               <input
                 checked={form.visible}
                 onChange={(event) => set('visible', event.target.checked)}
@@ -316,10 +316,10 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
           </div>
         </div>
 
-        <div className="mt-5 border-t border-stone-200 pt-5">
+        <div className="mt-5 border-t border-border pt-5">
           <Field label="독서 노트 — 다 읽고 남기는 짧은 독후감">
             <textarea
-              className="h-40 w-full rounded border border-stone-300 px-3 py-2 text-sm leading-relaxed"
+              className="h-40 w-full rounded border border-border-strong px-3 py-2 text-sm leading-relaxed"
               onChange={(event) => set('content', event.target.value)}
               placeholder="이 책이 어땠는지. 구절과 메모는 아래에 따로 쌓입니다."
               value={form.content}
@@ -327,7 +327,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError }: Props
           </Field>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-6 border-t border-stone-200 pt-5">
+        <div className="mt-5 grid grid-cols-2 gap-6 border-t border-border pt-5">
           <BookNotes
             documentId={document.id}
             bookId={bookId}
@@ -358,7 +358,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-xs text-stone-500">{label}</span>
+      <span className="text-xs text-muted">{label}</span>
       <span className="mt-1 block">{children}</span>
     </label>
   );
@@ -378,7 +378,7 @@ function Choice<T extends string>({
   return (
     <Field label={label}>
       <select
-        className="w-full rounded border border-stone-300 px-2 py-1 text-sm"
+        className="w-full rounded border border-border-strong px-2 py-1 text-sm"
         onChange={(event) => onChange(event.target.value as T)}
         value={value}
       >

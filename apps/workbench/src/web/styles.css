@@ -1,8 +1,18 @@
 @import 'tailwindcss';
+/* 색 토큰(팔레트 02C)은 블로그와 함께 쓴다(NOR-203). 컴포넌트는 의미 토큰만 쓴다. */
+@import '@gze1206/theme/tokens.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-serif: Georgia, 'Times New Roman', serif;
-  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --font-sans:
+    'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI',
+    'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  --font-serif: 'Noto Serif KR', ui-serif, Georgia, 'Apple SD Gothic Neo', serif;
+  /* 고정폭 폰트에는 한글이 없다. 한글 대체가 없으면 Windows 는 굴림체로 그린다(NOR-202). */
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Consolas, 'Pretendard Variable', 'Pretendard',
+    'Apple SD Gothic Neo', 'Malgun Gothic', monospace;
 }
 
 @layer base {
@@ -10,22 +20,35 @@
     box-sizing: border-box;
   }
 
+  html {
+    background: var(--theme-background);
+  }
+
   body {
     margin: 0;
     min-width: 52rem;
     min-height: 100vh;
-    background: #f4f1e8;
+    background: var(--theme-background);
+    color: var(--theme-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
 
   button,
   input,
-  textarea {
+  textarea,
+  select {
     font: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--theme-focus);
+    outline-offset: 2px;
   }
 }
 
 @layer components {
   .field {
-    @apply w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500;
+    @apply border-border bg-surface text-foreground placeholder:text-muted focus:border-accent w-full rounded-md border px-3 py-2 text-sm outline-none;
   }
 }

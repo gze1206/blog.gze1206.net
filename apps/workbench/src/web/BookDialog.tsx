@@ -127,27 +127,27 @@ export function BookDialog({ onClose, onCreated }: Props) {
   const coverPreview = cover?.preview ?? found?.coverUrl;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-stone-900/40 p-6 pt-[8vh]">
-      <div className="flex max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-stone-200 bg-white shadow-xl">
-        <header className="border-b border-stone-200 px-5 py-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-scrim p-6 pt-[8vh]">
+      <div className="flex max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
+        <header className="border-b border-border px-5 py-4">
           <h2 className="font-serif text-xl">책 등록</h2>
-          <p className="mt-1 text-sm text-stone-500">
+          <p className="mt-1 text-sm text-muted">
             제목과 저자만 있으면 됩니다. ISBN 이 있으면 나머지를 채워 볼 수 있습니다.
           </p>
         </header>
 
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
           <label className="block">
-            <span className="text-xs text-stone-500">ISBN (선택)</span>
+            <span className="text-xs text-muted">ISBN (선택)</span>
             <span className="mt-1 flex gap-2">
               <input
-                className="min-w-0 flex-1 rounded border border-stone-300 px-2 py-1 font-mono text-sm"
+                className="min-w-0 flex-1 rounded border border-border-strong px-2 py-1 font-mono text-sm"
                 onChange={(event) => setIsbn(event.target.value)}
                 placeholder="978-89-…"
                 value={isbn}
               />
               <button
-                className="rounded border border-stone-300 px-3 py-1 text-sm whitespace-nowrap disabled:opacity-40"
+                className="rounded border border-border-strong px-3 py-1 text-sm whitespace-nowrap disabled:opacity-40"
                 disabled={busy || isbn.trim() === ''}
                 onClick={() => void lookup()}
                 type="button"
@@ -156,20 +156,20 @@ export function BookDialog({ onClose, onCreated }: Props) {
               </button>
             </span>
           </label>
-          {hint ? <p className="text-[11px] text-stone-500">{hint}</p> : null}
+          {hint ? <p className="text-[11px] text-muted">{hint}</p> : null}
 
           <label className="block">
-            <span className="text-xs text-stone-500">제목</span>
+            <span className="text-xs text-muted">제목</span>
             <input
-              className="mt-1 w-full rounded border border-stone-300 px-2 py-1 text-sm"
+              className="mt-1 w-full rounded border border-border-strong px-2 py-1 text-sm"
               onChange={(event) => setTitle(event.target.value)}
               value={title}
             />
           </label>
           <label className="block">
-            <span className="text-xs text-stone-500">저자 (쉼표로 구분)</span>
+            <span className="text-xs text-muted">저자 (쉼표로 구분)</span>
             <input
-              className="mt-1 w-full rounded border border-stone-300 px-2 py-1 text-sm"
+              className="mt-1 w-full rounded border border-border-strong px-2 py-1 text-sm"
               onChange={(event) => setAuthors(event.target.value)}
               value={authors}
             />
@@ -182,7 +182,7 @@ export function BookDialog({ onClose, onCreated }: Props) {
           </div>
 
           <div className="flex items-start gap-3">
-            <span className="flex h-24 w-16 flex-none items-center justify-center overflow-hidden rounded border border-stone-300 bg-stone-100 text-[10px] text-stone-400">
+            <span className="flex h-24 w-16 flex-none items-center justify-center overflow-hidden rounded border border-border-strong bg-surface-sunken text-[10px] text-muted">
               {coverPreview === undefined ? (
                 '표지 없음'
               ) : (
@@ -190,15 +190,15 @@ export function BookDialog({ onClose, onCreated }: Props) {
               )}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="text-xs text-stone-500">표지</span>
+              <span className="text-xs text-muted">표지</span>
               <input
                 accept="image/jpeg,image/png,image/webp"
-                className="mt-1 block w-full text-xs file:mr-2 file:rounded file:border file:border-stone-300 file:bg-white file:px-2 file:py-1 file:text-xs"
+                className="mt-1 block w-full text-xs file:mr-2 file:rounded file:border file:border-border-strong file:bg-surface file:px-2 file:py-1 file:text-xs"
                 disabled={busy}
                 onChange={(event) => void chooseCover(event.target.files?.[0])}
                 type="file"
               />
-              <span className="mt-1 block text-[11px] text-stone-500">
+              <span className="mt-1 block text-[11px] text-muted">
                 {cover === null
                   ? 'JPEG·PNG·WebP, 5MB 까지. 조회로 받은 표지가 있으면 그것을 씁니다.'
                   : '올린 표지를 씁니다.'}
@@ -207,9 +207,9 @@ export function BookDialog({ onClose, onCreated }: Props) {
           </div>
 
           <label className="block">
-            <span className="text-xs text-stone-500">메모 (비공개)</span>
+            <span className="text-xs text-muted">메모 (비공개)</span>
             <textarea
-              className="mt-1 h-24 w-full rounded border border-stone-300 px-2 py-1 text-sm"
+              className="mt-1 h-24 w-full rounded border border-border-strong px-2 py-1 text-sm"
               onChange={(event) => setNotes(event.target.value)}
               placeholder="밑줄 친 문장이나 생각. 이 내용은 블로그로 나가지 않습니다."
               value={notes}
@@ -217,18 +217,18 @@ export function BookDialog({ onClose, onCreated }: Props) {
           </label>
         </div>
 
-        <footer className="border-t border-stone-200 px-5 py-3">
-          {error ? <p className="mb-2 text-sm text-red-700">{error}</p> : null}
+        <footer className="border-t border-border px-5 py-3">
+          {error ? <p className="mb-2 text-sm text-danger">{error}</p> : null}
           <div className="flex justify-end gap-2">
             <button
-              className="rounded-md px-3 py-2 text-sm text-stone-600"
+              className="rounded-md px-3 py-2 text-sm text-muted-strong"
               onClick={onClose}
               type="button"
             >
               닫기
             </button>
             <button
-              className="rounded-md bg-emerald-700 px-3 py-2 text-sm text-white disabled:opacity-40"
+              className="rounded-md bg-accent px-3 py-2 text-sm text-accent-foreground disabled:opacity-40"
               disabled={!ready || busy}
               onClick={() => void save()}
               type="button"
@@ -255,9 +255,9 @@ function Choice<T extends string>({
 }) {
   return (
     <label className="block">
-      <span className="text-xs text-stone-500">{label}</span>
+      <span className="text-xs text-muted">{label}</span>
       <select
-        className="mt-1 w-full rounded border border-stone-300 px-2 py-1 text-sm"
+        className="mt-1 w-full rounded border border-border-strong px-2 py-1 text-sm"
         onChange={(event) => onChange(event.target.value as T)}
         value={value}
       >
