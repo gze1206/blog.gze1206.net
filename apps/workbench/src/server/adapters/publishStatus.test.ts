@@ -60,6 +60,11 @@ it(
       path.join(source, POSTS, 'blog-only.mdoc'),
       same.replace('slug: same', 'slug: blog-only').replace('title: same 글', 'title: 블로그 글'),
     );
+    // 스모크 테스트·픽스처 같은 draft 글은 "블로그에만 있는 글" 로 알리지 않는다.
+    await writeFile(
+      path.join(source, POSTS, 'smoke.mdoc'),
+      same.replace('slug: same', 'slug: smoke').replace('draft: false', 'draft: true'),
+    );
     await git(source, 'init', '-b', 'main');
     await git(source, 'config', 'user.name', 'Fixture');
     await git(source, 'config', 'user.email', 'fixture@example.test');
