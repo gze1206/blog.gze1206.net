@@ -60,3 +60,14 @@ for (const path of PAGES) {
     expect(items.filter((item) => mono.test(item.first)).map((item) => item.label)).toEqual([]);
   });
 }
+
+test('NOR-34 AC-2: 목차 링크의 터치 대상은 높이 24px 이상이다', async ({ page }) => {
+  await page.goto('/blog/c-9-0-record-type');
+  const links = page.locator('.toc-list a');
+  const count = await links.count();
+  expect(count).toBeGreaterThan(0);
+  for (let index = 0; index < count; index += 1) {
+    const box = await links.nth(index).boundingBox();
+    if (box) expect(box.height, await links.nth(index).innerText()).toBeGreaterThanOrEqual(24);
+  }
+});

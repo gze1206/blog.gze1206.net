@@ -39,3 +39,17 @@ describe('spineTitle', () => {
     expect(spineTitle('토지')).toBe('토지');
   });
 });
+
+describe('표지 불러오기', () => {
+  it('NOR-34 AC-1: 첫 줄 표지는 바로, 첫 표지는 높은 우선순위로, 나머지는 지연 로드한다', async () => {
+    const mod = await import('./book-shelf');
+    expect(mod).toHaveProperty('coverLoading');
+    const coverLoading = Reflect.get(mod, 'coverLoading') as (index: number) => {
+      loading: string;
+      fetchpriority?: string;
+    };
+    expect(coverLoading(0)).toEqual({ loading: 'eager', fetchpriority: 'high' });
+    expect(coverLoading(5)).toEqual({ loading: 'eager' });
+    expect(coverLoading(6)).toEqual({ loading: 'lazy' });
+  });
+});
