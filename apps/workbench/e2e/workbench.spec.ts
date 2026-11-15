@@ -253,3 +253,18 @@ test('NOR-203 AC-6: 추가 버튼은 한 줄이고 본문 글꼴은 Pretendard �
   const family = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
   expect(family).toMatch(/^"?Pretendard/u);
 });
+
+test('NOR-204 AC-4: 쉼표로 구분하는 칸에 여러 이름을 그대로 칠 수 있다', async ({ page }) => {
+  await page.goto('/');
+  const book = page.getByRole('button', { name: /인용 테스트/u });
+  await expect(book).toBeVisible();
+  await book.click();
+  const translators = page.getByLabel('역자 (쉼표로 구분)');
+  await expect(translators).toBeVisible();
+  await translators.pressSequentially('옮긴이 하나, 옮긴이 둘');
+  await expect(translators).toHaveValue('옮긴이 하나, 옮긴이 둘');
+  const authors = page.getByLabel('저자 (쉼표로 구분)');
+  await authors.fill('');
+  await authors.pressSequentially('유발 하라리, 공저자');
+  await expect(authors).toHaveValue('유발 하라리, 공저자');
+});
