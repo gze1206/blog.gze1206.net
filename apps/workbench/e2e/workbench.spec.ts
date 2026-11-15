@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 test('creates and edits a document without sending a filesystem path', async ({ page }) => {
   let createPayload: unknown;
@@ -18,7 +18,7 @@ test('creates and edits a document without sending a filesystem path', async ({ 
 
   const editor = page.getByLabel('Markdown 문서');
   await expect(editor).toContainText('title: Quick capture');
-  await editor.fill(`${await editor.inputValue()}\n- • 첫 기록\n`);
+  await appendToEditor(page, '\n- • 첫 기록\n');
   await page.getByRole('button', { name: '저장', exact: true }).click();
   await expect(page.getByRole('button', { name: '저장됨' })).toBeDisabled();
   await expect(page.getByRole('button', { name: /Quick capture/u })).toBeVisible();
@@ -28,7 +28,7 @@ test('creates and edits a document without sending a filesystem path', async ({ 
   await page.getByLabel('회고 기간').fill('2026-W33');
   await page.getByRole('button', { name: /주간 회고/u }).click();
   await expect(editor).toContainText('period: 2026-W33');
-  await expect(editor).toContainText('# 2026-W33 주간 회고');
+  await expect(editor.locator('.cm-lp-h1')).toHaveText('2026-W33 주간 회고');
 });
 
 test('stores Later locally and Skip suppresses only that review period on the next app open', async ({
@@ -94,7 +94,9 @@ test('offers one nonmodal review only on app open and creates it with a selected
 
   const editor = page.getByLabel('Markdown 문서');
   await expect(editor).toContainText('period: 2026-W32');
-  await expect(editor).toContainText(
+  // 커서가 없는 줄은 링크 표시 문자를 숨긴다. 줄을 눌러 원본을 드러낸 뒤 확인한다(NOR-206 AC-6).
+  await editor.locator('.cm-lp-link').click();
+  await expect(editor.locator('.cm-line').filter({ hasText: '](/day/' })).toContainText(
     '[첫 번째 남은 일](/day/2026-08-11#bullet-01J5AR7W6M3Q9N8K2T4V1X0ZBC)',
   );
   await page.getByRole('button', { name: '오늘의 로그' }).click();
@@ -292,10 +294,69 @@ test('NOR-206 AC-5: 저장하지 않은 내용도 나란히 보기에서 렌더�
   await page.getByRole('button', { name: /빠른 메모/u }).click();
   const editor = page.getByLabel('Markdown 문서');
   await expect(editor).toContainText('title: 미리보기 확인');
-  await editor.fill(`${await editor.inputValue()}\n## 미리보기 제목\n\n- **굵은** 항목\n`);
+  await appendToEditor(page, '\n## 미리보기 제목\n\n- **굵은** 항목\n');
   await page.getByRole('button', { name: '나란히' }).click();
   const preview = page.getByRole('region', { name: '미리보기' });
   await expect(preview.getByRole('heading', { name: '미리보기 제목' })).toBeVisible();
   await expect(preview.locator('strong')).toHaveText('굵은');
   await expect(editor).toBeVisible();
+});
+
+/** 라이브 프리뷰 편집기(CodeMirror) 끝에 글자를 친다. textarea 처럼 fill 할 수 없다. */
+async function appendToEditor(page: Page, text: string) {
+  await page.getByLabel('Markdown 문서').click();
+  await page.keyboard.press('ControlOrMeta+End');
+  await page.keyboard.insertText(text);
+}
+
+test('NOR-206 AC-6·8: 라이브 편집기는 커서가 떠난 줄의 표시 문자를 숨기고 원본 그대로 저장한다', async ({
+  page,
+}) => {
+  let saved = '';
+  await page.route('**/api/documents/**', async (route) => {
+    if (route.request().method() === 'PUT')
+      saved = String(route.request().postDataJSON()?.source ?? '');
+    await route.fallback();
+  });
+  await page.goto('/');
+  await page.getByLabel('새 문서 제목').fill('라이브 확인');
+  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  const editor = page.getByLabel('Markdown 문서');
+  await expect(editor).toContainText('title: 라이브 확인');
+  await appendToEditor(page, '\n## 라이브 제목\n\n본문 ');
+  await page.keyboard.insertText('굵은말');
+  await page.keyboard.press('Shift+ArrowLeft');
+  await page.keyboard.press('Shift+ArrowLeft');
+  await page.keyboard.press('Shift+ArrowLeft');
+  await page.getByRole('button', { name: '굵게' }).click();
+  await page.keyboard.press('ControlOrMeta+End');
+  await page.keyboard.insertText('\n\n끝');
+  await expect(editor.locator('.cm-lp-strong')).toHaveText('굵은말');
+  await expect(editor.locator('.cm-lp-h2')).toHaveText('라이브 제목');
+  await page.getByRole('button', { name: '저장', exact: true }).click();
+  await expect(page.getByRole('button', { name: '저장됨' })).toBeDisabled();
+  expect(saved).toContain('## 라이브 제목\n\n본문 **굵은말**\n\n끝');
+});
+
+test('NOR-206 AC-8: 다른 문서를 연 뒤 실행 취소해도 이전 문서 내용이 돌아오지 않는다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('새 문서 제목').fill('취소 첫 문서');
+  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  const editor = page.getByLabel('Markdown 문서');
+  await expect(editor).toContainText('title: 취소 첫 문서');
+  await appendToEditor(page, '\n첫 문서에만 있는 줄');
+  await page.getByRole('button', { name: '저장', exact: true }).click();
+  await expect(page.getByRole('button', { name: '저장됨' })).toBeDisabled();
+
+  await page.getByLabel('새 문서 제목').fill('취소 둘째 문서');
+  await page.getByRole('button', { name: /빠른 메모/u }).click();
+  await expect(editor).toContainText('title: 취소 둘째 문서');
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+z');
+  await page.keyboard.press('ControlOrMeta+z');
+  await expect(editor).toContainText('title: 취소 둘째 문서');
+  await expect(editor).not.toContainText('첫 문서에만 있는 줄');
+  await expect(page.getByRole('button', { name: '저장됨' })).toBeDisabled();
 });
