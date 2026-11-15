@@ -28,6 +28,6 @@
 
 - **AC-6** (manual) 컨테이너는 digest 로 고정한 linux/arm64 이미지를 쓰고, 공개 포트 없이 `edge` 네트워크의 alias `comentario` 로만 닿는다. root 가 아닌 UID, 읽기 전용 루트 파일 시스템, `cap_drop: ALL`, `no-new-privileges` 로 돈다.
 - **AC-7** (manual) `sites/comments.caddy` 는 `import cloudflare_origin` 으로 시작하고 요청 본문을 1MB 로 제한한다. Cloudflare 는 `comments` 레코드를 프록시한다.
-- **AC-8** (manual) 첫 계정(superuser)은 edge 에 붙이기 전에 루프백에서 만든다. 그 뒤 새 가입(`auth.signup.enabled`)과 Gravatar 를 끈다. 도메인 `gze1206.net` 은 익명 허용, 이름 필수, 익명 사전 승인, 로컬 가입 끔, 이미지 마크다운 끔이다.
-- **AC-9** (manual) SQLite 를 매일 백업하고 14개까지 둔다.
+- **AC-8** (manual) 첫 계정(superuser)은 edge 에 붙이기 전에 바깥과 끊긴 내부 네트워크(`compose.bootstrap.yml`)에서 만든다. 그 뒤 새 가입(`auth.signup.enabled`)과 Gravatar 를 끈다. 도메인 `gze1206.net` 은 익명 허용, 이름 필수, 익명 사전 승인, 로컬 가입 끔, 이미지 마크다운 끔이다.
+- **AC-9** (manual) SQLite 를 매일 백업하고 14개까지 둔다. 백업은 서비스와 다른 계정(`comments-backup`)이 만들고 갖는다. 동시 실행은 잠금으로 막는다.
 - **AC-10** `checkDomains` 는 `services` 로 받은 URL(예: 댓글 스크립트)이 200 인지, `integrity` 가 있으면 본문의 sha384 가 같은지 확인한다. `pnpm check:domains` 가 댓글 서버와 블로그에 고정한 해시를 함께 본다. 서버를 갱신하면 해시도 함께 바꿔야 한다.

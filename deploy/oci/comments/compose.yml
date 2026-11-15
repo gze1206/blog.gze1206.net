@@ -20,8 +20,13 @@ services:
       - /tmp:size=16m,noexec,nosuid,nodev
     cap_drop: [ALL]
     security_opt: ['no-new-privileges:true']
+    # 1 vCPU 를 다른 서비스와 나눠 쓴다.
+    cpus: 0.5
     mem_limit: 256m
     pids_limit: 128
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: '3' }
     restart: unless-stopped
     networks:
       edge:

@@ -3,19 +3,22 @@ Description=Comments (Comentario) SQLite backup
 
 [Service]
 Type=oneshot
-User=comments
-Group=comments
+# 서비스 계정(comments)과 다르다. 컨테이너가 침해돼도 백업을 지우지 못한다.
+User=comments-backup
+Group=comments-backup
 ExecStart=/usr/local/lib/comments/comments-backup.sh
 TimeoutStartSec=10min
 UMask=0077
 
+# 데이터 디렉터리(comments, 0700)를 읽기만 한다.
+AmbientCapabilities=CAP_DAC_READ_SEARCH
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH
 NoNewPrivileges=yes
-CapabilityBoundingSet=
 ProtectSystem=strict
 ProtectHome=yes
 ReadOnlyPaths=/srv/comments/data
 ReadWritePaths=/srv/comments/backups
-InaccessiblePaths=/srv/comments/deploy
+InaccessiblePaths=/srv/comments/deploy -/etc/shadow -/etc/gshadow -/etc/ssh -/var/lib/docker -/var/lib/tailscale -/etc/docker -/srv/workbench
 PrivateTmp=yes
 PrivateDevices=yes
 PrivateNetwork=yes
