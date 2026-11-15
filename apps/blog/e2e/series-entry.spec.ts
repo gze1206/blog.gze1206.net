@@ -1,12 +1,22 @@
 import { expect, test } from '@playwright/test';
 
-test('NOR-207 AC-1: 탐색 페이지에서 시리즈로 갈 수 있다', async ({ page }) => {
+test('NOR-207 AC-1: 탐색의 시리즈 링크는 /series 목록과 같다', async ({ page }) => {
+  await page.goto('/series');
+  const listed = await page
+    .locator('main a[href^="/series/"]')
+    .evaluateAll((links) => links.map((link) => link.getAttribute('href')).sort());
   await page.goto('/topics');
   const section = page.getByRole('region', { name: '시리즈' });
+  if (listed.length === 0) {
+    await expect(section).toHaveCount(0);
+    return;
+  }
   await expect(section).toBeVisible();
-  const links = section.locator('a[href^="/series/"]');
-  expect(await links.count()).toBeGreaterThan(0);
-  await expect(links.first()).toContainText(/글 \d+개/u);
+  const shown = await section
+    .locator('a[href^="/series/"]')
+    .evaluateAll((links) => links.map((link) => link.getAttribute('href')).sort());
+  expect(shown).toEqual(listed);
+  await expect(section.locator('a').first()).toContainText(/글 \d+개/u);
 });
 
 test('NOR-207 AC-2: 푸터에는 시리즈 링크가 없다', async ({ page }) => {

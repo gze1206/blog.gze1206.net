@@ -1,0 +1,32 @@
+---
+/**
+ * 시리즈 목록 (NOR-207). 시리즈도 글을 묶는 분류라서 카테고리·태그와 같은 탐색 페이지에 둔다.
+ */
+import { seriesPath } from '../lib/routes';
+
+interface Props {
+  series: readonly { slug: string; name: string; count: number }[];
+}
+
+const { series } = Astro.props;
+---
+
+{
+  series.length > 0 && (
+    <section class="taxonomy-section" aria-labelledby="topics-series-heading">
+      <h2 id="topics-series-heading" class="taxonomy-section__title">
+        시리즈
+      </h2>
+      <ul class="taxonomy-category-grid">
+        {series.map((entry) => (
+          <li>
+            <a href={seriesPath(entry.slug)} class="taxonomy-category-card">
+              <span class="taxonomy-category-card__label">{entry.name}</span>
+              <span class="taxonomy-category-card__count">글 {entry.count}개</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

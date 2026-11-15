@@ -2,14 +2,14 @@
 /**
  * 사이트 공통 푸터 (NOR-16, NOR-151).
  *
- * `contentinfo` 랜드마크와 함께, 상단 내비게이션에서 뺀 경로(시리즈·피드)로 가는 길을 둔다.
+ * `contentinfo` 랜드마크와 함께, 상단 내비게이션에서 뺀 경로(읽은 책·피드)로 가는 길을 둔다.
  * 상단에 다 넣으면 네 개짜리 메뉴가 여덟 개가 되고, 그러면 아무것도 눈에 띄지 않는다.
+ * 시리즈는 글의 분류라서 탐색(/topics)으로 옮겼다(NOR-207).
  */
 const year = new Date().getFullYear();
 
 const FOOTER_LINKS = [
   { href: '/books', label: '읽은 책' },
-  { href: '/series', label: '시리즈' },
   { href: '/rss.xml', label: 'RSS' },
 ] as const;
 ---
