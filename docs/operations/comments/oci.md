@@ -20,6 +20,7 @@
 ## 댓글 정책
 
 - 가입 없이 **이름만** 받는다(`authAnonymous`, `login.unregistered.requireName`). 이메일은 묻지 않는다.
+  익명 방문자에게 로그인 창을 띄우지 않는다(`login.showForUnauth=false`).
 - 익명 댓글은 **승인 뒤 공개**한다(`modAnonymous`). 메일 발송(SMTP)이 없으므로 관리 화면에서 확인한다.
 - 댓글 작성자 가입(`signup.enableLocal`·`enableFederated`)과 관리 화면 가입(`auth.signup.enabled`)을 끈다.
   관리자 로그인(`authLocal`)만 남는다.
