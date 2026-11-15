@@ -237,3 +237,32 @@ it('NOR-221 AC-3: 발행된 글의 편집기 머리는 발행 상태와 다시 �
   expect(html).toContain('블로그에 발행된 글');
   expect(html).toContain('다시 발행 검토');
 });
+
+it('NOR-227 AC-3: draft 상태의 글은 발행된 글로 부르지 않고 비공개 초안 배지를 붙인다', async () => {
+  const { DocumentList } = await import('./DocumentList.js');
+  const render = () =>
+    renderToStaticMarkup(
+      <DocumentList
+        documents={
+          [
+            {
+              id: 'd',
+              relativePath: 'drafts/d.md',
+              label: 'd',
+              title: '숨긴 글',
+              kind: 'public-draft',
+              updatedAt: '2026-11-15',
+            },
+          ] as never
+        }
+        onSelect={() => undefined}
+        problems={[]}
+        selectedId={null}
+        statuses={{ d: 'draft' } as never}
+      />,
+    );
+  expect(render).not.toThrow();
+  const html = render();
+  expect(html).toContain('비공개 초안');
+  expect(html).not.toContain('발행된 글');
+});
