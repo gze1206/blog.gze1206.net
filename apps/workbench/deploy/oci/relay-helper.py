@@ -16,7 +16,6 @@ import sys
 
 SHA = re.compile(r"[0-9a-f]{40}")
 REF = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*\.(bundle|patch)")
-BRANCH = re.compile(r"content/[A-Za-z0-9][A-Za-z0-9._-]*")
 
 
 def fail(reason: str, detail: object = None) -> None:
@@ -66,7 +65,8 @@ def manifest(path: str) -> None:
         fail("bad-manifest")
     if values["exportFormat"] not in ("bundle", "format-patch") or not REF.fullmatch(values["exportRef"]):
         fail("bad-manifest")
-    if not BRANCH.fullmatch(values["branch"]):
+    # 브랜치 이름은 쓰지 않는다. bundle 은 커밋으로 가져온다(NOR-214). 개행만 막는다.
+    if "\n" in values["branch"] or "\0" in values["branch"]:
         fail("bad-manifest")
     for key in ("baseSha", "exportFormat", "exportRef", "commit", "branch"):
         print(values[key])

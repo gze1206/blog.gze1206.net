@@ -4,6 +4,7 @@ import { chmod, mkdir, open, readFile, realpath, rename, rm, stat } from 'node:f
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { BLOG_LAYOUT, isBookId } from '@gze1206/content-contract';
+import { publishRefKey } from '../../core/publishing/refKey.js';
 
 const run = promisify(execFile);
 
@@ -39,7 +40,7 @@ export class PublishOutbox {
   public async write(input: PublishOutboxInput): Promise<PublishOutboxResult> {
     const root = await this.prepareRoot();
     const key = targetKeyFromPath(input.targetPath);
-    const slug = key.startsWith('post:') ? key.slice(5) : `book-${safeKey(key.slice(5))}`;
+    const slug = key.startsWith('post:') ? key.slice(5) : `book-${publishRefKey(key.slice(5))}`;
     const prefix = `${slug}-${new Date().toISOString().replace(/[-:.]/gu, '')}`;
     const bundleRef = `${prefix}.bundle`;
     const patchRef = `${prefix}.patch`;
@@ -170,14 +171,6 @@ export function targetKeyFromPath(targetPath: string): string {
     if (isBookId(id)) return `book:${id}`;
   }
   throw new Error('invalid publish target path');
-}
-function safeKey(id: string): string {
-  return (
-    id
-      .normalize('NFC')
-      .replace(/[^\p{L}\p{N}_-]/gu, '')
-      .slice(0, 64) || 'book'
-  );
 }
 
 function assertArtifactRef(root: string, reference: string): string {
