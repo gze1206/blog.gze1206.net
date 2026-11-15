@@ -145,3 +145,30 @@ it('NOR-197 AC-2: smoke 빌드도 smoke 경로 밖의 draft 누출을 검사한�
     expect.objectContaining({ path: 'index.html', rule: 'draft-leak' }),
   ]);
 });
+
+it('NOR-201 AC-4: 감사는 _headers 가 없거나 인라인 스크립트 해시가 빠지면 찾는다', async () => {
+  const { inlineScriptHashes } = await import('./csp.ts');
+  const html = '<script>a()</script><script type="module">b()</script>';
+  const [first, second] = inlineScriptHashes(html);
+  const base = {
+    files: [{ path: 'index.html', html }],
+    draftSlugs: [],
+    draftTitles: [],
+    smoke: false,
+    requireCsp: true,
+  };
+  const rules = (assets: { path: string; content: string | null }[]) =>
+    auditDist({ ...base, assets }).map((finding) => finding.rule);
+  expect(rules([])).toEqual(['csp-missing-headers']);
+  expect(
+    rules([{ path: '_headers', content: `/*\n  Content-Security-Policy: script-src ${first}\n` }]),
+  ).toEqual(['csp-missing-hash']);
+  expect(
+    rules([
+      {
+        path: '_headers',
+        content: `/*\n  Content-Security-Policy: script-src ${first} ${second}\n`,
+      },
+    ]),
+  ).toEqual([]);
+});
