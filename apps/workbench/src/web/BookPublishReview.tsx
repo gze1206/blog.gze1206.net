@@ -1,5 +1,6 @@
 import type { BookPublishReviewData, PublishResult } from './api.js';
 import { PublishHandoff } from './PublishHandoff.js';
+import { DiffView } from './diff/DiffView.js';
 
 export function BookPublishReview({
   review,
@@ -28,12 +29,7 @@ export function BookPublishReview({
       {review.warnings?.map((warning) => (
         <p key={warning}>{warning}</p>
       ))}
-      <pre
-        aria-label="책 통합 diff"
-        className="mt-2 max-h-96 overflow-auto rounded-lg bg-foreground p-5 font-mono text-xs whitespace-pre text-background"
-      >
-        {review.diff}
-      </pre>
+      <DiffView diff={review.diff} label="책 통합 diff" />
       <div className="mt-3 flex gap-3">
         <button type="button" onClick={onClose}>
           닫기

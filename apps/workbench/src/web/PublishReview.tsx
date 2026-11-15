@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import type { PublishResult, PublishReviewData } from './api.js';
 import { PublishHandoff } from './PublishHandoff.js';
+import { DiffView } from './diff/DiffView.js';
 
 interface Props {
   readonly review: PublishReviewData;
@@ -72,12 +73,7 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
             {warning}
           </p>
         ))}
-        <pre
-          aria-label="통합 diff"
-          className="mt-2 max-h-[28rem] overflow-auto rounded-lg bg-foreground p-5 font-mono text-xs leading-5 whitespace-pre text-background"
-        >
-          {review.diff}
-        </pre>
+        <DiffView diff={review.diff} label="통합 diff" />
 
         <footer className="mt-5 flex items-center justify-between gap-5 rounded-lg border border-notice-foreground/30 bg-notice p-4">
           <label className="flex items-start gap-3 text-sm leading-5 text-body">
