@@ -1,9 +1,20 @@
 {
   "title": "니체의 초월자",
   "authors": ["프리드리히 니체"],
-  "status": "reading",
+  "translators": ["김철"],
+  "publisher": "히읏",
+  "publishedYear": 2025,
+  "isbn13": "9791192559100",
+  "cover": {
+    "src": "/assets/books/%EB%8B%88%EC%B2%B4%EC%9D%98-%EC%B4%88%EC%9B%94%EC%9E%90.jpg",
+    "width": 680,
+    "height": 1024
+  },
+  "status": "finished",
   "startedAt": "2026-08-06",
+  "finishedAt": "2026-08-18",
   "format": "ebook",
   "source": "library",
+  "rating": 4,
   "tags": ["철학"]
 }
