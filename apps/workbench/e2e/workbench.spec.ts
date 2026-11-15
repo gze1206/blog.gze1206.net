@@ -398,3 +398,34 @@ test('NOR-217 AC-3: 발행 검토 diff 를 채색해 보이고 나란히 보기�
   const SP = process.env['DIFF_SHOT'];
   if (SP) await page.screenshot({ path: SP });
 });
+
+test('NOR-219 AC-1·5: 여러 줄 칸의 빈 줄·공백을 지키고 포트폴리오 이미지를 올린다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '사이트 콘텐츠' }).click();
+  const site = page.getByRole('region', { name: '사이트 콘텐츠' });
+  await site.getByRole('button', { name: 'E2E', exact: true }).click();
+  const skills = site.getByLabel('기술(한 줄에 하나)');
+  await skills.click();
+  await page.keyboard.press('ControlOrMeta+End');
+  await page.keyboard.type('\n\nTypeScript 와 ');
+  await expect(skills).toHaveValue('C#\n\nTypeScript 와 ');
+
+  await site.getByRole('button', { name: '새 포트폴리오' }).click();
+  await site.getByRole('button', { name: '이미지 추가' }).click();
+  await site.getByLabel('이미지 1 파일').setInputFiles({
+    name: 'shot.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      '89504e470d0a1a0a0000000d494844520000000200000003080600000000000000',
+      'hex',
+    ),
+  });
+  await expect(site.getByLabel('이미지 1 경로')).toHaveValue(
+    /^\/img\/portfolio\/shot-[0-9a-f]{8}\.png$/u,
+  );
+  await expect(site.getByLabel('이미지 1 너비')).toHaveValue('2');
+  await expect(site.getByLabel('이미지 1 높이')).toHaveValue('3');
+  await expect(site.getByRole('img', { name: '이미지 1 미리보기' })).toBeVisible();
+});

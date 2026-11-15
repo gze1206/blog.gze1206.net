@@ -180,3 +180,33 @@ it('NOR-208 AC-9: main 이 바뀌어 검토를 거절하면 409 와 이유를 �
   const body = (await response.json()) as { error: { message: string } };
   expect(body.error.message).toContain('changed on main');
 });
+
+it('NOR-219 AC-2: 이미지 올리기와 읽기 경로를 연다', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'site-api-'));
+  const images = {
+    ...publisher,
+    async saveSiteImage(bytes: Uint8Array, name: string) {
+      calls.push({ size: bytes.length, name });
+      return { src: '/img/portfolio/a-12345678.png', width: 2, height: 3 };
+    },
+    async readSiteImage(name: string) {
+      return name === 'a-12345678.png'
+        ? { bytes: Buffer.from('png'), contentType: 'image/png' }
+        : null;
+    },
+  } as unknown as PublicBlogPublisher;
+  const app = createApp(new ServerFileStore(root), images);
+  calls.length = 0;
+  const saved = await app.request('/api/site/images?name=a.png', {
+    method: 'POST',
+    headers: { 'content-type': 'image/png' },
+    body: new Uint8Array([1, 2, 3]),
+  });
+  expect(saved.status).toBe(201);
+  expect(await saved.json()).toEqual({ src: '/img/portfolio/a-12345678.png', width: 2, height: 3 });
+  expect(calls).toEqual([{ size: 3, name: 'a.png' }]);
+  const read = await app.request('/api/site/images/a-12345678.png');
+  expect(read.status).toBe(200);
+  expect(read.headers.get('content-type')).toBe('image/png');
+  expect((await app.request('/api/site/images/nope.png')).status).toBe(404);
+});

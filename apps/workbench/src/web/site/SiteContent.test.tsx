@@ -34,3 +34,18 @@ it('NOR-208 AC-7: 항목 폼은 칸과 검토 버튼을 보인다', async () => 
   for (const label of ['이름', '직함', '소개', '기술', '링크']) expect(html).toContain(label);
   expect(html).toContain('C#');
 });
+
+it('NOR-219 AC-1: 칸은 입력한 글(빈 줄·끝 공백)을 그대로 보인다', async () => {
+  const mod = await import('./SiteContent.js');
+  const html = renderToStaticMarkup(
+    <mod.SiteForm
+      collection="profile"
+      data={{ name: '이름 ', headline: '직함', introduction: '소개', skills: ['C#'], links: [] }}
+      drafts={{ name: '이름 ', skills: 'C#\n\n', about: '첫 문단\n\n' }}
+      onChange={() => undefined}
+    />,
+  );
+  expect(html).toContain('value="이름 "');
+  expect(html).toContain('>C#\n\n</textarea>');
+  expect(html).toContain('>첫 문단\n\n</textarea>');
+});
