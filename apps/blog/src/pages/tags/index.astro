@@ -9,7 +9,7 @@ import { tagPath, topicsPath } from '../../lib/routes';
 const groups = await getTagGroups();
 const items = groups.map((group) => ({
   href: tagPath(group.slug),
-  label: `#${group.label}`,
+  label: group.label,
   count: group.posts.length,
 }));
 ---
@@ -28,7 +28,7 @@ const items = groups.map((group) => ({
     items.length === 0 ? (
       <EmptyState message="아직 태그가 없습니다." />
     ) : (
-      <TaxonomyIndex items={items} />
+      <TaxonomyIndex items={items} icon="tag" />
     )
   }
 </ListLayout>

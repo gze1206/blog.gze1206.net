@@ -96,7 +96,11 @@ const description = data.oneLiner ?? `${byline}${imprint ? ` (${imprint})` : ''}
           data.tags.length > 0 && (
             <div>
               <dt>태그</dt>
-              <dd>{data.tags.map((tag) => `#${tag}`).join(' ')}</dd>
+              <dd class="flex flex-wrap gap-x-3 gap-y-1">
+                {data.tags.map((tag) => (
+                  <span class="tag-icon">{tag}</span>
+                ))}
+              </dd>
             </div>
           )
         }

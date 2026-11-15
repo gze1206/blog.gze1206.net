@@ -12,9 +12,11 @@ interface Item {
 
 interface Props {
   items: readonly Item[];
+  /** 이름 앞 아이콘. 태그 목록은 `#` 대신 태그 아이콘을 쓴다(NOR-223). */
+  icon?: 'tag' | undefined;
 }
 
-const { items } = Astro.props;
+const { items, icon } = Astro.props;
 ---
 
 <ul class="flex flex-wrap gap-2">
@@ -25,7 +27,7 @@ const { items } = Astro.props;
           href={item.href}
           class="border-border-strong hover:bg-surface-sunken inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm"
         >
-          <span>{item.label}</span>
+          <span class:list={{ 'tag-icon': icon === 'tag' }}>{item.label}</span>
           <span class="text-muted">
             <span class="sr-only">글 </span>
             {item.count}

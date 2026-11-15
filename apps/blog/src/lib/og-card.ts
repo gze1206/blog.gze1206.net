@@ -67,6 +67,10 @@ export interface OgNode {
   readonly type: string;
   readonly props: {
     readonly style?: Readonly<Record<string, string | number>>;
+    /** `img` 요소의 원본·크기. */
+    readonly src?: string;
+    readonly width?: number;
+    readonly height?: number;
     readonly children?: OgChild | readonly OgChild[];
   };
 }
@@ -85,6 +89,18 @@ export interface OgCardInput {
   readonly description?: string | undefined;
   /** 우하단 브랜드 문자열. 호출부가 `SITE_NAME` 을 넘긴다(상수 중복을 만들지 않기 위해). */
   readonly brand: string;
+  /** 제목 앞 아이콘. 태그 카드는 `#` 대신 태그 아이콘을 그린다(NOR-223). */
+  readonly icon?: 'tag' | undefined;
+}
+
+/** 태그 아이콘 크기와 제목과의 간격(px). */
+const ICON_SIZE = 64;
+const ICON_GAP = 20;
+
+/** 사이트 CSS(`.tag-icon`)와 같은 Lucide `tag` 모양(ISC). 색은 카드 강조색이다. */
+function tagIconSrc(color: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1.5" fill="${color}"/></svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 }
 
 function text(
@@ -116,7 +132,10 @@ function text(
  * 두 겹으로 막기 때문에 아주 긴 제목에서도 카드 밖으로 글자가 새지 않는다.
  */
 export function buildOgCard(input: OgCardInput): OgNode {
-  const fit = fitTitle(input.title, { contentWidth: CONTENT_WIDTH - OG_THEME.titleTrailingSpace });
+  const iconWidth = input.icon === 'tag' ? ICON_SIZE + ICON_GAP : 0;
+  const fit = fitTitle(input.title, {
+    contentWidth: CONTENT_WIDTH - OG_THEME.titleTrailingSpace - iconWidth,
+  });
   const eyebrow =
     input.eyebrow === undefined ? '' : truncateChars(input.eyebrow, EYEBROW_MAX_CHARS);
   const description =
@@ -124,20 +143,40 @@ export function buildOgCard(input: OgCardInput): OgNode {
       ? ''
       : truncateChars(input.description, DESCRIPTION_MAX_CHARS);
 
+  const title = text(
+    fit.text,
+    {
+      fontSize: fit.fontSize,
+      fontWeight: 700,
+      lineHeight: fit.lineHeight,
+      color: OG_THEME.foreground,
+      letterSpacing: '-0.02em',
+      paddingRight: OG_THEME.titleTrailingSpace,
+    },
+    // 글자 크기를 줄여도 안 담기는 제목이 남을 수 있다. 마지막 방어선으로 clamp 를 건다.
+    fit.maxLines,
+  );
   const middle: OgChild[] = [
-    text(
-      fit.text,
-      {
-        fontSize: fit.fontSize,
-        fontWeight: 700,
-        lineHeight: fit.lineHeight,
-        color: OG_THEME.foreground,
-        letterSpacing: '-0.02em',
-        paddingRight: OG_THEME.titleTrailingSpace,
-      },
-      // 글자 크기를 줄여도 안 담기는 제목이 남을 수 있다. 마지막 방어선으로 clamp 를 건다.
-      fit.maxLines,
-    ),
+    input.icon === 'tag'
+      ? {
+          type: 'div',
+          props: {
+            style: { display: 'flex', alignItems: 'center' },
+            children: [
+              {
+                type: 'img',
+                props: {
+                  src: tagIconSrc(OG_THEME.accent),
+                  width: ICON_SIZE,
+                  height: ICON_SIZE,
+                  style: { flexShrink: 0, marginRight: ICON_GAP },
+                },
+              },
+              title,
+            ],
+          },
+        }
+      : title,
   ];
   if (description !== '') {
     middle.push(

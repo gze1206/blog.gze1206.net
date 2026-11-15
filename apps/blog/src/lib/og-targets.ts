@@ -180,7 +180,8 @@ export function buildOgTargets(input: OgTargetsInput): OgTarget[] {
       target(tagPath(tag.slug), {
         kind: 'list',
         eyebrow: '태그',
-        title: `#${tag.label}`,
+        title: tag.label,
+        icon: 'tag',
         description: `이 태그가 붙은 글 ${tag.count}개`,
         brand,
       }),
