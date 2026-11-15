@@ -193,6 +193,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
   private readonly outbox: PublishOutbox;
   private readonly sessions: PublishSessionRegistry;
   private readonly sitePublishing = new Set<string>();
+  private readonly statusInFlight = new Map<string, Promise<PublishStatusReport>>();
 
   public constructor(private readonly options: PublicBlogAdapterOptions) {
     this.cloneManager = new EphemeralCloneManager({
@@ -258,6 +259,18 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
    * 발행 검사를 통과하지 못하는 초안은 `invalid` 다. 어느 초안과도 slug 가 맞지 않는 블로그 글은 따로 돌려준다.
    */
   public async publishStatus(
+    drafts: readonly { readonly documentId: string; readonly source: string }[],
+  ): Promise<PublishStatusReport> {
+    // 상태 조회는 clone 과 변환을 모두 한다. 같은 입력으로 동시에 오면 진행 중인 것을 함께 기다린다.
+    const key = createHash('sha256').update(JSON.stringify(drafts)).digest('hex');
+    const running = this.statusInFlight.get(key);
+    if (running) return running;
+    const task = this.computePublishStatus(drafts).finally(() => this.statusInFlight.delete(key));
+    this.statusInFlight.set(key, task);
+    return task;
+  }
+
+  private async computePublishStatus(
     drafts: readonly { readonly documentId: string; readonly source: string }[],
   ): Promise<PublishStatusReport> {
     const clone = await this.cloneManager.create();

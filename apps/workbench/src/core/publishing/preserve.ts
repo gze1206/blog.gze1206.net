@@ -23,6 +23,17 @@ function same(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function sortedKeys(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortedKeys);
+  if (value !== null && typeof value === 'object')
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, sortedKeys((value as Record<string, unknown>)[key])]),
+    );
+  return value;
+}
+
 export function preservePublishedFormat(current: string | null, next: string): string {
   if (current === null) return next;
   const before = split(current);
@@ -38,7 +49,7 @@ export function preservePublishedFormat(current: string | null, next: string): s
 
   let changed = false;
   for (const key of Object.keys(currentData)) {
-    if (!(key in wanted)) {
+    if (!Object.hasOwn(wanted, key)) {
       document.delete(key);
       changed = true;
     }
@@ -52,6 +63,10 @@ export function preservePublishedFormat(current: string | null, next: string): s
   const yaml = changed
     ? document.toString({ lineWidth: 0, flowCollectionPadding: false }).trimEnd()
     : before.yaml;
+
+  // anchor·alias 공유처럼 한 필드를 고치면 다른 필드가 따라 바뀌는 경우가 있다. 다시 읽어 의도와
+  // 정확히 같을 때만 보존한 표기를 쓰고, 아니면 새로 직렬화한 내용을 그대로 쓴다.
+  if (!same(sortedKeys(parse(yaml) as unknown), sortedKeys(wanted))) return next;
 
   // 본문 앞 빈 줄은 블로그 파일의 관례를 따른다.
   const leadingBlank = /^\r?\n/u.test(before.body);
