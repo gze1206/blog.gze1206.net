@@ -8,6 +8,7 @@ on:
       - 'apps/workbench/**'
       - 'packages/content-contract/**'
       - 'packages/config/**'
+      - 'packages/theme/**'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - 'package.json'

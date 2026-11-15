@@ -12,9 +12,11 @@ COPY apps/workbench/package.json apps/workbench/
 COPY packages/config/package.json packages/config/
 COPY packages/content-contract/package.json packages/content-contract/
 COPY packages/repo-tools/package.json packages/repo-tools/
+COPY packages/theme/package.json packages/theme/
 RUN pnpm install --frozen-lockfile --filter "@gze1206/workbench..."
 COPY packages/config packages/config
 COPY packages/content-contract packages/content-contract
+COPY packages/theme packages/theme
 COPY apps/workbench apps/workbench
 RUN pnpm --filter @gze1206/workbench build \
   && pnpm --filter @gze1206/workbench --prod deploy --legacy /out
