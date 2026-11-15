@@ -506,6 +506,7 @@ export type SiteChangeInput = (
   | { readonly collection: SiteCollection; readonly id: string; readonly delete: true }
 ) & { readonly baseHash: string | null };
 export interface SiteReviewData {
+  readonly warnings?: readonly string[];
   readonly reviewId: string;
   readonly kind: 'write' | 'delete' | 'noop';
   readonly targetPath: string;
@@ -546,4 +547,37 @@ export interface PublishStatusData {
 }
 export async function loadPublishStatus(): Promise<PublishStatusData> {
   return request('/api/publish/status');
+}
+
+/** 포트폴리오 이미지를 올린다(NOR-219). 블로그에서 쓸 경로와 크기를 돌려받는다. */
+export async function uploadSiteImage(
+  file: File,
+): Promise<{ readonly src: string; readonly width: number; readonly height: number }> {
+  const response = await fetch(`/api/site/images?name=${encodeURIComponent(file.name)}`, {
+    method: 'POST',
+    headers: { 'content-type': file.type || 'application/octet-stream' },
+    body: file,
+  });
+  const payload = (await response.json().catch(() => null)) as {
+    src?: string;
+    width?: number;
+    height?: number;
+    error?: { message?: string };
+  } | null;
+  if (!response.ok || payload?.src === undefined)
+    throw new Error(payload?.error?.message ?? '이미지를 올리지 못했습니다.');
+  return { src: payload.src, width: payload.width ?? 0, height: payload.height ?? 0 };
+}
+
+/** 사이트 이미지 미리보기 주소. 올린 이미지는 워크벤치에서, 블로그에 있는 이미지는 블로그에서 읽는다. */
+export function siteImagePreview(src: string): { primary: string; fallback: string } {
+  const fallback = `https://gze1206.net${src}`;
+  const name = src.startsWith('/img/portfolio/') ? src.slice('/img/portfolio/'.length) : null;
+  return {
+    primary:
+      name && /^[a-z0-9][a-z0-9-]*\.(?:png|jpg|webp)$/u.test(name)
+        ? `/api/site/images/${name}`
+        : fallback,
+    fallback,
+  };
 }

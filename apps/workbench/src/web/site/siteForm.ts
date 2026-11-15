@@ -23,11 +23,20 @@ export type SiteField =
   | { readonly key: string; readonly label: string; readonly type: 'lines' | 'paragraphs' }
   | { readonly key: string; readonly label: string; readonly type: 'boolean' }
   | { readonly key: string; readonly label: string; readonly type: 'date' }
+  /** 사이트 경로를 적거나 이미지를 올려 채운다(NOR-219). */
+  | {
+      readonly key: string;
+      readonly label: string;
+      readonly type: 'image';
+      readonly optional?: boolean;
+    }
   | {
       readonly key: string;
       readonly label: string;
       readonly type: 'rows';
       readonly columns: readonly RowColumn[];
+      /** 행마다 이미지를 올리고 미리 본다(경로·너비·높이를 채운다). */
+      readonly images?: boolean;
     };
 
 export type Row = Record<string, string>;
@@ -83,6 +92,7 @@ export const SITE_FIELDS: Record<SiteCollection, readonly SiteField[]> = {
       key: 'media',
       label: '이미지',
       type: 'rows',
+      images: true,
       columns: [
         { key: 'src', label: '경로' },
         { key: 'alt', label: '대체 텍스트' },
@@ -91,7 +101,7 @@ export const SITE_FIELDS: Record<SiteCollection, readonly SiteField[]> = {
         { key: 'caption', label: '설명', optional: true },
       ],
     },
-    { key: 'thumbnail', label: '썸네일 경로', type: 'text', optional: true },
+    { key: 'thumbnail', label: '썸네일', type: 'image', optional: true },
   ],
   series: [
     { key: 'name', label: '이름', type: 'text' },

@@ -76,6 +76,12 @@ export function createApp(
         listSite: publisher.listSite.bind(publisher),
         reviewSite: publisher.reviewSite.bind(publisher),
         publishSite: publisher.publishSite.bind(publisher),
+        ...(publisher.saveSiteImage
+          ? { saveSiteImage: publisher.saveSiteImage.bind(publisher) }
+          : {}),
+        ...(publisher.readSiteImage
+          ? { readSiteImage: publisher.readSiteImage.bind(publisher) }
+          : {}),
       }),
     );
   }

@@ -4,3 +4,4 @@
 ^apps/blog/public/assets/books/[^/.][^/]*\.(png|jpg|jpeg|webp|avif|gif)$
 ^apps/blog/src/content/profile\.json$
 ^apps/blog/src/content/(experience|portfolio|series)/[a-z0-9][a-z0-9-]*\.json$
+^apps/blog/public/img/portfolio/[a-z0-9][a-z0-9-]*\.(png|jpg|jpeg|webp)$
