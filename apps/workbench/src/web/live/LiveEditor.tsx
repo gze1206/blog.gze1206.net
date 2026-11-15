@@ -1,9 +1,16 @@
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
-import { EditorState, type TransactionSpec } from '@codemirror/state';
+import type { EditorState, TransactionSpec } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { useEffect, useRef } from 'react';
 
-import { insertLink, livePreview, toggleLinePrefix, toggleWrap } from './livePreview.js';
+import {
+  createSourceState,
+  insertLink,
+  livePreview,
+  sourceOf,
+  toggleLinePrefix,
+  toggleWrap,
+} from './livePreview.js';
 
 type Command = (state: EditorState) => TransactionSpec;
 
@@ -35,48 +42,45 @@ export function LiveEditor({ source, onChange, className = '' }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
   const changeRef = useRef(onChange);
+  const loaded = useRef(false);
   useEffect(() => {
     changeRef.current = onChange;
   }, [onChange]);
 
   useEffect(() => {
     if (!host.current) return;
-    const editor = new EditorView({
-      parent: host.current,
-      state: EditorState.create({
-        doc: source,
-        extensions: [
-          history(),
-          keymap.of([
-            { key: 'Mod-b', run: runner((state) => toggleWrap(state, '**')) },
-            { key: 'Mod-i', run: runner((state) => toggleWrap(state, '*')) },
-            ...defaultKeymap,
-            ...historyKeymap,
-            indentWithTab,
-          ]),
-          livePreview(),
-          EditorView.contentAttributes.of({ 'aria-label': 'Markdown 문서', spellcheck: 'false' }),
-          EditorView.updateListener.of((update) => {
-            if (update.docChanged) changeRef.current(update.state.doc.toString());
-          }),
-        ],
-      }),
-    });
+    const editor = new EditorView({ parent: host.current });
     view.current = editor;
     return () => {
       editor.destroy();
       view.current = null;
+      loaded.current = false;
     };
-    // 편집기는 한 번만 만든다. 바깥에서 바뀐 원본은 아래 효과가 맞춘다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 바깥에서 원본이 바뀌면(다른 문서를 열면) 상태와 실행 취소 이력을 새로 만든다.
+  // 자기 입력으로 바뀐 원본은 이미 같으므로 건드리지 않는다.
   useEffect(() => {
     const editor = view.current;
-    if (!editor) return;
-    const current = editor.state.doc.toString();
-    if (current !== source)
-      editor.dispatch({ changes: { from: 0, to: current.length, insert: source } });
+    if (!editor || (loaded.current && sourceOf(editor.state) === source)) return;
+    loaded.current = true;
+    editor.setState(
+      createSourceState(source, [
+        history(),
+        keymap.of([
+          { key: 'Mod-b', run: runner((state) => toggleWrap(state, '**')) },
+          { key: 'Mod-i', run: runner((state) => toggleWrap(state, '*')) },
+          ...defaultKeymap,
+          ...historyKeymap,
+          indentWithTab,
+        ]),
+        livePreview(),
+        EditorView.contentAttributes.of({ 'aria-label': 'Markdown 문서', spellcheck: 'false' }),
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged) changeRef.current(sourceOf(update.state));
+        }),
+      ]),
+    );
   }, [source]);
 
   return (

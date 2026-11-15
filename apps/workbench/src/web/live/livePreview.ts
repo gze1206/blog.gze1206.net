@@ -8,7 +8,7 @@ import { markdown, markdownLanguage as baseMarkdown } from '@codemirror/lang-mar
 import { syntaxTree } from '@codemirror/language';
 import {
   EditorSelection,
-  type EditorState,
+  EditorState,
   type Extension,
   type Range,
   type TransactionSpec,
@@ -160,7 +160,32 @@ export function previewDecorations(state: EditorState): PreviewItem[] {
       return;
     },
   });
-  return items;
+  return items.flatMap((item) => (item.kind === 'hide' ? splitByLine(state, item) : [item]));
+}
+
+/** 줄을 넘는 숨김은 ViewPlugin 장식으로 둘 수 없다. 줄마다 나눈다. */
+function splitByLine(state: EditorState, item: PreviewItem): PreviewItem[] {
+  const parts: PreviewItem[] = [];
+  for (let pos = item.from; pos < item.to;) {
+    const line = state.doc.lineAt(pos);
+    const to = Math.min(item.to, line.to);
+    if (to > pos) parts.push({ from: pos, to, kind: 'hide' });
+    pos = line.to + 1;
+  }
+  return parts;
+}
+
+/** 원본의 줄바꿈 형식(CRLF/LF)을 그대로 지키는 편집기 상태를 만든다. */
+export function createSourceState(source: string, extensions: Extension): EditorState {
+  return EditorState.create({
+    doc: source,
+    extensions: [source.includes('\r\n') ? EditorState.lineSeparator.of('\r\n') : [], extensions],
+  });
+}
+
+/** 편집기 상태를 저장할 원본 문자열로 되돌린다. */
+export function sourceOf(state: EditorState): string {
+  return state.doc.sliceString(0, state.doc.length, state.lineBreak);
 }
 
 function toDecorations(state: EditorState): DecorationSet {
