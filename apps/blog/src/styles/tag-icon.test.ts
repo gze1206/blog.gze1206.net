@@ -18,4 +18,20 @@ describe('태그 아이콘 (NOR-223)', () => {
     expect(rule).toContain('background-color: currentColor');
     expect(rule).toMatch(/mask(-image)?:[^;]*url\("data:image\/svg\+xml/u);
   });
+
+  it('NOR-223 AC-3: 태그 페이지·태그 목록·책 상세는 # 를 붙이지 않고 아이콘을 쓴다', async () => {
+    const tagPage = await read('../pages/tags/[slug].astro');
+    expect(tagPage).not.toContain('`#${label}`');
+    expect(tagPage).toContain('icon="tag"');
+    const tagIndex = await read('../pages/tags/index.astro');
+    expect(tagIndex).not.toContain('`#${group.label}`');
+    expect(tagIndex).toContain('icon="tag"');
+    const book = await read('../pages/books/[id].astro');
+    expect(book).not.toContain('`#${tag}`');
+    expect(book).toContain('tag-icon');
+    const layout = await read('../layouts/ListLayout.astro');
+    expect(layout).toContain('tag-icon');
+    const index = await read('../components/TaxonomyIndex.astro');
+    expect(index).toContain('tag-icon');
+  });
 });

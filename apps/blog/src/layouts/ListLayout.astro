@@ -19,16 +19,25 @@ interface Props {
   heading: string;
   /** h1 아래 설명 문단. 없으면 렌더하지 않는다. */
   lead?: string | undefined;
+  /** 제목 앞 아이콘. 태그 페이지는 `#` 대신 태그 아이콘을 쓴다(NOR-223). */
+  icon?: 'tag' | undefined;
 }
 
-const { title, description, eyebrow, heading, lead } = Astro.props;
+const { title, description, eyebrow, heading, lead, icon } = Astro.props;
 ---
 
 <BaseLayout title={title ?? heading} description={description}>
   <main id="main-content" class="list-page">
     <div class="list-page__head">
       {eyebrow && <p class="list-page__eyebrow">{eyebrow}</p>}
-      <h1 class="display-serif mt-2 text-3xl sm:text-4xl">{heading}</h1>
+      <h1
+        class:list={[
+          'display-serif mt-2 text-3xl sm:text-4xl',
+          { 'tag-icon tag-icon--heading': icon === 'tag' },
+        ]}
+      >
+        {heading}
+      </h1>
       {lead && <p class="text-muted mt-3">{lead}</p>}
     </div>
     <slot />

@@ -1054,6 +1054,14 @@ summary:focus-visible {
     center / contain no-repeat;
 }
 
+/* 큰 제목에서는 아이콘을 글자보다 작게 두어 이름이 먼저 읽히게 한다. */
+.tag-icon--heading::before {
+  width: 0.7em;
+  height: 0.7em;
+  margin-right: 0.2em;
+  vertical-align: 0.02em;
+}
+
 /* --- 목차 (NOR-17, NOR-150) ---
    접기는 `<details>` 가 한다. 스크립트가 관여하지 않으므로 렌더 후 레이아웃이 움직이지 않는다(CLS 0). */
 .post-toc {
