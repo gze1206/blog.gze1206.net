@@ -55,3 +55,27 @@ describe('발행 진행 토스트 저장소 (NOR-228)', () => {
     expect(loadJobs(storage)).toEqual([]);
   });
 });
+
+it('NOR-228 AC-8: GitHub PR 주소가 아닌 링크는 저장소에서도 서버 응답에서도 버린다', () => {
+  const jobs = applyProgress(
+    [job('a.json'), job('b.json')],
+    [
+      { ref: 'a.json', stage: 'checking', pull: { number: 1, url: 'javascript:alert(1)' } },
+      {
+        ref: 'b.json',
+        stage: 'checking',
+        pull: { number: 2, url: 'https://github.com/o/r/pull/2' },
+      },
+    ],
+  );
+  expect(jobs[0]).not.toHaveProperty('pull');
+  expect(jobs[1]).toHaveProperty('pull.url', 'https://github.com/o/r/pull/2');
+  const storage = memoryStorage();
+  storage.setItem(
+    'workbench.publishJobs',
+    JSON.stringify([
+      { ...job('c.json'), pull: { number: 3, url: 'https://github.com.evil.example/o/r/pull/3' } },
+    ]),
+  );
+  expect(loadJobs(storage)).toEqual([]);
+});
