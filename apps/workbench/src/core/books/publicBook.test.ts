@@ -151,30 +151,30 @@ describe('NOR-215 공개 구절 내보내기', () => {
     content: '비공개 독후감',
     extra: {},
     excerpts: [
-      { id: ulid(1), text: '공개 구절', page: 12, public: true, memo: '비공개 메모' },
-      { id: ulid(2), text: '비공개 구절', public: false },
+      { id: ulid(1), text: '공개 구절', page: 12, public: true, memo: '공개 구절의 메모' },
+      { id: ulid(2), text: '비공개 구절', public: false, memo: '비공개 구절의 메모' },
       { text: 'id 없는 구절', public: true },
     ],
     memos: [{ text: '메모' }],
   } as unknown as Parameters<typeof toPublicBook>[0];
 
-  it('NOR-215 AC-2: id 가 있는 공개 구절만 quotes 로 내보낸다', () => {
+  it('NOR-215 AC-2 · NOR-230 AC-2: id 가 있는 공개 구절만, 그 메모와 함께 quotes 로 내보낸다', () => {
     const book = toPublicBook(record);
     expect(book).toHaveProperty('quotes');
     expect((book as { quotes: unknown }).quotes).toEqual([
-      { id: ulid(1), text: '공개 구절', page: 12 },
+      { id: ulid(1), text: '공개 구절', page: 12, memo: '공개 구절의 메모' },
     ]);
     expect(JSON.stringify(book)).not.toContain('비공개');
   });
 
-  it('NOR-215 AC-3: 가져오기는 quotes 를 공개 구절로 되돌리고 다시 내보내면 같다', () => {
+  it('NOR-215 AC-3 · NOR-230 AC-3: 가져오기는 quotes 를 메모와 함께 공개 구절로 되돌리고 다시 내보내면 같다', () => {
     const json = {
       title: '책',
       authors: ['저자'],
       status: 'finished',
       format: 'paper',
       source: 'purchase',
-      quotes: [{ id: ulid(1), text: '공개 구절', page: 12 }],
+      quotes: [{ id: ulid(1), text: '공개 구절', page: 12, memo: '공개 메모' }],
     };
     const { document } = planBookImport('책', json);
     expect(document).toHaveProperty('excerpts');
