@@ -405,6 +405,9 @@ importers:
       '@hono/node-server':
         specifier: ^2.1.0
         version: 2.1.6(hono@4.13.17)
+      '@markdoc/markdoc':
+        specifier: 'catalog:'
+        version: 0.5.8(@types/react@19.2.17)(react@19.2.7)
       diff:
         specifier: 8.0.4
         version: 8.0.4

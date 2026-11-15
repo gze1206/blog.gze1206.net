@@ -10,6 +10,7 @@ import type { PublicBlogPublisher } from './adapters/publicBlog.js';
 import { createBulletRoutes, type BulletRouteOptions } from './routes/bullets.js';
 import { createDocumentRoutes } from './routes/documents.js';
 import { createTrashRoutes } from './routes/trash.js';
+import { createPreviewRoutes } from './routes/preview.js';
 import type { BookMetadataProvider } from '../core/books/metadata.js';
 import type { BookAssetStore } from './adapters/bookAssets.js';
 import { createHealthRoutes } from './routes/health.js';
@@ -55,6 +56,7 @@ export function createApp(
   const app = new Hono();
   app.route('/', createHealthRoutes());
   app.route('/', createDocumentRoutes(store));
+  app.route('/', createPreviewRoutes(store));
   // 휴지통은 파일 저장소가 지원할 때만 연다(NOR-205).
   if (isTrash(store)) app.route('/', createTrashRoutes(store));
   app.route('/', createReviewRoutes(store, journalStore, reviewOptions));

@@ -1,4 +1,14 @@
+import { useState } from 'react';
+
 import type { PublicAssetCandidate } from './api.js';
+import { PreviewPane } from './PreviewPane.js';
+
+type EditorMode = 'edit' | 'split' | 'preview';
+const MODES: readonly { id: EditorMode; label: string }[] = [
+  { id: 'edit', label: '편집' },
+  { id: 'split', label: '나란히' },
+  { id: 'preview', label: '미리보기' },
+];
 
 interface Props {
   readonly source: string;
@@ -28,6 +38,7 @@ export function Editor({
   selectedAssetIds = [],
   onToggleAsset,
 }: Props) {
+  const [mode, setMode] = useState<EditorMode>('edit');
   return (
     <section className="flex min-h-0 flex-1 flex-col" aria-label="문서 편집기">
       <header className="flex h-16 items-center justify-between border-b border-border px-6">
@@ -36,6 +47,23 @@ export function Editor({
           <p className="text-xs text-muted">Markdown + YAML frontmatter</p>
         </div>
         <div className="flex gap-2">
+          <div
+            aria-label="보기"
+            className="border-border flex rounded-md border p-0.5"
+            role="group"
+          >
+            {MODES.map((item) => (
+              <button
+                aria-pressed={mode === item.id}
+                className="text-muted aria-pressed:bg-surface-sunken aria-pressed:text-foreground rounded px-2.5 py-1.5 text-xs"
+                key={item.id}
+                onClick={() => setMode(item.id)}
+                type="button"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
           {onDelete ? (
             <button
               className="text-muted hover:text-danger rounded-md px-3 py-2 text-sm disabled:opacity-40"
@@ -89,13 +117,23 @@ export function Editor({
           )}
         </fieldset>
       ) : null}
-      <textarea
-        aria-label="Markdown 문서"
-        className="min-h-0 flex-1 resize-none bg-background p-6 font-mono text-sm leading-7 text-foreground outline-none"
-        onChange={(event) => onChange(event.target.value)}
-        spellCheck={false}
-        value={source}
-      />
+      <div className="flex min-h-0 flex-1">
+        {mode !== 'preview' ? (
+          <textarea
+            aria-label="Markdown 문서"
+            className="min-h-0 min-w-0 flex-1 resize-none bg-background p-6 font-mono text-sm leading-7 text-foreground outline-none"
+            onChange={(event) => onChange(event.target.value)}
+            spellCheck={false}
+            value={source}
+          />
+        ) : null}
+        {mode !== 'edit' ? (
+          <PreviewPane
+            className={mode === 'split' ? 'border-border w-1/2 border-l' : 'flex-1'}
+            source={source}
+          />
+        ) : null}
+      </div>
     </section>
   );
 }
