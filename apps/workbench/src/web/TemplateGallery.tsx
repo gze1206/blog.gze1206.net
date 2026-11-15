@@ -14,15 +14,15 @@ export function TemplateGallery({ templates, busy, onCreate }: Props) {
   const [periodError, setPeriodError] = useState<string | null>(null);
 
   return (
-    <section aria-labelledby="templates-title" className="border-b border-stone-200 pb-6">
+    <section aria-labelledby="templates-title" className="border-b border-border pb-6">
       <div className="mb-3 flex items-baseline justify-between">
         <h2
           id="templates-title"
-          className="text-xs font-semibold tracking-[0.18em] text-stone-500 uppercase"
+          className="text-xs font-semibold tracking-[0.18em] text-muted uppercase"
         >
           Templates
         </h2>
-        <span className="text-xs text-stone-400">{templates.length}</span>
+        <span className="text-xs text-muted">{templates.length}</span>
       </div>
       <div className="mb-3 grid gap-2">
         <input
@@ -39,11 +39,12 @@ export function TemplateGallery({ templates, busy, onCreate }: Props) {
             setPeriod(event.target.value);
             setPeriodError(null);
           }}
-          placeholder="회고 기간 (주간 YYYY-Www / 월간 YYYY-MM)"
+          placeholder="회고 기간 (예: 2026-W45, 2026-11)"
+          title="주간 YYYY-Www 또는 월간 YYYY-MM"
           value={period}
         />
         {periodError ? (
-          <p className="text-xs text-red-700" role="alert">
+          <p className="text-xs text-danger" role="alert">
             {periodError}
           </p>
         ) : null}
@@ -51,7 +52,7 @@ export function TemplateGallery({ templates, busy, onCreate }: Props) {
       <div className="grid gap-2">
         {templates.map((template) => (
           <button
-            className="group rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-left transition hover:border-stone-400 disabled:opacity-50"
+            className="group rounded-lg border border-border bg-surface px-3 py-2.5 text-left transition hover:border-muted disabled:opacity-50"
             disabled={busy}
             key={template.id}
             onClick={() => {
@@ -67,8 +68,8 @@ export function TemplateGallery({ templates, busy, onCreate }: Props) {
             }}
             type="button"
           >
-            <span className="block text-sm font-medium text-stone-800">{template.title}</span>
-            <span className="mt-0.5 block font-mono text-[11px] text-stone-400 group-hover:text-stone-600">
+            <span className="block text-sm font-medium text-foreground">{template.title}</span>
+            <span className="mt-0.5 block font-mono text-[11px] text-muted group-hover:text-muted-strong">
               {template.kind}
             </span>
           </button>

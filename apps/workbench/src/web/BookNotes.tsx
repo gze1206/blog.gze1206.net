@@ -119,11 +119,10 @@ export function BookNotes({ documentId, bookId, list, items, onChanged, onError 
     <section aria-labelledby={`${list}-title`} className="min-h-0 flex-1">
       <div className="flex items-baseline justify-between">
         <h3 className="font-serif text-sm" id={`${list}-title`}>
-          {labels.title}{' '}
-          <span className="ml-1 font-mono text-xs text-stone-400">{items.length}</span>
+          {labels.title} <span className="ml-1 font-mono text-xs text-muted">{items.length}</span>
         </h3>
         <button
-          className="text-xs text-emerald-700"
+          className="text-xs text-accent"
           onClick={() => (editing === 'new' ? setEditing(null) : open('new'))}
           type="button"
         >
@@ -148,10 +147,10 @@ export function BookNotes({ documentId, bookId, list, items, onChanged, onError 
 
       <ol className="mt-3 grid gap-3">
         {items.length === 0 ? (
-          <p className="text-sm text-stone-400">{labels.empty}</p>
+          <p className="text-sm text-muted">{labels.empty}</p>
         ) : (
           items.map((item, index) => (
-            <li className="border-l-2 border-stone-300 pl-3" key={`${item.text}:${index}`}>
+            <li className="border-l-2 border-border-strong pl-3" key={`${item.text}:${index}`}>
               {editing === index ? (
                 <Form
                   busy={busy}
@@ -167,9 +166,9 @@ export function BookNotes({ documentId, bookId, list, items, onChanged, onError 
                 />
               ) : (
                 <>
-                  <p className="text-sm whitespace-pre-wrap text-stone-800">{item.text}</p>
+                  <p className="text-sm whitespace-pre-wrap text-foreground">{item.text}</p>
                   {list === 'excerpts' ? (
-                    <div className="mt-1 flex gap-3 text-sm text-stone-600">
+                    <div className="mt-1 flex gap-3 text-sm text-muted-strong">
                       <label>
                         <input
                           type="checkbox"
@@ -198,19 +197,17 @@ export function BookNotes({ documentId, bookId, list, items, onChanged, onError 
                     </div>
                   ) : null}
                   {item.memo === undefined ? null : (
-                    <p className="mt-1 text-sm whitespace-pre-wrap text-stone-600">— {item.memo}</p>
+                    <p className="mt-1 text-sm whitespace-pre-wrap text-muted-strong">
+                      — {item.memo}
+                    </p>
                   )}
-                  <p className="mt-1 flex items-center gap-2 font-mono text-[11px] text-stone-400">
+                  <p className="mt-1 flex items-center gap-2 font-mono text-[11px] text-muted">
                     <span>{item.page === undefined ? '쪽 모름' : `p.${item.page}`}</span>
-                    <button
-                      className="hover:text-stone-700"
-                      onClick={() => open(index)}
-                      type="button"
-                    >
+                    <button className="hover:text-body" onClick={() => open(index)} type="button">
                       고치기
                     </button>
                     <button
-                      className="hover:text-red-700"
+                      className="hover:text-danger"
                       disabled={busy}
                       onClick={() => void remove(index)}
                       type="button"
@@ -252,29 +249,29 @@ function Form({
   readonly onCancel: () => void;
 }) {
   return (
-    <div className="mt-2 grid gap-2 rounded-lg border border-stone-200 bg-white p-3">
+    <div className="mt-2 grid gap-2 rounded-lg border border-border bg-surface p-3">
       <label className="block">
-        <span className="block text-xs text-stone-500">쪽 (모르면 비워 두세요)</span>
+        <span className="block text-xs text-muted">쪽 (모르면 비워 두세요)</span>
         <input
-          className="mt-1 w-24 rounded border border-stone-300 px-2 py-1 font-mono text-sm"
+          className="mt-1 w-24 rounded border border-border-strong px-2 py-1 font-mono text-sm"
           inputMode="numeric"
           onChange={(event) => onPage(event.target.value)}
           value={page}
         />
       </label>
       <label className="block">
-        <span className="block text-xs text-stone-500">{labels.text}</span>
+        <span className="block text-xs text-muted">{labels.text}</span>
         <textarea
-          className="mt-1 h-20 w-full rounded border border-stone-300 px-2 py-1 text-sm"
+          className="mt-1 h-20 w-full rounded border border-border-strong px-2 py-1 text-sm"
           onChange={(event) => onText(event.target.value)}
           value={text}
         />
       </label>
       {labels.memo === null ? null : (
         <label className="block">
-          <span className="block text-xs text-stone-500">{labels.memo}</span>
+          <span className="block text-xs text-muted">{labels.memo}</span>
           <textarea
-            className="mt-1 h-16 w-full rounded border border-stone-300 px-2 py-1 text-sm"
+            className="mt-1 h-16 w-full rounded border border-border-strong px-2 py-1 text-sm"
             onChange={(event) => onMemo(event.target.value)}
             placeholder={labels.memoHint ?? ''}
             value={memo}
@@ -282,11 +279,11 @@ function Form({
         </label>
       )}
       <div className="flex justify-end gap-2">
-        <button className="px-2 py-1 text-sm text-stone-600" onClick={onCancel} type="button">
+        <button className="px-2 py-1 text-sm text-muted-strong" onClick={onCancel} type="button">
           취소
         </button>
         <button
-          className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm text-white disabled:opacity-40"
+          className="rounded-md bg-accent px-3 py-1.5 text-sm text-accent-foreground disabled:opacity-40"
           disabled={busy || text.trim() === ''}
           onClick={onSubmit}
           type="button"

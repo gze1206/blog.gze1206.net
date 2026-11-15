@@ -29,6 +29,7 @@ import { Editor } from './Editor.js';
 import { PublishReview } from './PublishReview.js';
 import { readSkippedReviewPeriods } from './reviewPreferences.js';
 import { TemplateGallery } from './TemplateGallery.js';
+import { ThemeToggle } from './ThemeToggle.js';
 import { DayPage } from './day/[date].js';
 
 export function App() {
@@ -195,35 +196,40 @@ export function App() {
   };
 
   return (
-    <div className="flex h-screen min-h-[38rem] bg-[#f4f1e8] text-stone-900">
+    <div className="flex h-screen min-h-[38rem] bg-background text-foreground">
       {importing ? (
         <ImportDialog onClose={() => setImporting(false)} onImported={() => void refresh()} />
       ) : null}
       {addingBook ? (
         <BookDialog onClose={() => setAddingBook(false)} onCreated={() => void refresh()} />
       ) : null}
-      <aside className="w-80 shrink-0 overflow-y-auto border-r border-stone-200 bg-[#f8f6ef] p-5">
+      <aside className="w-80 shrink-0 overflow-y-auto border-r border-border bg-surface-sunken p-5">
         <header className="mb-8">
-          <p className="font-mono text-[11px] tracking-[0.22em] text-emerald-700 uppercase">
-            Private
-          </p>
-          <h1 className="mt-1 font-serif text-2xl">Workbench</h1>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-accent font-mono text-[11px] tracking-[0.22em] uppercase">
+                Private
+              </p>
+              <h1 className="text-foreground mt-1 font-serif text-2xl">Workbench</h1>
+            </div>
+            <ThemeToggle />
+          </div>
           <button
-            className="mt-4 w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-left text-sm"
+            className="mt-4 w-full rounded-md border border-border bg-surface px-3 py-2 text-left text-sm"
             onClick={() => setSelected(null)}
             type="button"
           >
             오늘의 로그
           </button>
           <button
-            className="mt-2 w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-left text-sm"
+            className="mt-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-left text-sm"
             onClick={() => setImporting(true)}
             type="button"
           >
             블로그에서 가져오기
           </button>
           <button
-            className="mt-2 w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-left text-sm"
+            className="mt-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-left text-sm"
             onClick={() => setAddingBook(true)}
             type="button"
           >
@@ -238,10 +244,10 @@ export function App() {
           selectedId={selected?.id ?? null}
         />
       </aside>
-      <main className="flex min-w-0 flex-1 flex-col bg-[#fbfaf6]">
+      <main className="flex min-w-0 flex-1 flex-col bg-background">
         {error ? (
           <div
-            className="border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700"
+            className="border-b border-danger/30 bg-danger/10 px-6 py-3 text-sm text-danger"
             role="alert"
           >
             {error}
@@ -270,10 +276,10 @@ export function App() {
         ) : selected ? (
           <>
             {selected.kind === 'book' ? (
-              <p className="border-b border-stone-200 bg-stone-50 px-6 py-2 text-xs text-stone-600">
+              <p className="border-b border-border bg-surface-sunken px-6 py-2 text-xs text-muted-strong">
                 원본을 직접 고치는 중입니다.{' '}
                 <button
-                  className="text-emerald-700 underline"
+                  className="text-accent underline"
                   onClick={() => setEditingSource(false)}
                   type="button"
                 >
@@ -311,7 +317,7 @@ export function App() {
             reviewSuggestion={reviewSuggestion}
           />
         ) : (
-          <p className="p-8 text-sm text-stone-500">앱 달력을 불러오는 중입니다.</p>
+          <p className="p-8 text-sm text-muted">앱 달력을 불러오는 중입니다.</p>
         )}
       </main>
     </div>

@@ -85,15 +85,15 @@ export function ImportDialog({ onClose, onImported }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-stone-900/40 p-6 pt-[8vh]">
-      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-stone-200 bg-white shadow-xl">
-        <header className="border-b border-stone-200 px-5 py-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-scrim p-6 pt-[8vh]">
+      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
+        <header className="border-b border-border px-5 py-4">
           <h2 className="font-serif text-xl">블로그에서 가져오기</h2>
-          <p className="mt-1 text-sm text-stone-500">
+          <p className="mt-1 text-sm text-muted">
             가져올 글을 고르세요. 같은 slug 가 이미 있으면 어떻게 할지 함께 정합니다.
           </p>
           <input
-            className="mt-3 w-full rounded-md border border-stone-300 px-3 py-2 text-sm"
+            className="mt-3 w-full rounded-md border border-border-strong px-3 py-2 text-sm"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="제목이나 slug 로 찾기"
             type="search"
@@ -103,26 +103,26 @@ export function ImportDialog({ onClose, onImported }: Props) {
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           {status === 'loading' ? (
-            <p className="text-sm text-stone-500">블로그를 읽는 중입니다…</p>
+            <p className="text-sm text-muted">블로그를 읽는 중입니다…</p>
           ) : null}
           {status !== 'loading' && posts.length === 0 ? (
-            <p className="text-sm text-stone-500">가져올 글이 없습니다.</p>
+            <p className="text-sm text-muted">가져올 글이 없습니다.</p>
           ) : null}
           {status !== 'loading' && posts.length > 0 ? (
-            <p className="mb-3 text-[11px] text-stone-500">
+            <p className="mb-3 text-[11px] text-muted">
               {posts.length}편 중 {visible.length}편 표시
               {chosen.length > 0 ? ` · ${chosen.length}편 선택` : ''}
             </p>
           ) : null}
           {status !== 'loading' && posts.length > 0 && visible.length === 0 ? (
-            <p className="text-sm text-stone-500">찾는 글이 없습니다.</p>
+            <p className="text-sm text-muted">찾는 글이 없습니다.</p>
           ) : null}
 
           <ul className="grid gap-2">
             {visible.map((post) => {
               const isSelected = selected[post.repoPath] === true;
               return (
-                <li className="rounded-lg border border-stone-200 px-3 py-2" key={post.repoPath}>
+                <li className="rounded-lg border border-border px-3 py-2" key={post.repoPath}>
                   <label className="flex items-start gap-3">
                     <input
                       checked={isSelected}
@@ -136,8 +136,8 @@ export function ImportDialog({ onClose, onImported }: Props) {
                       type="checkbox"
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm text-stone-800">{post.title}</span>
-                      <span className="block font-mono text-[11px] text-stone-400">
+                      <span className="block truncate text-sm text-foreground">{post.title}</span>
+                      <span className="block font-mono text-[11px] text-muted">
                         {post.slug}
                         {post.draft ? ' · draft' : ''}
                       </span>
@@ -145,8 +145,8 @@ export function ImportDialog({ onClose, onImported }: Props) {
                   </label>
 
                   {isSelected && post.conflictsWith !== null ? (
-                    <div className="mt-2 rounded-md bg-amber-50 px-3 py-2">
-                      <p className="text-[11px] text-amber-900">
+                    <div className="mt-2 rounded-md bg-notice px-3 py-2">
+                      <p className="text-[11px] text-notice-foreground">
                         이미 <span className="font-mono">{post.conflictsWith}</span> 가 같은 slug 를
                         쓰고 있습니다.
                       </p>
@@ -154,7 +154,7 @@ export function ImportDialog({ onClose, onImported }: Props) {
                         {(['rename', 'overwrite', 'skip', 'cancel'] as const).map((option) => (
                           <button
                             aria-pressed={resolutions[post.repoPath] === option}
-                            className="rounded border border-amber-300 px-2 py-1 text-[11px] aria-pressed:bg-amber-200"
+                            className="rounded border border-notice-foreground/40 px-2 py-1 text-[11px] aria-pressed:bg-notice"
                             key={option}
                             onClick={() =>
                               setResolutions((current) => ({ ...current, [post.repoPath]: option }))
@@ -167,7 +167,7 @@ export function ImportDialog({ onClose, onImported }: Props) {
                       </div>
                       {resolutions[post.repoPath] === 'rename' ? (
                         <input
-                          className="mt-2 w-full rounded border border-amber-300 px-2 py-1 font-mono text-[11px]"
+                          className="mt-2 w-full rounded border border-notice-foreground/40 px-2 py-1 font-mono text-[11px]"
                           onChange={(event) =>
                             setSlugs((current) => ({
                               ...current,
@@ -186,29 +186,29 @@ export function ImportDialog({ onClose, onImported }: Props) {
           </ul>
         </div>
 
-        <footer className="border-t border-stone-200 px-5 py-3">
-          {error ? <p className="mb-2 text-sm text-red-700">{error}</p> : null}
+        <footer className="border-t border-border px-5 py-3">
+          {error ? <p className="mb-2 text-sm text-danger">{error}</p> : null}
           {hiddenChosen > 0 ? (
-            <p className="mb-2 text-[11px] text-stone-500">
+            <p className="mb-2 text-[11px] text-muted">
               검색어 밖에서 고른 {hiddenChosen}편도 함께 가져옵니다.
             </p>
           ) : null}
           {undecided.length > 0 ? (
-            <p className="mb-2 text-[11px] text-amber-800">
+            <p className="mb-2 text-[11px] text-notice-foreground">
               겹치는 {undecided.length}편을 어떻게 할지 정해야 가져올 수 있습니다.
               {hiddenUndecided > 0 ? ' 검색어를 지우면 남은 것이 보입니다.' : ''}
             </p>
           ) : null}
           <div className="flex justify-end gap-2">
             <button
-              className="rounded-md px-3 py-2 text-sm text-stone-600"
+              className="rounded-md px-3 py-2 text-sm text-muted-strong"
               onClick={onClose}
               type="button"
             >
               닫기
             </button>
             <button
-              className="rounded-md bg-emerald-700 px-3 py-2 text-sm text-white disabled:opacity-40"
+              className="rounded-md bg-accent px-3 py-2 text-sm text-accent-foreground disabled:opacity-40"
               disabled={chosen.length === 0 || undecided.length > 0 || status === 'working'}
               onClick={() => void apply()}
               type="button"

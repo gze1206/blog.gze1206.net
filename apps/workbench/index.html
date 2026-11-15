@@ -3,8 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f4f1e8" />
-    <title>Personal Workbench</title>
+    <script>
+      // 첫 그리기 전에 테마를 적용해 깜박임을 막는다(NOR-203). 규칙은 src/web/theme.ts 와 같다.
+      (() => {
+        let stored = null;
+        try {
+          stored = localStorage.getItem('workbench-theme');
+        } catch {}
+        const pref = stored === 'light' || stored === 'dark' ? stored : 'system';
+        const dark =
+          pref === 'system' ? matchMedia('(prefers-color-scheme: dark)').matches : pref === 'dark';
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+      })();
+    </script>
+    <title>Workbench</title>
   </head>
   <body>
     <div id="root"></div>

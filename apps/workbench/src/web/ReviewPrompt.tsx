@@ -20,21 +20,21 @@ export function ReviewPrompt({
   return (
     <section
       aria-label="회고 제안"
-      className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50/60 px-4 py-3"
+      className="mb-6 rounded-lg border border-accent/40 bg-accent-soft px-4 py-3"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-stone-800">
+          <p className="text-sm font-medium text-foreground">
             {suggestion.period} {frequency} 회고를 남길까요?
           </p>
-          <p className="mt-0.5 text-xs text-stone-500">
+          <p className="mt-0.5 text-xs text-muted">
             종료일 {suggestion.endedOn}
             {selectedBulletCount > 0 ? ` · 선택 불렛 ${selectedBulletCount}개 연결` : ''}
           </p>
         </div>
         <div className="flex gap-2">
           <button
-            className="rounded bg-emerald-800 px-3 py-1.5 text-xs text-white disabled:opacity-50"
+            className="rounded bg-accent-strong px-3 py-1.5 text-xs text-accent-foreground disabled:opacity-50"
             disabled={busy}
             onClick={onCreate}
             type="button"
@@ -42,7 +42,7 @@ export function ReviewPrompt({
             작성
           </button>
           <button
-            className="rounded border border-stone-200 bg-white px-3 py-1.5 text-xs"
+            className="rounded border border-border bg-surface px-3 py-1.5 text-xs"
             onClick={() => {
               rememberReviewLater(suggestion);
               onDismiss();
@@ -52,7 +52,7 @@ export function ReviewPrompt({
             나중에
           </button>
           <button
-            className="rounded px-3 py-1.5 text-xs text-stone-500"
+            className="rounded px-3 py-1.5 text-xs text-muted"
             onClick={() => {
               skipReviewPeriod(suggestion);
               onDismiss();

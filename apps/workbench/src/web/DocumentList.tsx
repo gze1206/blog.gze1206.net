@@ -20,28 +20,28 @@ export function DocumentList({ documents, problems, selectedId, onSelect }: Prop
       <div className="mb-3 flex items-baseline justify-between">
         <h2
           id="documents-title"
-          className="text-xs font-semibold tracking-[0.18em] text-stone-500 uppercase"
+          className="text-xs font-semibold tracking-[0.18em] text-muted uppercase"
         >
           Documents
         </h2>
-        <span className="text-xs text-stone-400">{documents.length}</span>
+        <span className="text-xs text-muted">{documents.length}</span>
       </div>
       <div className="grid gap-1">
         {documents.length === 0 ? (
-          <p className="py-3 text-sm text-stone-400">아직 문서가 없습니다.</p>
+          <p className="py-3 text-sm text-muted">아직 문서가 없습니다.</p>
         ) : null}
         {documents.map((document) => (
           <button
             aria-pressed={selectedId === document.id}
-            className="flex items-center gap-2.5 rounded-md px-3 py-2 text-left hover:bg-stone-100 aria-pressed:bg-stone-200"
+            className="flex items-center gap-2.5 rounded-md px-3 py-2 text-left hover:bg-surface-sunken aria-pressed:bg-border"
             key={document.id}
             onClick={() => onSelect(document.id)}
             type="button"
           >
             {hasBooks ? <Cover document={document} /> : null}
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm text-stone-800">{document.title}</span>
-              <span className="block font-mono text-[11px] text-stone-400">{document.kind}</span>
+              <span className="block truncate text-sm text-foreground">{document.title}</span>
+              <span className="block font-mono text-[11px] text-muted">{document.kind}</span>
             </span>
           </button>
         ))}
@@ -51,17 +51,19 @@ export function DocumentList({ documents, problems, selectedId, onSelect }: Prop
          * 읽지 못한 파일을 조용히 감추지 않는다. 감추면 사용자는 파일이 사라진 줄 알고,
          * 목록에 없는 글을 다시 쓰기 시작한다(NOR-190).
          */
-        <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
-          <p className="text-xs font-semibold text-amber-900">읽지 못한 파일 {problems.length}개</p>
+        <div className="mt-4 rounded-md border border-notice-foreground/30 bg-notice px-3 py-2">
+          <p className="text-xs font-semibold text-notice-foreground">
+            읽지 못한 파일 {problems.length}개
+          </p>
           <ul className="mt-1 grid gap-1">
             {problems.map((problem) => (
-              <li className="text-[11px] text-amber-800" key={problem.relativePath}>
+              <li className="text-[11px] text-notice-foreground" key={problem.relativePath}>
                 <span className="block font-mono break-all">{problem.relativePath}</span>
                 <span className="block">{problem.message}</span>
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-[11px] text-amber-700">
+          <p className="mt-2 text-[11px] text-notice-foreground">
             파일을 직접 고치면 다시 목록에 나타납니다.
           </p>
         </div>
@@ -82,7 +84,7 @@ function Cover({ document }: { readonly document: DocumentSummary }) {
   const url = document.cover === undefined ? null : bookCoverUrl(document.cover);
   if (url === null) {
     return (
-      <span className="flex h-9 w-6 flex-none items-center justify-center rounded-[2px] border border-stone-200 bg-stone-100 text-[9px] text-stone-400">
+      <span className="flex h-9 w-6 flex-none items-center justify-center rounded-[2px] border border-border bg-surface-sunken text-[9px] text-muted">
         {[...document.title][0] ?? '책'}
       </span>
     );
@@ -90,7 +92,7 @@ function Cover({ document }: { readonly document: DocumentSummary }) {
   return (
     <img
       alt=""
-      className="h-9 w-6 flex-none rounded-[2px] border border-stone-200 object-cover"
+      className="h-9 w-6 flex-none rounded-[2px] border border-border object-cover"
       src={url}
     />
   );

@@ -41,12 +41,12 @@ export function QuickCapture({
   };
 
   return (
-    <section className="rounded-xl border border-stone-200 bg-white p-4" aria-label="빠른 캡처">
+    <section className="rounded-xl border border-border bg-surface p-4" aria-label="빠른 캡처">
       <div className="mb-3 flex gap-2" role="group" aria-label="불렛 유형">
         {choices.map((choice, index) => (
           <button
             aria-pressed={type === choice.type}
-            className="rounded-md border border-stone-200 px-3 py-1.5 text-sm aria-pressed:border-emerald-600 aria-pressed:bg-emerald-50"
+            className="rounded-md border border-border px-3 py-1.5 text-sm aria-pressed:border-accent aria-pressed:bg-accent-soft"
             key={choice.type}
             onClick={() => setType(choice.type)}
             title={`Alt+${index + 1}`}
@@ -67,7 +67,7 @@ export function QuickCapture({
           value={text}
         />
         <button
-          className="rounded-md bg-stone-900 px-4 text-sm text-white"
+          className="bg-foreground text-background shrink-0 rounded-md px-4 text-sm whitespace-nowrap"
           onClick={() => void submit()}
           type="button"
         >

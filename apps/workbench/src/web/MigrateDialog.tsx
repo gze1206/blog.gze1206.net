@@ -28,15 +28,15 @@ export function MigrateDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-20 grid place-items-center bg-stone-950/30 p-6">
+    <div className="fixed inset-0 z-20 grid place-items-center bg-scrim p-6">
       <section
         aria-label={intentional ? '의식적 이월' : '간편 이월'}
         aria-modal="true"
-        className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+        className="w-full max-w-md rounded-xl bg-surface p-6 shadow-xl"
         role="dialog"
       >
         <h2 className="font-serif text-2xl">{intentional ? '의식적 이월' : '간편 이월'}</h2>
-        <p className="mt-3 text-sm text-stone-600">{bullet.text}</p>
+        <p className="mt-3 text-sm text-muted-strong">{bullet.text}</p>
         <label className="mt-5 block text-sm font-medium">
           대상 날짜
           <input className="field mt-1" readOnly type="date" value={targetDate} />
@@ -57,7 +57,7 @@ export function MigrateDialog({
             취소
           </button>
           <button
-            className="rounded-md bg-emerald-700 px-4 py-2 text-sm text-white disabled:opacity-40"
+            className="rounded-md bg-accent px-4 py-2 text-sm text-accent-foreground disabled:opacity-40"
             disabled={busy || (intentional && !confirmation.trim())}
             onClick={() => void submit()}
             type="button"
