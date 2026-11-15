@@ -1,0 +1,18 @@
+---
+import katex from 'katex';
+import katexCss from 'katex/dist/katex.min.css?url';
+
+interface Props {
+  formula: string;
+}
+
+const { formula } = Astro.props;
+const html = katex.renderToString(formula, {
+  throwOnError: false,
+  displayMode: true,
+  output: 'htmlAndMathml',
+});
+---
+
+<link rel="stylesheet" href={katexCss} />
+<div class="katex-block" set:html={html} />

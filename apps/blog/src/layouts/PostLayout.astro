@@ -1,0 +1,145 @@
+---
+/**
+ * 글 상세 레이아웃 (NOR-16, NOR-17).
+ *
+ * 헤딩 계층: 글 제목이 `h1`, 본문 헤딩은 `h2` 부터 쓰는 것을 전제로 한다.
+ *
+ * 파생 데이터(목차·읽기 시간·ISO 날짜)는 여기서 계산하지 않고 `derivePostDetail` 이 만든
+ * {@link PostDetail} 을 받는다. 같은 값을 Phase 7(JSON-LD)이 다시 쓰기 때문이다 —
+ * 표시용 계산을 템플릿에 묻어두면 구조화 데이터와 조용히 어긋난다. 읽기 시간을
+ * `<time datetime="PT3M">` 으로 내보내는 것도 같은 이유다(JSON-LD `timeRequired` 와 같은 값).
+ *
+ * 메타(NOR-27)도 같은 원칙이다 — `og:type=article` 과 `article:published_time` /
+ * `article:modified_time` 을 `BaseLayout` 에 넘기되, 시각은 {@link PostDetail} 의 ISO 값을
+ * **재사용**한다. 화면은 `isUpdated` 가 false 면 수정일을 감추지만 OG 는 감추지 않는다 —
+ * `updatedAt` 은 스키마 필수 필드라 항상 실재하고, 크롤러에게는 "발행일과 같음"이 더 정확한
+ * 정보이기 때문이다(spec NOR-27 결정 7).
+ *
+ * 확장 지점: 본문 뒤 `<slot name="after-content">`. NOR-18 의 시리즈 내비게이션이 여기 들어온다.
+ * 레이아웃은 그 안에 무엇이 오는지 알지 못한다 — 시리즈 내비게이션을 렌더할지 말지는
+ * `buildSeriesNav`(ADR 0011)가 판단하고, 레이아웃은 자리만 내준다.
+ */
+import BaseLayout from './BaseLayout.astro';
+import katexCss from 'katex/dist/katex.min.css?url';
+import TableOfContents from '../components/TableOfContents.astro';
+import TocFab from '../components/TocFab.astro';
+import { formatKoreanDate } from '../lib/date';
+import { categoryPath, seriesPath, tagPath } from '../lib/routes';
+import { toSlug } from '../lib/slug';
+import type { Post, Series } from '../lib/content';
+import type { PostDetail } from '../lib/post-detail';
+import { buildArticleJsonLd, buildBreadcrumbJsonLd } from '../lib/json-ld';
+import { resolveTocPlacement } from '../lib/toc';
+
+interface Props {
+  post: Post;
+  /** 목차·읽기 시간·ISO 날짜. `derivePostDetail(...)` 의 결과를 그대로 넘긴다. */
+  detail: PostDetail;
+  /**
+   * 글이 시리즈에 속할 때 그 시리즈 정의. **헤더의 소속 표시(이름 + 링크) 전용**이다.
+   * 이전/다음·목록·진행도는 `after-content` 슬롯의 `SeriesNav` 가 그린다(NOR-18).
+   */
+  series?: Series | undefined;
+}
+
+const { post, detail, series } = Astro.props;
+// Markdown 의 rehype-katex 결과는 Markdoc 컴포넌트를 거치지 않는다.
+const renderedContent = await Astro.slots.render('default');
+const hasMath = /class=["'][^"']*\bkatex\b[^"']*["']/.test(renderedContent);
+const { title, description, category, tags, publishedAt, updatedAt, draft } = post.data;
+const { toc, readingTime, publishedISO, updatedISO, isUpdated } = detail;
+const tocPlacement = resolveTocPlacement(post.data.toc, toc.length);
+const url = `https://gze1206.net/blog/${post.data.slug}`;
+const jsonLd = [
+  buildArticleJsonLd({ title, description, url, published: publishedISO, modified: updatedISO }),
+  buildBreadcrumbJsonLd([
+    { name: '홈', url: 'https://gze1206.net/' },
+    { name: '블로그', url: 'https://gze1206.net/blog' },
+    { name: title, url },
+  ]),
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  type="article"
+  article={{ publishedTime: publishedISO, modifiedTime: updatedISO }}
+  jsonLd={jsonLd}
+>
+  {hasMath && <link rel="stylesheet" href={katexCss} />}
+  <main id="main-content" class="article">
+    <article data-pagefind-body>
+      <header class="article__head">
+        {
+          draft && (
+            <p class="bg-notice text-notice-foreground mb-5 inline-block rounded px-2 py-1 text-sm font-semibold">
+              초안 — 개발 서버에서만 보입니다
+            </p>
+          )
+        }
+
+        <div class="article-taxonomy">
+          <span class="article-taxonomy__label">카테고리</span>
+          <a href={categoryPath(toSlug(category))} class="category-badge">{category}</a>
+        </div>
+
+        <h1 class="article__title">{title}</h1>
+        <p class="article__summary">{description}</p>
+
+        <div class="article__meta">
+          <time datetime={publishedISO}>{formatKoreanDate(publishedAt)}</time>
+          {
+            isUpdated && (
+              <span>
+                (수정 <time datetime={updatedISO}>{formatKoreanDate(updatedAt)}</time>)
+              </span>
+            )
+          }
+          <span>읽는 시간 <time datetime={readingTime.iso}>{readingTime.label}</time></span>
+          {
+            series && (
+              <span>
+                시리즈{' '}
+                <a href={seriesPath(series.data.slug)} class="rounded font-medium hover:underline">
+                  {series.data.name}
+                </a>
+              </span>
+            )
+          }
+        </div>
+
+        <div class="article-taxonomy">
+          <span class="article-taxonomy__label" id="post-tags-label">태그</span>
+          <ul class="tag-chips" aria-labelledby="post-tags-label">
+            {
+              tags.map((tag) => (
+                <li>
+                  <a href={tagPath(toSlug(tag))} class="tag-chip">
+                    {tag}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </header>
+
+      {tocPlacement.inline && <TableOfContents entries={toc} />}
+
+      <div class="post-body article__body">
+        <slot />
+      </div>
+
+      <div class="article__after">
+        <slot name="after-content" />
+      </div>
+    </article>
+
+    {
+      tocPlacement.floating && (
+        <TocFab entries={toc} followsScroll={tocPlacement.floatingFollowsScroll} />
+      )
+    }
+  </main>
+</BaseLayout>

@@ -1,0 +1,2206 @@
+@import 'tailwindcss';
+
+/* Tailwind의 `dark:` 유틸리티도 시스템 설정이 아니라 문서의 실제 선택값을 기준으로 한다. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans:
+    'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto,
+    'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic',
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+  /* 제목 전용. 본문까지 세리프로 두면 한글 서브셋 청크를 글 전체 분량만큼 받게 된다(NOR-149). */
+  --font-serif: 'Noto Serif KR', ui-serif, Georgia, 'Apple SD Gothic Neo', 'Nanum Myeongjo', serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-background: var(--theme-background);
+  --color-foreground: var(--theme-foreground);
+  --color-body: var(--theme-body);
+  --color-surface: var(--theme-surface);
+  --color-surface-sunken: var(--theme-surface-sunken);
+  --color-muted: var(--theme-muted);
+  --color-muted-strong: var(--theme-muted-strong);
+  --color-border: var(--theme-border);
+  --color-border-strong: var(--theme-border-strong);
+  --color-accent: var(--theme-accent);
+  --color-accent-strong: var(--theme-accent-strong);
+  --color-accent-soft: var(--theme-accent-soft);
+  --color-accent-foreground: var(--theme-accent-foreground);
+  --color-notice: var(--theme-notice);
+  --color-notice-foreground: var(--theme-notice-foreground);
+  --color-scrim: var(--theme-scrim);
+  --color-danger: var(--theme-danger);
+  --spacing-page: clamp(1rem, 2vw, 1.5rem);
+  /* 읽기 열. 글 상세와 목록 페이지가 **같은 하나의 열**을 쓴다(NOR-150).
+     한때 제목·목차·코드를 저마다 다른 폭에 두었는데, 화면에서는 의도가 아니라 어긋난 줄로
+     보였다 — 한 페이지 안에 왼쪽 끝이 세 군데였다. */
+  --spacing-reading: 56.25rem;
+  /* 읽기 열 + 좌우 여백. 바깥 상자의 폭이다. */
+  --spacing-reading-frame: calc(var(--spacing-reading) + 2rem);
+  /* 헤더·푸터가 쓰는 바깥 격자. 읽기 열보다 넓어서 브랜드와 내비게이션이 가장자리에 선다. */
+  --spacing-shell: 75rem;
+}
+
+/* 팔레트 02C Mineral / Warm Paper.
+   따뜻한 무채색 표면 위에 광물 초록을 신호로만 쓴다 — 표면까지 물들이면 독서 공간이
+   테마성 UI 처럼 보인다. 본문·보조 텍스트는 각 배경 위에서 WCAG AA(4.5:1) 를 넘긴다. */
+:root {
+  --theme-background: #fcf9f4;
+  --theme-surface: #fffdf9;
+  --theme-surface-sunken: #f4f0e9;
+  --theme-foreground: #292623;
+  --theme-body: #37322f;
+  --theme-muted: #6b645c;
+  --theme-muted-strong: #554e47;
+  --theme-border: #e4ded5;
+  --theme-border-strong: #d8d1c7;
+  --theme-accent: #3d7364;
+  --theme-accent-strong: #2e6252;
+  --theme-accent-soft: #eaf1e8;
+  --theme-accent-foreground: #fcf9f4;
+  --theme-focus: #3d7364;
+  --theme-shadow: 56 47 38;
+  /* 초안 배지처럼 "아직 공개 상태가 아님"을 알리는 자리. warning 콜아웃과 같은 색을 쓴다. */
+  --theme-notice: #f9efdd;
+  --theme-notice-foreground: #8a5a12;
+  /* 모달 뒤 어둠. 회색이 아니라 잉크색이어야 종이 위에서 자연스럽다. */
+  --theme-scrim: rgb(41 38 35 / 0.5);
+  /* 실패를 알리는 글자. danger 콜아웃과 같은 색이다. */
+  --theme-danger: #a33a2c;
+  /* 코드 면. 종이보다 한 단계 가라앉혀 본문과 다른 종류의 내용임을 보인다. */
+  --theme-code-surface: #f2eee7;
+}
+
+.dark {
+  --theme-background: #211f1d;
+  --theme-surface: #272522;
+  --theme-surface-sunken: #1b1917;
+  --theme-foreground: #efece7;
+  --theme-body: #ddd8d1;
+  --theme-muted: #a49c93;
+  --theme-muted-strong: #c0b9b0;
+  --theme-border: #38342f;
+  --theme-border-strong: #4a453f;
+  --theme-accent: #9fd0bb;
+  --theme-accent-strong: #b6e5cb;
+  --theme-accent-soft: #2a3430;
+  --theme-accent-foreground: #1a1917;
+  --theme-focus: #9fd0bb;
+  --theme-shadow: 0 0 0;
+  --theme-notice: #2a2113;
+  --theme-notice-foreground: #dcb679;
+  --theme-scrim: rgb(12 11 10 / 0.62);
+  --theme-danger: #e5a598;
+  /* 다크에서는 Tokyo Night 의 배경을 그대로 쓴다 — 이미 페이지와 또렷이 구분된다. */
+  --theme-code-surface: #1a1b26;
+}
+
+html {
+  background: var(--theme-background);
+}
+
+body {
+  background: var(--theme-background);
+  color: var(--theme-foreground);
+}
+
+/* --- 제목 타이포그래피 (NOR-149) ---
+   세리프는 **제목에만** 쓴다. 한글 세리프는 서브셋 청크로 나뉘어 내려오므로, 본문까지
+   세리프로 두면 글 한 편에 쓰인 음절 수만큼 청크를 받게 된다. h3 이하는 산세리프 굵기로
+   위계를 만든다 — 작은 크기의 세리프는 화면에서 오히려 읽기 어렵다. */
+.display-serif {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+}
+
+/* 사이트 공통 격자 (NOR-150). 헤더·푸터·목록 페이지가 같은 좌우 여백을 쓴다. */
+.site-shell {
+  width: min(100%, var(--spacing-shell));
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+/* --- 브랜드 (NOR-149) ---
+   주소(`gze1206.net`)와 정체성(`NORU`)을 분리한다. 헤더에는 정체성을 둔다. */
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  color: var(--theme-foreground);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.site-brand__mark {
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 0.55rem;
+  background: var(--theme-accent);
+  color: var(--theme-accent-foreground);
+}
+
+/* 단축키 칩. 표기가 정해지기 전에도 폭을 지켜 헤더가 흔들리지 않게 한다(NOR-164). */
+.search-shortcut {
+  display: inline-block;
+  min-width: 3.1rem;
+  padding: 0 0.3rem;
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 0.25rem;
+  color: var(--theme-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-align: center;
+}
+
+.site-nav__link {
+  border-radius: 0.25rem;
+  color: var(--theme-muted);
+}
+
+.site-nav__link:hover {
+  color: var(--theme-foreground);
+}
+
+.site-nav__link[aria-current] {
+  color: var(--theme-foreground);
+  font-weight: 650;
+}
+
+/* 목록 성격 페이지의 골격 (NOR-151). 글 상세와 같은 폭 위에 서서 페이지를 오갈 때
+   본문 열이 흔들리지 않는다. */
+.list-page {
+  width: min(100%, var(--spacing-reading-frame));
+  margin-inline: auto;
+  padding-inline: 1rem;
+  padding-block: clamp(2.5rem, 6vw, 4rem) clamp(3rem, 8vw, 5rem);
+}
+
+.list-page__head {
+  margin-bottom: clamp(2rem, 4vw, 2.75rem);
+}
+
+.list-page__eyebrow {
+  color: var(--theme-accent);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 50;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  background: var(--theme-accent);
+  color: var(--theme-accent-foreground);
+  font-weight: 700;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-left: auto;
+  border: 1px solid var(--theme-border);
+  border-radius: 9999px;
+  background: var(--theme-surface);
+  color: var(--theme-foreground);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: var(--theme-accent);
+  color: var(--theme-accent);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--theme-accent);
+  outline-offset: 2px;
+}
+
+/* --- 키보드 포커스 가시성 (NOR-16, NOR-18) ---
+   브라우저 기본 outline 이 요소 배경에 묻히는 경우가 있어 전역으로 한 번 고정한다.
+   `<summary>` 도 기본 포커스 대상이다(시리즈 목록 접기 — NOR-18). 링크·버튼과 같게 맞춘다. */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+/* --- 앵커 이동 (NOR-17) ---
+   프래그먼트로 점프했을 때 헤딩이 뷰포트 맨 위에 딱 붙지 않도록 여유를 준다. */
+:target {
+  scroll-margin-top: 1.5rem;
+}
+
+/* 부드러운 스크롤은 '움직임 줄이기'를 켠 사용자에게는 적용하지 않는다. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* --- 헤딩 앵커 링크 (NOR-17) ---
+   `.md`(rehype) 와 `.mdoc`(Markdoc) 이 같은 마크업을 만든다: 자식이 없는 `<a class="heading-anchor">`.
+   보이는 `#` 는 여기서 그린다 — 텍스트로 넣으면 목차 텍스트가 오염되고 스크린리더가
+   "링크, 우물 정"으로 읽는다. 접근 가능한 이름은 마크업의 `aria-label` 이 준다. */
+.heading-anchor {
+  margin-left: 0.35em;
+  font-weight: 400;
+  /* 흐린 회색은 대비가 모자란다. 보이는 동안에는 본문 대비 AA(4.5:1) 를 넘겨야 한다. */
+  color: var(--theme-muted);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.heading-anchor::before {
+  content: '#';
+}
+
+/* 호버뿐 아니라 **포커스에서도** 보여야 한다. 키보드 사용자가 못 쓰는 앵커는 없는 것과 같다. */
+.post-body :is(h1, h2, h3, h4, h5, h6):hover > .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+
+/* 호버가 없는 기기(터치)에서는 늘 보여 준다. 반투명으로 두면 대비만 깎이고 쓸 수는 없다. */
+@media (hover: none) {
+  .heading-anchor {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heading-anchor {
+    transition: none;
+  }
+}
+
+/* --- 홈 (NOR-151) ---
+   홈은 입구다. 소개 → 최근 기록 → 두 개의 문(경력·포트폴리오) 순서로 좁혀 간다. */
+.home {
+  padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(4rem, 10vw, 7rem);
+}
+
+.home-hero {
+  display: grid;
+  gap: clamp(2rem, 5vw, 4rem);
+}
+
+.home-kicker {
+  color: var(--theme-accent);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.home-title {
+  max-width: 40rem;
+  margin-top: 1rem;
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 5.6vw, 4.2rem);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 1.14;
+  word-break: keep-all;
+}
+
+.home-intro {
+  max-width: 34rem;
+  margin-top: 1.6rem;
+  color: var(--theme-muted-strong);
+  font-size: 1.0625rem;
+  line-height: 1.85;
+  word-break: keep-all;
+}
+
+/* 사실 목록은 자랑이 아니라 좌표다. 이름표(dt)와 값(dd)이 한 줄씩 쌓인다. */
+.home-facts {
+  align-self: end;
+  display: grid;
+  gap: 0;
+}
+
+.home-fact {
+  padding-block: 1.1rem;
+  border-top: 1px solid var(--theme-border);
+}
+
+.home-fact:last-child {
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.home-fact dt {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.home-fact dd {
+  margin-top: 0.35rem;
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.home-section {
+  margin-top: clamp(3.5rem, 8vw, 6rem);
+}
+
+.home-section__heading {
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.home-section__eyebrow {
+  color: var(--theme-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.home-section__title {
+  margin-top: 0.6rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.25;
+  word-break: keep-all;
+}
+
+.home-recent-posts {
+  margin-top: 1.5rem;
+}
+
+.home-empty-state {
+  margin-top: 1.25rem;
+  color: var(--theme-muted);
+}
+
+.home-section__action {
+  margin-top: 1.75rem;
+}
+
+.home-text-link {
+  color: var(--theme-accent);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.home-text-link:hover {
+  color: var(--theme-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+/* 두 개의 문. 홈에서 깊이 있는 두 공간으로 나가는 유일한 출구다. */
+.home-doors {
+  display: grid;
+  gap: 1px;
+  margin-top: clamp(3.5rem, 8vw, 6rem);
+  overflow: hidden;
+  border: 1px solid var(--theme-border);
+  border-radius: 1rem;
+  background: var(--theme-border);
+}
+
+.home-door {
+  display: flex;
+  min-height: 14rem;
+  flex-direction: column;
+  padding: clamp(1.75rem, 4vw, 2.75rem);
+  background: var(--theme-surface);
+}
+
+.home-door__ordinal {
+  margin-bottom: auto;
+  color: var(--theme-accent);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+}
+
+.home-door__title {
+  margin: 1.75rem 0 0.7rem;
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.3;
+  word-break: keep-all;
+}
+
+.home-door__summary {
+  max-width: 22rem;
+  color: var(--theme-muted-strong);
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.home-door__action {
+  margin-top: 1.3rem;
+}
+
+@media (min-width: 48rem) {
+  .home-hero {
+    grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 0.75fr);
+  }
+
+  .home-doors {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* 소개 안의 경력 블록 (NOR-160). 소개 문단과 사이드바 아래에 한 단 전체로 놓인다. */
+.about__career {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+@media (min-width: 48rem) {
+  .about__career {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- 경력 (NOR-151, NOR-155) ---
+   목록은 이력을 훑는 곳이다. 그래서 접힌 상태에서 보이는 것은 기간·조직·소속뿐이고,
+   담당 업무는 펼쳤을 때만 나온다. */
+.career-timeline {
+  display: grid;
+  gap: 0;
+}
+
+.career-entry {
+  border-top: 1px solid var(--theme-border);
+}
+
+.career-timeline > li:last-child .career-entry {
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.career-entry__summary {
+  display: grid;
+  align-items: baseline;
+  gap: 0.15rem 1.25rem;
+  padding: 1.35rem 1.75rem 1.35rem 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.career-entry__summary::-webkit-details-marker {
+  display: none;
+}
+
+/* 펼침 표시는 오른쪽 끝에 둔다. 요약 텍스트의 정렬을 흐트러뜨리지 않는다. */
+.career-entry__summary::after {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  color: var(--theme-accent);
+  transform: translateY(-50%);
+  content: '+';
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.career-entry[open] .career-entry__summary::after {
+  content: '−';
+}
+
+.career-entry__summary:hover .career-entry__organization {
+  color: var(--theme-accent);
+}
+
+.career-entry__period {
+  color: var(--theme-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+.career-entry__organization {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.career-entry__role {
+  color: var(--theme-muted);
+  font-size: 0.875rem;
+}
+
+.career-entry__highlights {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+  padding-left: 1.15rem;
+  color: var(--theme-body);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  list-style: disc;
+  word-break: keep-all;
+}
+
+@media (min-width: 40rem) {
+  .career-entry__summary {
+    position: relative;
+    grid-template-columns: 9rem minmax(0, 1fr);
+  }
+
+  .career-entry__period {
+    grid-row: span 2;
+  }
+
+  .career-entry__highlights {
+    margin-left: 9rem;
+  }
+}
+
+@media (max-width: 39.99rem) {
+  .career-entry__summary {
+    position: relative;
+  }
+}
+
+/* --- 소개 (NOR-156) --- */
+.about {
+  display: grid;
+  gap: clamp(2rem, 5vw, 3.5rem);
+}
+
+.about__body p {
+  color: var(--theme-body);
+  font-size: 1.0625rem;
+  line-height: 1.9;
+  word-break: keep-all;
+}
+
+.about__body p + p {
+  margin-top: 1.4em;
+}
+
+.about__more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.about__side {
+  display: grid;
+  gap: 2rem;
+  align-content: start;
+}
+
+.about__side-heading {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--theme-border);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.about__side .portfolio-card__stack {
+  margin-top: 1rem;
+}
+
+/* 소개 옆의 "요즘 읽는 것" (NOR-188). 책장으로 가는 입구이므로 표지는 작게, 제목이 먼저 읽히게. */
+.about__reading {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.about__reading a {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.about__reading a:hover .about__reading-title {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.about__reading-cover {
+  flex: none;
+  width: 2.25rem;
+  aspect-ratio: 2 / 3;
+  height: auto;
+  border-radius: 0.1rem 0.2rem 0.2rem 0.1rem;
+  object-fit: cover;
+}
+
+/* 책장 규칙(`.book-card__blank`)의 색은 그대로 쓰고, 크기만 여기서 다시 정한다 —
+   그쪽 규칙이 뒤에 있어 폭·높이를 덮어쓴다. */
+.about__reading-cover.book-card__blank {
+  display: flex;
+  width: 2.25rem;
+  height: auto;
+  padding: 0.3rem 0.25rem;
+  overflow: hidden;
+}
+
+/* 2.25rem 폭에는 제목이 온전히 들어가지 않는다. 색과 결로만 구분되면 충분하다. */
+.about__reading-spine {
+  font-family: var(--font-serif);
+  font-size: 0.5rem;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.about__reading-body {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.about__reading-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+
+.about__reading-author {
+  color: var(--theme-muted);
+  font-size: 0.75rem;
+}
+
+.about__links {
+  display: grid;
+  gap: 0.1rem;
+  margin-top: 0.5rem;
+}
+
+.about__links a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.65rem;
+  border-bottom: 1px solid var(--theme-border);
+  font-size: 0.9375rem;
+}
+
+.about__links a:hover {
+  color: var(--theme-accent);
+}
+
+.about__handle {
+  color: var(--theme-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+@media (min-width: 48rem) {
+  .about {
+    grid-template-columns: minmax(0, 1.55fr) minmax(14rem, 0.45fr);
+  }
+}
+
+/* --- 읽은 책 책장 (NOR-153, NOR-188) ---
+   목록은 "무엇을 읽었는가"만 말한다. 밑줄과 메모는 워크벤치에 비공개로 남는다.
+   표지를 세워 책장처럼 보이되, 표지 없는 책이 흔하다는 사실을 디자인의 전제로 둔다. */
+.shelf + .shelf {
+  margin-top: clamp(2.5rem, 6vw, 3.5rem);
+}
+
+.shelf__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--theme-border);
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.shelf__count {
+  color: var(--theme-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.shelf__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: clamp(2rem, 5vw, 3rem) 1.5rem;
+  align-items: start;
+  margin-top: 2rem;
+}
+
+.book-card__frame {
+  position: relative;
+  aspect-ratio: 2 / 3;
+}
+
+/* 책이 놓인 선반. 칸 사이 간격(1.5rem)만큼 양옆으로 넘겨 한 줄이 하나의 판처럼 이어지게 한다.
+   칸마다 그리므로 몇 줄로 접히든 각 줄 아래에 선반이 생긴다. */
+.book-card__frame::after {
+  content: '';
+  position: absolute;
+  right: -0.75rem;
+  bottom: -0.55rem;
+  left: -0.75rem;
+  height: 1px;
+  background: var(--theme-border-strong);
+  box-shadow: 0 2px 5px -3px rgb(var(--theme-shadow) / 0.5);
+}
+
+.book-card__cover,
+.book-card__blank {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.15rem 0.3rem 0.3rem 0.15rem;
+  box-shadow: 0 4px 10px -6px rgb(var(--theme-shadow) / 0.55);
+}
+
+.book-card__cover {
+  border: 1px solid var(--theme-border);
+  object-fit: cover;
+}
+
+/* 표지를 못 구한 책. 제목에서 정해진 색이라 다시 빌드해도 같은 책은 같은 색으로 선다. */
+.book-card__blank {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.9rem 0.75rem 0.8rem;
+  background: var(--spine);
+  color: #f6f2ea;
+  /* 책등처럼 보이도록 왼쪽에 접힘선 하나. */
+  border-left: 3px solid rgb(0 0 0 / 0.18);
+  /* 어두운 배경에서 판이 배경에 잠기지 않게 하는 실오라기 하나. */
+  outline: 1px solid rgb(255 255 255 / 0.07);
+  outline-offset: -1px;
+}
+
+.book-card__blank--t1 {
+  --spine: #3d7364;
+}
+
+.book-card__blank--t2 {
+  --spine: #6b5344;
+}
+
+.book-card__blank--t3 {
+  --spine: #4a5568;
+}
+
+.book-card__blank--t4 {
+  --spine: #7a4a4a;
+}
+
+.book-card__blank--t5 {
+  --spine: #56583c;
+}
+
+.book-card__blank-title {
+  font-family: var(--font-serif);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.03em;
+  word-break: keep-all;
+}
+
+.book-card__blank-author {
+  font-size: 0.6875rem;
+  opacity: 0.82;
+  word-break: keep-all;
+}
+
+/* 지금 손에 든 책. 책장에서 먼저 눈에 들어와야 하므로 표지 위에 끼운 갈피처럼 얹는다. */
+.book-card__now {
+  position: absolute;
+  top: 0.6rem;
+  right: 0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.2rem 0 0 0.2rem;
+  background: var(--theme-accent);
+  color: var(--theme-accent-foreground);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+/* 갈피가 붙은 칸에서만 제목이 그 자리를 비켜 간다. 붙지 않은 칸까지 좁힐 이유는 없다. */
+.book-card__frame:has(.book-card__now) .book-card__blank-title {
+  padding-right: 3.4rem;
+}
+
+.book-card__body {
+  margin-top: 1.1rem;
+}
+
+.book-card__title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+
+.book-card__authors {
+  margin-top: 0.25rem;
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+  word-break: keep-all;
+}
+
+.book-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  margin-top: 0.5rem;
+  color: var(--theme-muted);
+  font-size: 0.75rem;
+}
+
+.book-card__status {
+  color: var(--theme-muted-strong);
+  font-weight: 700;
+}
+
+.book-card__one-liner {
+  margin-top: 0.6rem;
+  color: var(--theme-body);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.book-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.7rem;
+}
+
+.book-card__related {
+  margin-top: 0.6rem;
+  font-size: 0.8125rem;
+}
+
+/* --- 포트폴리오 (NOR-151, NOR-157) ---
+   링크가 없는 작업도 실린다. 그 자리를 이미지와 담당 업무가 채운다. */
+.portfolio-list {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.portfolio-card {
+  overflow: hidden;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.9rem;
+  background: var(--theme-surface);
+}
+
+/* 크기를 마크업에 적어 두므로 이미지가 도착하기 전에도 자리가 잡혀 있다(CLS 0). */
+.portfolio-card__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.portfolio-card__body {
+  padding: clamp(1.25rem, 3vw, 1.9rem);
+}
+
+.portfolio-card__title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.portfolio-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  margin-top: 0.5rem;
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+}
+
+.portfolio-card__summary {
+  margin-top: 0.9rem;
+  color: var(--theme-muted-strong);
+  line-height: 1.8;
+  word-break: keep-all;
+}
+
+.portfolio-card__highlights {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1.1rem;
+  padding-left: 1.15rem;
+  color: var(--theme-body);
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  list-style: disc;
+  word-break: keep-all;
+}
+
+.portfolio-card__stack,
+.home-tech-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1.35rem;
+}
+
+.stack-token {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 9999px;
+  background: var(--theme-background);
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+
+.portfolio-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* --- 글 상세 읽기 레이아웃 (NOR-150) ---
+   제목·목차·본문·코드·댓글이 **한 열**을 쓴다. 예전에는 셋으로 나뉘어 있었고(제목·목차 948,
+   본문 900, 코드 980) 역할의 위계를 폭으로 말하려던 것이었지만, 읽는 쪽에서는 위계가 아니라
+   **어긋난 줄**로 보였다 — 한 화면 안에 왼쪽 끝이 세 군데였다. 종류가 다르다는 것은 코드 면의
+   배경색과 테두리가 이미 말하고 있으므로, 폭까지 동원할 필요가 없다. */
+.article {
+  width: min(100%, var(--spacing-reading-frame));
+  margin-inline: auto;
+  padding-inline: 1rem;
+  padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(4rem, 10vw, 8rem);
+}
+
+.article__head {
+  margin-bottom: clamp(2rem, 4vw, 2.75rem);
+}
+
+.article__title {
+  margin-top: 1.25rem;
+  font-family: var(--font-serif);
+  font-size: clamp(2.1rem, 5.2vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.14;
+  word-break: keep-all;
+}
+
+.article__summary {
+  max-width: 47.5rem;
+  margin-top: 1.5rem;
+  color: var(--theme-muted-strong);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  word-break: keep-all;
+}
+
+.article__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  margin-top: 1.35rem;
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+}
+
+/* --- 분류 표기 (NOR-150) ---
+   카테고리는 **하나**라서 채운 표식, 태그는 **여럿**이라서 외곽선 표식이다. 색만 다르게 하면
+   둘의 개수 차이가 보이지 않는다. 둘 다 실제 링크다 — 메타데이터가 장식으로 끝나면 탐색이 끊긴다. */
+.article-taxonomy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* 글 머리의 메타데이터는 제목 → 요약 → 날짜·읽는 시간 → 태그 순으로 한 줄씩 쌓인다.
+   이웃한 줄이 무엇이든 같은 간격을 준다 — `.article-taxonomy` 끼리만 규칙을 두면
+   날짜 줄 다음에 오는 태그 줄이 간격 없이 붙는다. */
+:is(.article-taxonomy, .article__meta) + :is(.article-taxonomy, .article__meta) {
+  margin-top: 1.1rem;
+}
+
+.article-taxonomy__label {
+  color: var(--theme-accent);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+
+.category-badge {
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.375rem;
+  background: var(--theme-accent);
+  color: var(--theme-accent-foreground);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.category-badge:hover {
+  background: var(--theme-accent-strong);
+}
+
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.tag-chip {
+  display: inline-block;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 9999px;
+  background: var(--theme-surface);
+  color: var(--theme-muted-strong);
+  font-size: 0.75rem;
+}
+
+.tag-chip:hover {
+  border-color: var(--theme-accent);
+  color: var(--theme-accent);
+}
+
+/* 갈 곳이 없는 태그는 링크처럼 보이지 않아야 한다. */
+.tag-chip--plain {
+  border-style: dashed;
+  color: var(--theme-muted);
+}
+
+.tag-chip::before {
+  color: var(--theme-muted);
+  content: '#';
+}
+
+/* --- 목차 (NOR-17, NOR-150) ---
+   접기는 `<details>` 가 한다. 스크립트가 관여하지 않으므로 렌더 후 레이아웃이 움직이지 않는다(CLS 0). */
+.post-toc {
+  width: 100%;
+  margin-block: clamp(2rem, 4vw, 2.75rem);
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 0.8rem;
+  background: var(--theme-surface-sunken);
+}
+
+.post-toc__summary,
+.post-toc-fab__button {
+  cursor: pointer;
+  list-style: none;
+}
+
+.post-toc__summary::-webkit-details-marker,
+.post-toc-fab__button::-webkit-details-marker {
+  display: none;
+}
+
+.post-toc__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.05rem 1.3rem;
+  font-weight: 700;
+}
+
+/* 접힘 상태를 아이콘 방향이 아니라 기호로 알린다 — 회전 애니메이션은 여기서 값을 못 한다. */
+.post-toc__summary::after {
+  color: var(--theme-accent);
+  content: '−';
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.post-toc:not([open]) .post-toc__summary::after {
+  content: '+';
+}
+
+.post-toc__body {
+  padding: 0 1.35rem 1.35rem;
+}
+
+.toc-list {
+  display: grid;
+  gap: 0.6rem;
+  padding-left: 1.2rem;
+  color: var(--theme-muted-strong);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  list-style: decimal;
+}
+
+.toc-list li::marker {
+  color: var(--theme-accent);
+  font-weight: 700;
+}
+
+.toc-list a:hover {
+  color: var(--theme-accent);
+  text-decoration: underline;
+}
+
+.toc-list__children {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+  list-style: disc;
+}
+
+/* 긴 목차가 좁은 화면에서 본문을 밀어내지 않도록 높이를 제한한다. */
+@media (max-width: 48rem) {
+  .post-toc__body {
+    max-height: 45vh;
+    overflow-y: auto;
+  }
+}
+
+/* --- 플로팅 목차 (NOR-150) --- */
+.post-toc-fab {
+  position: fixed;
+  z-index: 40;
+  right: clamp(1rem, 4vw, 2.5rem);
+  bottom: 1.5rem;
+}
+
+.post-toc-fab[hidden] {
+  display: none;
+}
+
+.post-toc-fab__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 9999px;
+  background: var(--theme-surface);
+  box-shadow: 0 8px 22px rgb(var(--theme-shadow) / 0.18);
+  color: var(--theme-accent);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.post-toc-fab__icon {
+  display: grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: var(--theme-accent);
+  color: var(--theme-accent-foreground);
+  font-size: 0.7rem;
+}
+
+.post-toc-fab__panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.6rem);
+  width: min(20rem, calc(100vw - 2rem));
+  max-height: min(60vh, 30rem);
+  padding: 1.1rem 1.25rem;
+  overflow-y: auto;
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 0.8rem;
+  background: var(--theme-surface);
+  box-shadow: 0 12px 30px rgb(var(--theme-shadow) / 0.2);
+}
+
+/* --- 글 본문 타이포그래피 (NOR-16, NOR-150) ---
+   한글은 단어 중간에서 끊기면 읽기가 크게 나빠진다. `keep-all` 로 어절을 지키되, 끊을 곳이
+   없는 긴 URL 은 `anywhere` 로 흘려보낸다 — 둘 중 하나만 쓰면 넘치거나 어색해진다. */
+.post-body {
+  color: var(--theme-body);
+  /* 좁은 화면에서는 17px, 넓은 화면에서는 18.4px. 한 줄에 담기는 글자 수를 비슷하게 유지한다. */
+  font-size: clamp(1.0625rem, 0.98rem + 0.45vw, 1.15rem);
+  letter-spacing: -0.019em;
+  line-height: 1.9;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* Markdoc 은 문서 전체를 `<article>` 로 한 겹 감싸고(`nodes.document` 기본값), `.md`(rehype)
+   경로는 감싸지 않는다. 두 경로가 같은 간격을 갖도록 **두 위치의 자식**을 모두 고른다 —
+   `.post-body > * + *` 만 두면 Markdoc 글에서는 감싸개 하나만 잡혀 문단 간격이 사라진다. */
+:is(.post-body, .post-body > article) > * + * {
+  margin-top: 1.54em;
+}
+
+.post-body h2 {
+  margin-top: 3.2em;
+  color: var(--theme-foreground);
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.3;
+  word-break: keep-all;
+}
+
+:is(.post-body, .post-body > article) > :is(h2, h3):first-child {
+  margin-top: 0;
+}
+
+/* 헤딩과 그 아래 첫 문단은 한 덩어리로 읽혀야 한다. 문단 사이 간격을 그대로 두면
+   제목이 아래 글이 아니라 위 글에 붙어 보인다. */
+.post-body :is(h2, h3, h4) + * {
+  margin-top: 0.85em;
+}
+
+.post-body h3 {
+  margin-top: 2.4em;
+  color: var(--theme-foreground);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.post-body h4 {
+  margin-top: 1.5rem;
+  font-weight: 700;
+}
+
+.post-body ul,
+.post-body ol {
+  padding-left: 1.5rem;
+}
+
+.post-body ul {
+  list-style: disc;
+}
+
+.post-body ol {
+  list-style: decimal;
+}
+
+.post-body li + li {
+  margin-top: 0.375rem;
+}
+
+.post-body a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.post-body blockquote {
+  padding-left: 1rem;
+  border-left: 4px solid var(--theme-border-strong);
+  color: var(--theme-muted-strong);
+}
+
+.post-body :not(pre) > code {
+  padding: 0.15em 0.35em;
+  border-radius: 0.25rem;
+  background: var(--theme-surface-sunken);
+  font-size: 0.9em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.post-body hr {
+  border-top: 1px solid var(--theme-border);
+}
+
+.post-body table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.post-body th,
+.post-body td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--theme-border);
+  text-align: left;
+}
+
+/* --- 코드 블록의 면 (NOR-162) ---
+   Shiki 는 `defaultColor: false` 로 두 테마의 값을 CSS 변수로만 내보낸다. 글자색은 테마
+   것을 그대로 쓰고, **면(배경)은 우리 토큰으로 준다** — 라이트 테마의 배경(#fdf6e3)이
+   본문 종이(#fcf9f4)와 거의 같아 그대로 두면 코드가 배경 없는 본문처럼 보인다.
+   다크에서는 Tokyo Night 의 배경이 이미 페이지와 또렷이 구분되므로 테마 것을 쓴다. */
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style);
+  font-weight: var(--shiki-light-font-weight);
+  text-decoration: var(--shiki-light-text-decoration);
+}
+
+.astro-code {
+  padding: 1.15rem 1.35rem;
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 0.65rem;
+  background-color: var(--theme-code-surface) !important;
+  overflow-x: auto;
+}
+
+.dark {
+  .astro-code,
+  .astro-code span {
+    color: var(--shiki-dark);
+    font-style: var(--shiki-dark-font-style);
+    font-weight: var(--shiki-dark-font-weight);
+    text-decoration: var(--shiki-dark-text-decoration);
+  }
+}
+
+/* 코드는 본문 글자 크기를 물려받지 않는다. 물려받으면 좁은 화면에서 등폭 글자가 본문보다
+   커 보이고, 한 줄에 담기는 글자 수가 줄어 가로 스크롤이 잦아진다(NOR-161). */
+.astro-code,
+.astro-code code {
+  font-family: var(--font-mono);
+  font-size: clamp(0.8125rem, 0.76rem + 0.28vw, 0.9rem);
+  line-height: 1.75;
+  letter-spacing: 0;
+}
+
+/* --- Code block: title / filename --- */
+.code-block {
+  position: relative;
+  margin: 1rem 0;
+}
+
+.code-block-title {
+  display: block;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--theme-border-strong);
+  border-bottom: 0;
+  border-radius: 0.65rem 0.65rem 0 0;
+  background: var(--theme-code-surface);
+  color: var(--theme-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+/* 파일명이 있으면 그 라벨과 코드가 한 상자로 보여야 한다. 위쪽 테두리와 모서리를 뗀다. */
+.code-block .astro-code {
+  margin-top: 0;
+  border-top: 1px dashed color-mix(in srgb, var(--theme-border-strong) 60%, transparent);
+  border-radius: 0 0 0.65rem 0.65rem;
+}
+
+.dark {
+  .code-block-title {
+    background: var(--theme-surface-sunken);
+    color: var(--theme-body);
+    border-bottom-color: var(--theme-border);
+  }
+}
+
+/* --- Code block: line highlight --- */
+.astro-code .line.highlighted {
+  display: inline-block;
+  width: 100%;
+  background: rgba(101, 117, 133, 0.16);
+}
+
+.dark {
+  .astro-code .line.highlighted {
+    background: rgba(148, 163, 184, 0.14);
+  }
+}
+
+/* --- Code block: diff --- */
+.astro-code .line.diff {
+  display: inline-block;
+  width: 100%;
+}
+
+.astro-code .line.diff::before {
+  display: inline-block;
+  width: 1ch;
+  margin-right: 0.5ch;
+  text-align: center;
+  user-select: none;
+}
+
+.astro-code .line.diff.add {
+  background: rgba(22, 163, 74, 0.14);
+}
+
+.astro-code .line.diff.add::before {
+  content: '+';
+  color: #16a34a;
+}
+
+.astro-code .line.diff.remove {
+  background: rgba(220, 38, 38, 0.14);
+}
+
+.astro-code .line.diff.remove::before {
+  content: '-';
+  color: #dc2626;
+}
+
+.dark {
+  .astro-code .line.diff.add {
+    background: rgba(34, 197, 94, 0.15);
+  }
+
+  .astro-code .line.diff.add::before {
+    color: #4ade80;
+  }
+
+  .astro-code .line.diff.remove {
+    background: rgba(248, 113, 113, 0.15);
+  }
+
+  .astro-code .line.diff.remove::before {
+    color: #f87171;
+  }
+}
+
+/* --- Code block: copy button --- */
+.code-copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--theme-surface) 80%, transparent);
+  color: var(--theme-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+  backdrop-filter: blur(4px);
+}
+
+.code-copy-btn:hover {
+  background: color-mix(in srgb, var(--theme-surface) 95%, transparent);
+  color: var(--theme-body);
+}
+
+.code-copy-btn:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.code-block:hover .code-copy-btn,
+pre.astro-code:hover > .code-copy-btn {
+  opacity: 1;
+}
+
+/* Position the copy button inside the title header area when present */
+.code-block .code-copy-btn {
+  top: 0.25rem;
+}
+
+/* --- KaTeX --- */
+.katex {
+  color: var(--theme-foreground);
+}
+
+/* --- Mermaid: CLS prevention & dark mode --- */
+.mermaid-container {
+  min-height: 12rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem 0;
+  border-radius: 0.375rem;
+  background: var(--theme-surface-sunken);
+  border: 1px solid var(--theme-border);
+  overflow-x: auto;
+}
+
+.mermaid-container[data-rendered='true'] {
+  min-height: unset;
+  background: transparent;
+  border-color: transparent;
+}
+
+.mermaid-container .mermaid-loading {
+  color: var(--theme-muted);
+  font-size: 0.875rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mermaid-container svg {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* --- Media: figure/figcaption --- */
+.media-figure {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.media-figure > img,
+.media-figure > .media-video-wrapper,
+.media-figure > .media-youtube {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.media-figure > figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--theme-muted);
+}
+
+/* --- Media: YouTube embed --- */
+.media-youtube {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #000;
+}
+
+.media-youtube-link {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.media-youtube-thumbnail {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-youtube-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+
+.media-youtube-link:hover .media-youtube-play,
+.media-youtube-link:focus-visible .media-youtube-play {
+  opacity: 1;
+}
+
+.media-youtube-link:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.media-youtube iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media-youtube-play {
+    transition: none;
+  }
+}
+
+/* --- Media: video --- */
+.media-video-wrapper {
+  margin: 1rem 0;
+}
+
+.media-video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+/* --- Custom blocks: 북마크 카드 (NOR-15) --- */
+.block-bookmark {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 0;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.5rem;
+  background: var(--theme-surface);
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.block-bookmark:hover {
+  border-color: var(--theme-muted);
+  box-shadow: 0 1px 3px rgb(var(--theme-shadow) / 0.09);
+}
+
+.block-bookmark:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.block-bookmark-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.block-bookmark-title {
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--theme-foreground);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.block-bookmark-desc {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--theme-muted-strong);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.block-bookmark-site {
+  margin-top: auto;
+  padding-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--theme-muted);
+  overflow-wrap: anywhere;
+}
+
+/* 썸네일은 자리(비율·폭)를 고정해 CLS 를 막는다. */
+.block-bookmark-thumb {
+  flex: 0 0 clamp(7rem, 30%, 12rem);
+  aspect-ratio: 1.91 / 1;
+  background: var(--theme-surface-sunken);
+}
+
+.block-bookmark-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 30rem) {
+  .block-bookmark {
+    flex-direction: column-reverse;
+  }
+
+  .block-bookmark-thumb {
+    flex: none;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block-bookmark {
+    transition: none;
+  }
+}
+
+/* --- Custom blocks: GitHub 레포 카드 (NOR-15) --- */
+.block-github {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.5rem;
+  background: var(--theme-surface);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.block-github:hover {
+  border-color: var(--theme-muted);
+  box-shadow: 0 1px 3px rgb(var(--theme-shadow) / 0.09);
+}
+
+.block-github:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.block-github-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.block-github-mark {
+  flex: none;
+  color: var(--theme-foreground);
+}
+
+.block-github-name {
+  font-weight: 600;
+  color: var(--theme-foreground);
+  overflow-wrap: anywhere;
+}
+
+.block-github-desc {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--theme-muted-strong);
+}
+
+.block-github-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  font-size: 0.75rem;
+  color: var(--theme-muted);
+}
+
+.block-github-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block-github {
+    transition: none;
+  }
+}
+
+/* --- 분류 관계 지도 (NOR-152) ---
+   지도는 장식이 아니라 탐색 도구다. 그래서 눈에 띄는 것은 효과가 아니라 **관계의 굵기**여야
+   한다. 선의 굵기·농도는 그 조합의 글 수, 노드 크기는 그 분류의 글 수를 뜻한다. */
+.taxonomy-map {
+  margin-block: clamp(2.5rem, 6vw, 4rem);
+  overflow: hidden;
+  border: 1px solid var(--theme-border);
+  border-radius: 1rem;
+  background: var(--theme-surface);
+}
+
+.taxonomy-map__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  padding: 1rem 1.35rem;
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.taxonomy-map__title {
+  color: var(--theme-accent);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+
+.taxonomy-map__hint {
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+}
+
+.taxonomy-map__clear {
+  margin-left: auto;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 9999px;
+  background: var(--theme-background);
+  color: var(--theme-muted-strong);
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.taxonomy-map__clear:hover {
+  border-color: var(--theme-accent);
+  color: var(--theme-accent);
+}
+
+.taxonomy-map__canvas {
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      color-mix(in srgb, var(--theme-accent) 4%, transparent),
+      transparent 62%
+    ),
+    var(--theme-background);
+}
+
+.taxonomy-map__canvas svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.taxonomy-map__edge {
+  fill: none;
+  stroke: var(--theme-muted);
+  stroke-linecap: round;
+  transition: opacity 0.18s ease;
+}
+
+/* 태그끼리의 보조선은 카테고리–태그 관계와 성격이 다르므로 점선으로 구분한다. */
+.taxonomy-map__edge--co {
+  stroke: var(--theme-accent);
+  stroke-dasharray: 3 5;
+}
+
+.taxonomy-map__node circle {
+  stroke: var(--theme-border-strong);
+  stroke-width: 1;
+  fill: var(--theme-surface);
+  transition:
+    fill 0.18s ease,
+    stroke 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.taxonomy-map__node text {
+  fill: var(--theme-muted-strong);
+  font-size: 11px;
+  paint-order: stroke;
+  /* 배경색으로 글자 테두리를 그려 선 위에 겹쳐도 읽히게 한다. */
+  stroke: var(--theme-background);
+  stroke-width: 3px;
+}
+
+.taxonomy-map__node--category circle {
+  stroke: var(--theme-accent);
+  fill: var(--theme-accent);
+}
+
+.taxonomy-map__node--category text {
+  fill: var(--theme-foreground);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.taxonomy-map__node:hover circle,
+.taxonomy-map__node:focus-visible circle {
+  stroke: var(--theme-accent);
+  stroke-width: 2;
+}
+
+.taxonomy-map__node.is-selected circle {
+  stroke: var(--theme-accent);
+  stroke-width: 3;
+}
+
+.taxonomy-map__node.is-dimmed {
+  opacity: 0.16;
+}
+
+.taxonomy-map__context {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1.35rem;
+  border-top: 1px solid var(--theme-border);
+  background: var(--theme-surface-sunken);
+}
+
+.taxonomy-map__empty {
+  color: var(--theme-muted);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.taxonomy-map__label {
+  color: var(--theme-accent);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+
+.taxonomy-map__selected {
+  margin-top: 0.4rem;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.taxonomy-map__signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.taxonomy-map__signals span {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--theme-border-strong);
+  border-radius: 9999px;
+  background: var(--theme-surface);
+  color: var(--theme-muted-strong);
+  font-size: 0.6875rem;
+}
+
+.taxonomy-map__signals b {
+  color: var(--theme-accent);
+  font-weight: 700;
+}
+
+.taxonomy-map__action {
+  margin-top: 1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.taxonomy-map__action a {
+  color: var(--theme-accent);
+}
+
+.taxonomy-map__articles {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+}
+
+.taxonomy-map__articles li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.taxonomy-map__articles a {
+  color: var(--theme-body);
+  font-size: 0.875rem;
+}
+
+.taxonomy-map__articles a:hover {
+  color: var(--theme-accent);
+  text-decoration: underline;
+}
+
+.taxonomy-map__articles span {
+  color: var(--theme-muted);
+  font-size: 0.6875rem;
+  white-space: nowrap;
+}
+
+@media (min-width: 48rem) {
+  .taxonomy-map__context {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taxonomy-map__edge,
+  .taxonomy-map__node circle {
+    transition: none;
+  }
+}
+
+/* --- 분류 목록 (NOR-152) --- */
+.taxonomy-section + .taxonomy-section,
+.taxonomy-map + .taxonomy-section {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+.taxonomy-section__title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.taxonomy-category-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.taxonomy-category-card {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.75rem;
+  background: var(--theme-surface);
+}
+
+.taxonomy-category-card:hover {
+  border-color: var(--theme-accent);
+}
+
+.taxonomy-category-card__label {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.taxonomy-category-card__count {
+  color: var(--theme-muted);
+  font-size: 0.8125rem;
+}
+
+.taxonomy-tag-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.tag-chip__count {
+  margin-left: 0.4rem;
+  color: var(--theme-muted);
+  font-size: 0.6875rem;
+}
+
+@media (min-width: 40rem) {
+  .taxonomy-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- Custom blocks: 콜아웃 (NOR-15) ---
+   의미는 아이콘(형태) + 텍스트 라벨로 전달한다. 색은 보조 신호일 뿐이다(WCAG 1.4.1).
+   accent/본문 대비비는 라이트·다크 모두 AA(4.5:1) 이상. */
+.block-callout {
+  --callout-bg: var(--theme-surface-sunken);
+  --callout-accent: var(--theme-muted-strong);
+  --callout-fg: var(--theme-body);
+
+  margin: 1.5rem 0;
+  padding: 0.875rem 1rem;
+  border-left: 4px solid var(--callout-accent);
+  border-radius: 0 0.375rem 0.375rem 0;
+  background: var(--callout-bg);
+  color: var(--callout-fg);
+}
+
+/* 다섯 색은 종이 위에서 서로 구분되면서도 mineral 브랜드색과 겹치지 않게 고른다.
+   브랜드 초록은 링크·강조에만 쓰므로 콜아웃에는 쓰지 않는다. */
+.block-callout[data-callout='info'] {
+  --callout-bg: #e9eff4;
+  --callout-accent: #2f5e86;
+}
+
+.block-callout[data-callout='tip'] {
+  --callout-bg: #f2eef6;
+  --callout-accent: #6b4f8f;
+}
+
+.block-callout[data-callout='success'] {
+  --callout-bg: #eef2e7;
+  --callout-accent: #3f6b30;
+}
+
+.block-callout[data-callout='warning'] {
+  --callout-bg: #f9efdd;
+  --callout-accent: #8a5a12;
+}
+
+.block-callout[data-callout='danger'] {
+  --callout-bg: #f9eae6;
+  --callout-accent: #a33a2c;
+}
+
+.block-callout-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.375rem;
+  font-weight: 600;
+  color: var(--callout-accent);
+}
+
+.block-callout-icon {
+  flex: none;
+}
+
+.block-callout-body > :first-child {
+  margin-top: 0;
+}
+
+.block-callout-body > :last-child {
+  margin-bottom: 0;
+}
+
+.dark {
+  .block-callout[data-callout='info'] {
+    --callout-bg: #17242e;
+    --callout-accent: #8fbede;
+  }
+
+  .block-callout[data-callout='tip'] {
+    --callout-bg: #221c2c;
+    --callout-accent: #c3aade;
+  }
+
+  .block-callout[data-callout='success'] {
+    --callout-bg: #1a2417;
+    --callout-accent: #a6c894;
+  }
+
+  .block-callout[data-callout='warning'] {
+    --callout-bg: #2a2113;
+    --callout-accent: #dcb679;
+  }
+
+  .block-callout[data-callout='danger'] {
+    --callout-bg: #2c1a17;
+    --callout-accent: #e5a598;
+  }
+}

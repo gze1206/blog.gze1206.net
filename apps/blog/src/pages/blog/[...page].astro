@@ -1,0 +1,56 @@
+---
+/**
+ * 블로그 목록 + 페이지네이션 (NOR-16).
+ *
+ * rest 파라미터(`[...page]`)라 1페이지는 `/blog`, 2페이지부터 `/blog/2` 다.
+ * `/blog/1` 은 만들어지지 않는다 — 같은 내용의 URL 이 둘이면 중복 콘텐츠가 된다.
+ *
+ * 같은 디렉터리의 `[slug].astro` 와 경로가 겹칠 수 있으므로, 숫자만으로 된 글 slug 는
+ * `assertPaginationSafeSlugs` 가 빌드타임에 막는다(`src/lib/content.ts` 참고).
+ */
+import type { GetStaticPaths } from 'astro';
+import EmptyState from '../../components/EmptyState.astro';
+import Pagination from '../../components/Pagination.astro';
+import PostCard from '../../components/PostCard.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+import { POSTS_PER_PAGE, getVisiblePosts } from '../../lib/content';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getVisiblePosts();
+  // 글이 0개여도 paginate 는 빈 1페이지를 만든다 → `/blog` 는 항상 존재한다.
+  return paginate(posts, { pageSize: POSTS_PER_PAGE });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const isFirstPage = page.currentPage <= 1;
+const lead =
+  page.total > 0
+    ? `전체 ${page.total}개의 글 · ${page.currentPage} / ${page.lastPage} 페이지`
+    : undefined;
+
+/**
+ * 2페이지 이후는 제목·description 에 페이지 번호를 넣는다(NOR-27). 페이지마다 메타가 같으면
+ * 검색엔진이 중복 페이지로 본다. canonical 은 각 페이지가 **자기 자신**을 가리키므로
+ * (`/blog/2` → `.../blog/2`) 2페이지 이후 글이 색인에서 빠지지 않는다.
+ */
+const title = isFirstPage ? undefined : `블로그 (${page.currentPage}페이지)`;
+const description = isFirstPage
+  ? 'gze1206이 쓴 글 목록입니다.'
+  : `gze1206이 쓴 글 목록 ${page.currentPage} / ${page.lastPage} 페이지입니다.`;
+---
+
+<ListLayout title={title} heading="블로그" description={description} lead={lead}>
+  {
+    page.data.length === 0 ? (
+      <EmptyState message="아직 발행된 글이 없습니다." />
+    ) : (
+      <div>
+        {page.data.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </div>
+    )
+  }
+
+  <Pagination currentPage={page.currentPage} lastPage={page.lastPage} />
+</ListLayout>

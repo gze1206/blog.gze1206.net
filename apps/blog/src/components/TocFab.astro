@@ -1,0 +1,75 @@
+---
+/**
+ * 화면에 떠 있는 목차 (NOR-150).
+ *
+ * 상단 목차가 화면 밖으로 나간 뒤에도 글의 지형을 다시 볼 수 있게 한다. 열고 닫는 일은
+ * `<details>` 가 하므로 **스크립트가 없어도 동작한다**.
+ *
+ * `followsScroll`(= frontmatter `toc: auto`) 이면 처음에는 숨긴 채 내보내고, 스크립트가
+ * 상단 목차를 관찰해 그것이 보이지 않을 때만 드러낸다. 스크립트가 없으면 계속 숨어 있고
+ * 상단 목차가 그 역할을 그대로 한다 — 두 목차가 동시에 보이는 상태가 기본값이 아니다.
+ */
+import TocList from './TocList.astro';
+import type { TocEntry } from '../lib/toc';
+
+interface Props {
+  entries: readonly TocEntry[];
+  /** 상단 목차의 가시성에 따라 나타날지. `toc: floating` 은 항상 보이므로 false. */
+  followsScroll: boolean;
+}
+
+const { entries, followsScroll } = Astro.props;
+---
+
+{
+  entries.length > 0 && (
+    <details
+      class="post-toc-fab"
+      data-post-toc-fab
+      data-follows-scroll={followsScroll ? 'true' : undefined}
+      hidden={followsScroll}
+      data-pagefind-ignore
+    >
+      <summary class="post-toc-fab__button">
+        <span class="post-toc-fab__icon" aria-hidden="true">
+          ☰
+        </span>
+        목차
+      </summary>
+      <nav aria-label="떠 있는 목차" class="post-toc-fab__panel">
+        <TocList entries={entries} />
+      </nav>
+    </details>
+  )
+}
+
+<script>
+  /**
+   * 상단 목차가 보이지 않을 때만 플로팅 목차를 드러낸다.
+   *
+   * 스크롤 위치를 직접 재지 않고 IntersectionObserver 로 관찰한다 — 스크롤 이벤트마다
+   * 레이아웃을 읽으면 긴 글에서 그만큼 비용이 든다.
+   */
+  const fab = document.querySelector<HTMLDetailsElement>('[data-post-toc-fab]');
+  const inlineToc = document.querySelector<HTMLElement>('[data-post-toc]');
+
+  if (fab) {
+    if (fab.dataset.followsScroll === 'true' && inlineToc) {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          const hidden = entry?.isIntersecting ?? true;
+          fab.hidden = hidden;
+          // 숨는 순간까지 펼쳐져 있었다면 다음에 나타날 때 닫힌 상태로 시작한다.
+          if (hidden) fab.open = false;
+        },
+        { threshold: 0 },
+      );
+      observer.observe(inlineToc);
+    }
+
+    // 항목을 고르면 패널을 닫는다. 열린 패널이 방금 이동한 헤딩을 가리기 때문이다.
+    fab.addEventListener('click', (event) => {
+      if (event.target instanceof HTMLAnchorElement) fab.open = false;
+    });
+  }
+</script>

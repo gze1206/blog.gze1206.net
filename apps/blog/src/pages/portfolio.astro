@@ -1,0 +1,98 @@
+---
+/**
+ * 포트폴리오 (NOR-151).
+ *
+ * 공개 가능한 작업만 담는다. 카드 하나가 "무엇을 만들었고, 무엇을 맡았고, 무엇으로
+ * 만들었는가"에 답해야 한다.
+ *
+ * 공개 링크는 **있으면 좋은 것**이지 필수가 아니다(NOR-157). 회사 프로젝트는 볼 수 있는
+ * 주소가 없지만 실제로 한 일 중 가장 큰 덩어리다. 링크가 없는 자리는 이미지와 담당 업무가
+ * 대신 채운다.
+ */
+import { getPortfolio } from '../lib/portfolio';
+import ListLayout from '../layouts/ListLayout.astro';
+import EmptyState from '../components/EmptyState.astro';
+
+const entries = await getPortfolio();
+
+/** 링크 종류를 화면 문구로 바꾼다. 키 이름(`repo`)을 그대로 내보내면 방문자에게는 은어다. */
+const LINK_LABELS: Record<string, string> = {
+  repo: '저장소',
+  demo: '데모',
+  video: '영상',
+  article: '관련 글',
+};
+---
+
+<ListLayout
+  title="포트폴리오"
+  description="개인 프로젝트와 업무 경험 중 공개 가능한 작업을 문제·역할·기술·결과 중심으로 소개합니다."
+  eyebrow="포트폴리오"
+  heading="문제를 풀며 남긴 결과물"
+  lead="공개할 수 있는 작업만 담았습니다. 각 항목은 무엇을 만들었고 무엇으로 만들었는지를 함께 보여 줍니다."
+>
+  {
+    entries.length === 0 ? (
+      <EmptyState message="공개된 작업이 아직 없습니다." />
+    ) : (
+      <ol class="portfolio-list">
+        {entries.map((entry) => (
+          <li>
+            <article class="portfolio-card">
+              {entry.data.media.map((image) => (
+                <img
+                  class="portfolio-card__image"
+                  src={image.src}
+                  alt={image.alt}
+                  width={image.width}
+                  height={image.height}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ))}
+              <div class="portfolio-card__body">
+                <h2 class="portfolio-card__title">{entry.data.title}</h2>
+                {(entry.data.role || entry.data.period) && (
+                  <p class="portfolio-card__meta">
+                    {entry.data.role && <span>{entry.data.role}</span>}
+                    {entry.data.period && <span>{entry.data.period}</span>}
+                  </p>
+                )}
+                <p class="portfolio-card__summary">{entry.data.summary}</p>
+                {entry.data.highlights.length > 0 && (
+                  <ul class="portfolio-card__highlights">
+                    {entry.data.highlights.map((highlight) => (
+                      <li>{highlight}</li>
+                    ))}
+                  </ul>
+                )}
+                <ul class="portfolio-card__stack" aria-label={`${entry.data.title} 기술 스택`}>
+                  {entry.data.stack.map((technology) => (
+                    <li class="stack-token">{technology}</li>
+                  ))}
+                </ul>
+                {entry.data.links.length > 0 && (
+                  <div class="portfolio-card__links">
+                    {entry.data.links
+                      .flatMap((link) => Object.entries(link))
+                      .map(([kind, url]) => (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="home-text-link"
+                          aria-label={`${entry.data.title} ${LINK_LABELS[kind] ?? kind}`}
+                        >
+                          {LINK_LABELS[kind] ?? kind}
+                        </a>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </article>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</ListLayout>

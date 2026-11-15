@@ -1,0 +1,107 @@
+---
+/**
+ * 홈 (NOR-151).
+ *
+ * 홈은 목적지가 아니라 **입구**다. 사람을 소개하고 최근 기록을 보여 준 뒤, 깊이 볼 사람을
+ * 경력과 포트폴리오로 보낸다. 이전 구조는 홈에서 프로젝트를 늘어놓았는데, 그러면 홈이
+ * 길어지는 만큼 어느 것도 제대로 보여 주지 못했다.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import { getProfile, getVisiblePosts } from '../lib/content';
+import { getVisibleExperiences } from '../lib/experience';
+import { buildPersonJsonLd } from '../lib/json-ld';
+import { aboutPath, portfolioPath } from '../lib/routes';
+
+const [allPosts, profile, experiences] = await Promise.all([
+  getVisiblePosts(),
+  getProfile(),
+  getVisibleExperiences(),
+]);
+const recentPosts = allPosts.slice(0, 2);
+const [latestExperience] = experiences;
+// 큰 한 줄이 따로 없으면 소개 문장이 그 자리를 대신한다. 그 경우 아래 문단은 같은 문장을
+// 두 번 보여 주게 되므로 내지 않는다.
+const tagline = profile.data.tagline ?? profile.data.introduction;
+const hasSeparateIntroduction = profile.data.tagline !== undefined;
+---
+
+<BaseLayout
+  title="gze1206.net"
+  description="게임 개발과 웹·서버 개발을 기록하는 gze1206의 개인 블로그입니다."
+  jsonLd={buildPersonJsonLd('https://gze1206.net/')}
+>
+  <main id="main-content" class="home site-shell">
+    <section class="home-hero" aria-labelledby="about-heading">
+      <div class="home-hero__lead">
+        <p class="home-kicker">{profile.data.headline}</p>
+        <h1 id="about-heading" class="home-title">{tagline}</h1>
+        {hasSeparateIntroduction && <p class="home-intro">{profile.data.introduction}</p>}
+      </div>
+
+      <dl class="home-facts">
+        {
+          latestExperience && (
+            <div class="home-fact">
+              <dt>{latestExperience.data.endDate === null ? '지금 하는 일' : '가장 최근 경력'}</dt>
+              <dd>
+                {latestExperience.data.organization} · {latestExperience.data.role}
+              </dd>
+            </div>
+          )
+        }
+        <div class="home-fact">
+          <dt>주로 쓰는 것</dt>
+          <dd>{profile.data.skills.join(' · ')}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="home-section" aria-labelledby="recent-posts-heading">
+      <div class="home-section__heading">
+        <p class="home-section__eyebrow">최근 기록</p>
+        <h2 id="recent-posts-heading" class="home-section__title">쓰면서 정리한 것들</h2>
+      </div>
+      {
+        recentPosts.length === 0 ? (
+          <p class="home-empty-state">아직 발행된 글이 없습니다.</p>
+        ) : (
+          <div class="home-recent-posts">
+            {recentPosts.map((post) => (
+              <PostCard post={post} headingLevel={3} />
+            ))}
+          </div>
+        )
+      }
+      <p class="home-section__action">
+        <a href="/blog" class="home-text-link">글 전체 보기 →</a>
+      </p>
+    </section>
+
+    <section class="home-doors" aria-labelledby="doors-heading">
+      <h2 id="doors-heading" class="sr-only">더 자세히 보기</h2>
+
+      <article class="home-door">
+        <p class="home-door__ordinal">01 · 소개</p>
+        <h3 class="home-door__title">어디에서,<br />무엇을 만들었는지</h3>
+        <p class="home-door__summary">
+          하는 일과 지나온 회사, 그곳에서 담당한 작업을 정리했습니다.
+        </p>
+        <p class="home-door__action">
+          <a href={aboutPath()} class="home-text-link">소개와 경력 보기 →</a>
+        </p>
+      </article>
+
+      <article class="home-door">
+        <p class="home-door__ordinal">02 · 포트폴리오</p>
+        <h3 class="home-door__title">문제를 풀며<br />남긴 결과물</h3>
+        <p class="home-door__summary">
+          개인 프로젝트와 업무 경험 중 공개 가능한 작업을 문제·역할·기술·결과 중심으로 소개합니다.
+        </p>
+        <p class="home-door__action">
+          <a href={portfolioPath()} class="home-text-link">포트폴리오 보기 →</a>
+        </p>
+      </article>
+    </section>
+  </main>
+</BaseLayout>

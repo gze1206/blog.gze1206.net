@@ -1,0 +1,62 @@
+{
+  "name": "@gze1206/workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"tsx watch src/server/index.ts\"",
+    "dev:web": "vite",
+    "dev:server": "tsx watch src/server/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "lint": "eslint .",
+    "build": "tsc -b && vite build && tsup",
+    "start": "node dist/server/index.js",
+    "e2e": "playwright test",
+    "coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.0",
+    "gray-matter": "^4.0.3",
+    "hono": "^4.13.1",
+    "mdast-util-from-markdown": "^2.0.3",
+    "mdast-util-to-markdown": "^2.1.2",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "yaml": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@gze1206/content-contract": "workspace:*",
+    "@eslint/js": "catalog:",
+    "@playwright/test": "^1.62.1",
+    "@tailwindcss/vite": "catalog:",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "^6.0.1",
+    "concurrently": "^9.2.1",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.3.0",
+    "tailwindcss": "catalog:",
+    "tsx": "^4.21.0",
+    "tsup": "^8.5.0",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vite": "^8.2.1",
+    "vitest": "catalog:",
+    "@gze1206/config": "workspace:*",
+    "@vitest/coverage-v8": "catalog:"
+  },
+  "files": [
+    "dist",
+    "workspace-seed"
+  ]
+}

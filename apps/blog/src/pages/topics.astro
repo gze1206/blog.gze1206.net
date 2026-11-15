@@ -1,0 +1,36 @@
+---
+/**
+ * 탐색 (NOR-135, NOR-137, NOR-152).
+ *
+ * 한 페이지에서 세 가지 관점을 준다: 큰 분류(카테고리), 관계(지도), 세부 색인(태그).
+ * 지도는 **보조 수단**이다. 지도가 뜨지 않아도 위아래의 정적 목록으로 모든 분류에 갈 수 있다.
+ */
+import TaxonomyCategoryList from '../components/TaxonomyCategoryList.astro';
+import TaxonomyTagList from '../components/TaxonomyTagList.astro';
+import TaxonomyMap from '../islands/TaxonomyMap';
+import ListLayout from '../layouts/ListLayout.astro';
+import { getCategoryGroups, getTagGroups, getVisiblePosts } from '../lib/content';
+import { buildTaxonomyDetails } from '../lib/taxonomy-list';
+import { buildTaxonomyGraph } from '../lib/taxonomy-graph';
+import { buildTaxonomyMap } from '../lib/taxonomy-map';
+
+const [categories, tags, posts] = await Promise.all([
+  getCategoryGroups(),
+  getTagGroups(),
+  getVisiblePosts(),
+]);
+const map = buildTaxonomyMap(buildTaxonomyGraph(posts));
+
+const details = buildTaxonomyDetails(categories, tags);
+---
+
+<ListLayout
+  title="탐색"
+  description="카테고리와 태그의 관계로 gze1206.net의 글을 탐색합니다."
+  eyebrow="탐색"
+  heading="무엇을 다뤘고, 무엇과 이어지는가"
+>
+  <TaxonomyCategoryList categories={categories} />
+  <TaxonomyMap client:load map={map} details={details} />
+  <TaxonomyTagList tags={tags} />
+</ListLayout>

@@ -1,0 +1,12 @@
+---
+/** 목록이 비었을 때의 안내 (NOR-16). 빈 페이지를 그냥 두지 않는다. */
+interface Props {
+  message: string;
+}
+
+const { message } = Astro.props;
+---
+
+<p class="border-border-strong text-muted rounded-lg border border-dashed px-4 py-12 text-center">
+  {message}
+</p>

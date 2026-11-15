@@ -1,0 +1,5 @@
+{
+  "name": "시리즈 내비게이션 픽스처",
+  "slug": "series-nav-fixture",
+  "description": "가운데 편이 draft 인 시리즈입니다. 이전/다음 편 계산이 draft 를 건너뛰는지 확인하는 픽스처입니다."
+}

@@ -1,0 +1,69 @@
+---
+interface Props {
+  id: string;
+  title?: string;
+}
+
+const { id, title = 'YouTube 영상' } = Astro.props;
+const thumbnailUrl = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+const watchUrl = `https://www.youtube.com/watch?v=${id}`;
+---
+
+<div class="media-youtube" data-youtube-id={id}>
+  <a
+    href={watchUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="media-youtube-link"
+    aria-label={`${title} — YouTube에서 보기`}
+  >
+    <img
+      src={thumbnailUrl}
+      alt={`${title} 썸네일`}
+      loading="lazy"
+      decoding="async"
+      class="media-youtube-thumbnail"
+    />
+    <span class="media-youtube-play" aria-hidden="true">
+      <svg viewBox="0 0 68 48" width="68" height="48">
+        <path
+          d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55C3.97 2.33 2.27 4.81 1.48 7.74 .06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z"
+          fill="red"></path>
+        <path d="M45 24 27 14v20" fill="white"></path>
+      </svg>
+    </span>
+  </a>
+</div>
+
+<script>
+  function initYouTube() {
+    document.querySelectorAll<HTMLElement>('.media-youtube').forEach((el) => {
+      if (el.dataset.initialized) return;
+      el.dataset.initialized = 'true';
+
+      const id = el.dataset.youtubeId;
+      const link = el.querySelector('.media-youtube-link');
+      if (!link || !id) return;
+
+      link.addEventListener('click', (e) => {
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        e.preventDefault();
+
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=${reducedMotion ? '0' : '1'}`;
+        iframe.title =
+          link.getAttribute('aria-label')?.replace(' — YouTube에서 보기', '') ?? 'YouTube 영상';
+        iframe.allow =
+          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        iframe.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;border:0;';
+
+        el.innerHTML = '';
+        el.appendChild(iframe);
+      });
+    });
+  }
+
+  initYouTube();
+  document.addEventListener('astro:page-load', initYouTube);
+</script>

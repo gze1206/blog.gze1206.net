@@ -1,0 +1,75 @@
+---
+
+---
+
+<script>
+  async function initMermaid() {
+    const preBlocks = document.querySelectorAll<HTMLPreElement>('pre[data-language="mermaid"]');
+    if (preBlocks.length === 0) return;
+
+    const { default: mermaid } = await import('mermaid');
+
+    /**
+     * 다크 테마의 간선 라벨은 배경과 글자가 모두 어두워 대비가 2.5:1 밖에 안 나온다(NOR-34).
+     * 라벨 배경만 이 사이트의 코드 면 색으로 바꿔 읽을 수 있게 한다.
+     */
+    const mermaidConfig = (dark: boolean) => ({
+      startOnLoad: false,
+      theme: dark ? ('dark' as const) : ('default' as const),
+      securityLevel: 'strict' as const,
+      themeVariables: dark
+        ? { edgeLabelBackground: '#1b1917', tertiaryColor: '#272522' }
+        : { edgeLabelBackground: '#f4f0e9' },
+    });
+
+    const isDark = document.documentElement.classList.contains('dark');
+    mermaid.initialize(mermaidConfig(isDark));
+
+    const containers: { el: HTMLDivElement; source: string }[] = [];
+
+    for (const pre of preBlocks) {
+      const source = pre.textContent?.trim() ?? '';
+      if (!source) continue;
+
+      const container = document.createElement('div');
+      container.className = 'mermaid-container';
+      container.setAttribute('data-rendered', 'false');
+      container.innerHTML = '<span class="mermaid-loading">다이어그램 로딩 중…</span>';
+      pre.replaceWith(container);
+      containers.push({ el: container, source });
+    }
+
+    async function renderAll() {
+      for (const { el, source } of containers) {
+        try {
+          const id = `mermaid-${crypto.randomUUID().slice(0, 8)}`;
+          const { svg } = await mermaid.render(id, source);
+          el.innerHTML = svg;
+          el.setAttribute('data-rendered', 'true');
+          el.setAttribute('role', 'img');
+          el.setAttribute('aria-label', 'Mermaid 다이어그램');
+        } catch {
+          const pre = document.createElement('pre');
+          const code = document.createElement('code');
+          code.textContent = source;
+          pre.appendChild(code);
+          el.replaceChildren(pre);
+          el.setAttribute('data-rendered', 'true');
+        }
+      }
+    }
+
+    await renderAll();
+
+    window.addEventListener('themechange', () => {
+      mermaid.initialize(mermaidConfig(document.documentElement.classList.contains('dark')));
+      renderAll();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMermaid);
+  } else {
+    initMermaid();
+  }
+</script>

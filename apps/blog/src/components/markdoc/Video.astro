@@ -1,0 +1,20 @@
+---
+interface Props {
+  src: string;
+  title?: string;
+  poster?: string;
+}
+
+const { src, title, poster } = Astro.props;
+---
+
+<div class="media-video-wrapper">
+  <video controls preload="metadata" title={title} poster={poster} class="media-video">
+    <source src={src} />
+    <track kind="captions" />
+    <p>
+      브라우저가 동영상 재생을 지원하지 않습니다.
+      <a href={src} download>영상 다운로드</a>
+    </p>
+  </video>
+</div>

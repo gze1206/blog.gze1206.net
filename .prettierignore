@@ -1,0 +1,12 @@
+**/dist/
+**/.astro/
+**/node_modules/
+pnpm-lock.yaml
+apps/blog/public/pagefind/
+.superpowers/
+**/test-results/
+**/playwright-report/
+
+**/coverage/
+
+**/dist-smoke/

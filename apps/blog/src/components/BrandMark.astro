@@ -1,0 +1,51 @@
+---
+/**
+ * 브랜드 마크 "B1 · Swept Tines" (NOR-149).
+ *
+ * 닉네임 NORU 에서 온 **정면 노루 얼굴**이다. 문자를 추상화한 로고가 아니라
+ * 동물의 최소 요소(뿔·중심축·눈·코)만 남긴 표식이며, 위계는 이렇다.
+ *
+ * - 뿔은 얇게, 얼굴의 중심축은 굵게 — 이 대비가 사라지면 그냥 나뭇가지로 보인다.
+ * - 뿔 끝은 바깥으로 나갔다가 위로 회수되는 짧은 꺾임을 가진다(노루뿔의 성장 방향).
+ *
+ * 파비콘처럼 아주 작은 크기에서는 4/7 선폭이 사라지므로 `weight="bold"` 로 굵은 컷을 쓴다.
+ * 색은 `currentColor` 를 따른다 — 마크 자체는 단색이어야 어디에나 얹을 수 있다.
+ */
+interface Props {
+  /** 픽셀 크기(정사각). */
+  size?: number;
+  /** `bold` 는 16~32px 용 굵은 컷. */
+  weight?: 'regular' | 'bold';
+  /** 장식으로 쓸 때는 비워 둔다(옆에 워드마크 텍스트가 있는 경우). */
+  title?: string;
+  class?: string;
+}
+
+const { size = 28, weight = 'regular', title, class: className } = Astro.props;
+
+const cut =
+  weight === 'bold'
+    ? { antler: 7, axis: 11, eye: 5.5, noseX: 7.5, noseY: 5.5 }
+    : { antler: 4, axis: 7, eye: 4, noseX: 6, noseY: 4.5 };
+---
+
+<svg
+  viewBox="0 0 100 100"
+  width={size}
+  height={size}
+  fill="none"
+  class={className}
+  role={title ? 'img' : undefined}
+  aria-label={title}
+  aria-hidden={title ? undefined : 'true'}
+>
+  {title && <title>{title}</title>}
+  <g stroke="currentColor" stroke-width={cut.antler} stroke-linecap="round" stroke-linejoin="round">
+    <path d="M50 43 30 25l-12-2M30 25l4-16M50 43 70 25l12-2M70 25l-4-16"></path>
+    <path d="M34 9 38 5M66 9 62 5"></path>
+  </g>
+  <path d="M50 43v35" stroke="currentColor" stroke-width={cut.axis} stroke-linecap="round"></path>
+  <circle cx="34" cy="61" r={cut.eye} fill="currentColor"></circle>
+  <circle cx="66" cy="61" r={cut.eye} fill="currentColor"></circle>
+  <ellipse cx="50" cy="81" rx={cut.noseX} ry={cut.noseY} fill="currentColor"></ellipse>
+</svg>

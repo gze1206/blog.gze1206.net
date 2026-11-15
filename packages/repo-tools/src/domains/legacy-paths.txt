@@ -1,0 +1,7 @@
+/
+/blog/
+/blog/baekjoon-15663-n-and-m-9-ruby/
+/blog/baekjoon-solved-50-and-class-5/
+/blog/c-9-0-record-type/
+/blog/new-things-on-this-blog/
+/category/

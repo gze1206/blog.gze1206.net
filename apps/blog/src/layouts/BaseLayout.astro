@@ -1,0 +1,68 @@
+---
+/**
+ * 모든 페이지의 문서 골격.
+ *
+ * 메타(title·description·canonical·robots·OG/Twitter)는 여기서 `SeoMeta` 를 **한 번만**
+ * 호출해 만든다(NOR-27). 하위 레이아웃·페이지는 프롭을 넘기기만 하고 스스로 태그를 내지 않는다 —
+ * 레이아웃이 중첩되며 같은 태그가 두 번 들어가는 사고를 구조적으로 막기 위해서다.
+ *
+ * `title` 은 **사이트 이름을 붙이지 않은 맨 제목**을 넘긴다. ` · gze1206.net` 접미사는
+ * `formatTitle` 이 붙이고, 홈처럼 제목이 사이트 이름과 같으면 중복해 붙지 않는다.
+ */
+import '../styles/global.css';
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+// 제목 전용 세리프(NOR-149). `600.css` 는 한글을 `unicode-range` 로 120 조각 낸 정의라
+// 제목에 실제로 쓰인 음절이 든 조각만 내려온다 — `korean-600.css`(통짜 957KB)를 쓰면
+// 제목 한 줄 때문에 1MB 를 받는다. 굵기는 600 하나만 싣는다.
+import '@fontsource/noto-serif-kr/600.css';
+import CodeBlockEnhancer from '../components/CodeBlockEnhancer.astro';
+import SeoMeta from '../components/SeoMeta.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import MermaidDiagram from '../islands/MermaidDiagram.astro';
+import { SITE_LANG, type SeoInput } from '../lib/site-meta';
+
+type Props = SeoInput;
+
+// 렌더보다 먼저 실행되어야 하므로 React 아일랜드가 아니라 인라인 스크립트로 둔다(FOUC 방지).
+const themeInitScript = `(() => {
+  const key = 'gze1206-theme';
+  const stored = (() => {
+    try { return localStorage.getItem(key); } catch { return null; }
+  })();
+  const preference = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+  const resolved = preference === 'system'
+    ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : preference;
+  document.documentElement.classList.toggle('dark', resolved === 'dark');
+  document.documentElement.style.colorScheme = resolved;
+  if (preference === 'system') {
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+      document.documentElement.classList.toggle('dark', event.matches);
+      document.documentElement.style.colorScheme = event.matches ? 'dark' : 'light';
+      window.dispatchEvent(new CustomEvent('themechange'));
+    });
+  }
+})();`;
+---
+
+<!doctype html>
+<html lang={SITE_LANG}>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <script is:inline set:html={themeInitScript} />
+    <SeoMeta {...Astro.props} />
+  </head>
+  <body class="bg-background text-foreground flex min-h-screen flex-col antialiased">
+    <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
+    <SiteHeader />
+    <div class="flex-1"><slot /></div>
+    <SiteFooter />
+    <CodeBlockEnhancer />
+    <MermaidDiagram />
+  </body>
+</html>
