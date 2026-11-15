@@ -4,7 +4,8 @@ import { checkDomains, readLegacyPaths } from '../domains/check.ts';
 const failures = await checkDomains(fetch, {
   canonical: 'https://gze1206.net',
   aliases: ['www.gze1206.net', 'blog.gze1206.net'],
-  probe: '/blog/new-things-on-this-blog/?ref=check-domains',
+  probes: ['/', '/blog/new-things-on-this-blog/?ref=check-domains'],
+  hostileProbes: ['//evil.example/x?next=https://evil.example'],
   legacyPaths: await readLegacyPaths(),
 });
 for (const failure of failures) console.error(failure);
