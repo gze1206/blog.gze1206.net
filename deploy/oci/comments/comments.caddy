@@ -1,0 +1,14 @@
+# 공용 edge Caddy 의 사이트 (NOR-200). edge 의 sites/comments.caddy 로 복사하고 reload 한다.
+# "cloudflare_origin" 이 Let's Encrypt(HTTP-01), Authenticated Origin Pulls, HSTS 를 붙인다.
+comments.gze1206.net {
+	import cloudflare_origin
+	# 댓글 본문과 관리 화면 요청만 받는다. 가져오기(import)는 쓰지 않는다.
+	request_body {
+		max_size 1MB
+	}
+	# 다른 댓글 서비스에서 가져오기는 쓰지 않는다. 관리 화면에서도 열지 않는다.
+	@import path_regexp ^/api/domains/[^/]+/import/
+	respond @import 403
+	encode zstd gzip
+	reverse_proxy comentario:8080
+}

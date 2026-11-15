@@ -30,3 +30,4 @@
 | 0016 | [private Tailnet 워크벤치를 유일한 작성 진입점으로 사용](./0016-private-workbench-authoring.md)                      | accepted           | NOR-142                   |
 | 0017 | [공개 블로그 저장소를 워크벤치와 합친 pnpm 모노레포로 전환](./0017-monorepo-with-workbench.md)                       | accepted           | NOR-195                   |
 | 0018 | [워크벤치 아키텍처 결정 D1~D6](./0018-workbench-architecture-decisions.md)                                           | accepted           | NOR-139, NOR-143, NOR-195 |
+| 0019 | [댓글 서버로 Comentario 를 OCI 에서 셀프호스팅](./0019-comment-server-comentario.md)                                 | accepted           | NOR-200, NOR-32           |

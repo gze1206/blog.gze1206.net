@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily comments backup
+
+[Timer]
+OnCalendar=*-*-* 04:45
+RandomizedDelaySec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

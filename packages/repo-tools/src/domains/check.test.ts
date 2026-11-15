@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+const SCRIPT_BODY = 'console.log("comentario")';
+// SCRIPT_BODY 의 sha384 (openssl dgst -sha384 -binary | base64)
+const SCRIPT_SRI = 'sha384-mbvC5JTFSWrT4N6rD8UBsQReFKvpV0xY7QAT/Rw1Bqu9x7+9/r/2AB8h5dnuBX0N';
+
 type Route = { status: number; location?: string; body?: string };
 
 function fakeFetch(routes: Record<string, Route>) {
@@ -19,6 +23,7 @@ const options = {
   probes: ['/', '/blog/hello/?ref=check'],
   hostileProbes: ['//evil.example/x?next=https://evil.example'],
   legacyPaths: ['/blog/hello/'],
+  services: [{ url: 'https://comments.gze1206.net/comentario.js', integrity: SCRIPT_SRI }],
 };
 
 const canonicalPage =
@@ -28,6 +33,7 @@ function healthyRoutes(): Record<string, Route> {
   const routes: Record<string, Route> = {
     'https://gze1206.net/': { status: 200, body: canonicalPage },
     'https://gze1206.net/blog/hello/': { status: 200 },
+    'https://comments.gze1206.net/comentario.js': { status: 200, body: SCRIPT_BODY },
   };
   for (const alias of ['https://www.gze1206.net', 'https://blog.gze1206.net']) {
     routes[`${alias}/`] = { status: 301, location: 'https://gze1206.net/' };
@@ -104,7 +110,7 @@ describe('checkDomains', () => {
     const mod = await import('./check.ts');
     expect(mod).toHaveProperty('checkDomains');
     const failures = await mod.checkDomains(fakeFetch({}).fetchFn, options);
-    expect(failures).toHaveLength(8);
+    expect(failures).toHaveLength(9);
   });
 
   it('NOR-199 AC-7: 네트워크 오류(DNS 실패 등)도 던지지 않고 실패 항목으로 모은다', async () => {
@@ -113,7 +119,7 @@ describe('checkDomains', () => {
     const rejecting = async (input: string): Promise<Response> => {
       throw new Error(`fetch failed: ${input}`);
     };
-    await expect(mod.checkDomains(rejecting, options)).resolves.toHaveLength(8);
+    await expect(mod.checkDomains(rejecting, options)).resolves.toHaveLength(9);
     const failures = await mod.checkDomains(rejecting, options);
     expect(failures[0]).toContain('fetch failed');
   });
@@ -157,5 +163,23 @@ describe('checkDomains', () => {
     routes['https://www.gze1206.net/'] = { status: 301, location: 'http://[' };
     const run = mod.checkDomains(fakeFetch(routes).fetchFn, options);
     await expect(run).resolves.toHaveLength(2);
+  });
+
+  it('NOR-200 AC-10: services 의 URL 도 200 이어야 한다', async () => {
+    const mod = await import('./check.ts');
+    expect(mod).toHaveProperty('checkDomains');
+    const routes = healthyRoutes();
+    routes['https://comments.gze1206.net/comentario.js'] = { status: 502 };
+    const failures = await mod.checkDomains(fakeFetch(routes).fetchFn, options);
+    expect(failures).toEqual([expect.stringContaining('comments.gze1206.net')]);
+  });
+
+  it('NOR-200 AC-10: services 의 integrity 가 본문 sha384 와 다르면 실패다', async () => {
+    const mod = await import('./check.ts');
+    expect(mod).toHaveProperty('checkDomains');
+    const routes = healthyRoutes();
+    routes['https://comments.gze1206.net/comentario.js'] = { status: 200, body: 'tampered()' };
+    const failures = await mod.checkDomains(fakeFetch(routes).fetchFn, options);
+    expect(failures).toEqual([expect.stringContaining('integrity')]);
   });
 });

@@ -1,0 +1,11 @@
+# 처음 설치할 때만 쓴다 (NOR-200). 첫 가입자가 superuser 가 되므로, 공유 edge 네트워크의 다른
+# 컨테이너가 먼저 가입하지 못하게 바깥과 끊긴 내부 네트워크에서 계정을 만들고 가입을 닫는다.
+#   docker compose -f compose.yml -f compose.bootstrap.yml up -d
+services:
+  comentario:
+    networks: !override
+      bootstrap: {}
+
+networks:
+  bootstrap:
+    internal: true

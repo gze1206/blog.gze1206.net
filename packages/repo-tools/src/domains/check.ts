@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
 /** 런칭 직후와 이후 회귀에서 같은 기준으로 공개 도메인을 확인한다 (NOR-199). */
@@ -12,6 +13,14 @@ export interface DomainCheckOptions {
   hostileProbes: readonly string[];
   /** 정본 호스트에서 200 이어야 하는 옛 사이트 경로 */
   legacyPaths: readonly string[];
+  /** 200 이어야 하는 다른 서비스. `integrity` 가 있으면 본문 sha384 도 대조한다 (NOR-200) */
+  services: readonly ServiceCheck[];
+}
+
+export interface ServiceCheck {
+  url: string;
+  /** SRI 형식 `sha384-<base64>` */
+  integrity?: string;
 }
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
@@ -89,6 +98,19 @@ export async function checkDomains(
     const response = await get(url);
     if (response !== undefined && response.status !== 200)
       failures.push(`${url}: 200 이 아니라 ${response.status}`);
+  }
+
+  for (const { url, integrity } of options.services) {
+    const response = await get(url);
+    if (response === undefined) continue;
+    if (response.status !== 200) {
+      failures.push(`${url}: 200 이 아니라 ${response.status}`);
+      continue;
+    }
+    if (integrity === undefined) continue;
+    const body = Buffer.from(await response.arrayBuffer());
+    const actual = `sha384-${createHash('sha384').update(body).digest('base64')}`;
+    if (actual !== integrity) failures.push(`${url}: integrity 가 다르다 (${actual})`);
   }
 
   return failures;
