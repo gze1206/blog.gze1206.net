@@ -106,6 +106,8 @@ function kindLabel(document: DocumentSummary, state: PublishState | undefined): 
 interface Props {
   /** 문서 id 별 발행 상태. 아직 모르면 비어 있다. */
   readonly statuses?: Readonly<Record<string, PublishState>>;
+  /** 발행 상태를 불러오는 중이면 공개 글에 "확인 중" 자리를 둔다(NOR-228). */
+  readonly statusesLoading?: boolean;
   /** 블로그에만 있는 글의 수. */
   readonly blogOnly?: number;
   readonly onImport?: () => void;
@@ -122,6 +124,7 @@ export function DocumentList({
   selectedId,
   onSelect,
   statuses = {},
+  statusesLoading = false,
   blogOnly = 0,
   onImport,
 }: Props) {
@@ -159,7 +162,11 @@ export function DocumentList({
         <span className="block truncate text-sm text-foreground">{document.title}</span>
         <span className="block text-[11px] text-muted">
           {kindLabel(document, statuses[document.id])}
-          <StateBadge state={statuses[document.id]} />
+          {statusesLoading && document.kind === 'public-draft' && !statuses[document.id] ? (
+            <span className="ml-2 animate-pulse font-sans text-muted">확인 중</span>
+          ) : (
+            <StateBadge state={statuses[document.id]} />
+          )}
         </span>
       </span>
     </button>

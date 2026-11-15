@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 import { serve } from '@hono/node-server';
@@ -11,6 +12,8 @@ import { ServerFileStore } from './adapters/fileStore.js';
 import { ServerJournalStore } from './adapters/journalStore.js';
 import { PublicBlogAdapter } from './adapters/publicBlog.js';
 import { ProductionRemotePolicy } from './adapters/remotePolicy.js';
+
+import { createGitHubPullLookup } from './adapters/githubPulls.js';
 import { createApp } from './app.js';
 import { loadConfig } from './config.js';
 import { seedWorkspaceTemplates } from './seedTemplates.js';
@@ -18,6 +21,7 @@ import { seedWorkspaceTemplates } from './seedTemplates.js';
 // 설정 검증은 전부 `loadConfig` 안에 있다(NOR-148). 여기서 env 를 다시 읽지 않는다 —
 // 두 곳에서 읽으면 한쪽만 검증된 값이 흘러 들어간다.
 const config = loadConfig();
+const RELAY_LEDGER_PATH = '/data/relay/ledger';
 
 // 새 작업 공간이면 만들 수 있는 것이 하나도 안 보인다. 부팅할 때 기본 템플릿만 깔아 준다(NOR-191).
 const seeded = await seedWorkspaceTemplates({
@@ -56,6 +60,14 @@ const app = createApp(
       today: () => calendarDateInTimeZone(new Date(), config.appTimeZone),
       slugify: bookSlug,
     },
+  },
+  {
+    // 릴레이가 쓰는 ledger 의 공개 사본. compose 가 읽기 전용으로 마운트한다(NOR-228).
+    readLedger: () => readFile(RELAY_LEDGER_PATH, 'utf8'),
+    // PUBLIC_BLOG_REMOTE 는 loadConfig 가 https://github.com/<owner>/<repo> 로 검증했다.
+    lookupPull: createGitHubPullLookup({
+      repo: new URL(config.publicBlogRemote).pathname.replace(/^\/|\.git$/gu, ''),
+    }),
   },
 );
 

@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, stat, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -346,5 +346,17 @@ describe('publish-relay.sh', () => {
     );
     expect(f.run().status).toBe(0);
     expect(f.remoteRef('content/book-x')).not.toBeNull();
+  });
+
+  it('NOR-228 AC-7: ledger 를 쓸 때마다 컨테이너가 읽을 공개 사본(0644)을 갱신한다', async () => {
+    const f = await fixture();
+    await f.publish('hello-1', { 'apps/blog/src/content/posts/hello.mdoc': 'hello\n' });
+    const result = f.run();
+    expect(result.status, result.stderr).toBe(0);
+    const copy = path.join(f.state, 'public', 'ledger');
+    expect(existsSync(copy)).toBe(true);
+    expect((await readFile(copy, 'utf8')).trim().split('\n')).toEqual(await f.ledger());
+    expect((await stat(copy)).mode & 0o777).toBe(0o644);
+    expect((await stat(path.dirname(copy))).mode & 0o777).toBe(0o755);
   });
 });

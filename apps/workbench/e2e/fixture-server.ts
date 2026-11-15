@@ -151,6 +151,17 @@ const app = createApp(
     assets: new BookAssetStore({ workspaceRoot }),
     options: { today: () => '2026-08-12', slugify: bookSlug },
   },
+  // 발행 진행 토스트(NOR-228). 릴레이·GitHub 대신 고정된 답을 준다.
+  {
+    readLedger: async () => 'e2e-demo.json ok content/e2e-demo\n',
+    lookupPull: async () => ({
+      number: 1,
+      url: 'https://github.com/example/blog/pull/1',
+      state: 'open',
+      merged: false,
+      checks: 'pending',
+    }),
+  },
 );
 app.use('*', serveStatic({ root: './dist/web' }));
 app.get('*', serveStatic({ path: './dist/web/index.html' }));

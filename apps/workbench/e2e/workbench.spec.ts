@@ -498,3 +498,34 @@ test('NOR-220 AC-4: 발행한 항목은 반영 대기로 보이고 다시 검토
   await expect(site.getByRole('button', { name: '검토' })).toBeDisabled();
   await expect(site.getByRole('button', { name: 'main 다시 읽기' })).toBeVisible();
 });
+
+test('NOR-228 AC-5: 진행 중인 발행은 새로고침 뒤에도 토스트로 이어지고 서버의 단계를 보인다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.evaluate(() =>
+    localStorage.setItem(
+      'workbench.publishJobs',
+      JSON.stringify([
+        {
+          ref: 'e2e-demo.json',
+          title: '진행 중인 글',
+          startedAt: '2026-08-12T12:00:00.000Z',
+          stage: 'queued',
+        },
+      ]),
+    ),
+  );
+  await page.reload();
+  const toasts = page.getByRole('region', { name: '발행 진행' });
+  await expect(toasts).toContainText('진행 중인 글');
+  await expect(toasts).toContainText('PR #1 검사 중');
+  await expect(toasts.getByRole('link', { name: 'PR #1 보기' })).toHaveAttribute(
+    'href',
+    'https://github.com/example/blog/pull/1',
+  );
+  await page.getByRole('button', { name: '사이트 콘텐츠' }).click();
+  await expect(toasts).toContainText('PR #1 검사 중');
+  await toasts.getByRole('button', { name: '진행 중인 글 진행 알림 닫기' }).click();
+  await expect(toasts).toHaveCount(0);
+});

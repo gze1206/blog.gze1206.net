@@ -39,6 +39,8 @@ import { ThemeToggle } from './ThemeToggle.js';
 import { TrashList } from './TrashList.js';
 import { SiteContent } from './site/SiteContent.js';
 import { DayPage } from './day/[date].js';
+import { PublishToasts } from './publish/PublishToasts.js';
+import { trackPublish } from './publish/trackPublish.js';
 
 export function App() {
   const [templates, setTemplates] = useState<TemplateSummary[]>([]);
@@ -53,6 +55,15 @@ export function App() {
   /** 지금 열린 문서 id. 늦게 끝난 올리기가 다른 문서의 상태를 바꾸지 않게 본다. */
   const selectedIdRef = useRef<string | null>(null);
   const [publishStatus, setPublishStatus] = useState<PublishStatusData | null>(null);
+  // 상태를 아직 모르는 동안 배지 자리에 "확인 중" 을 둔다(NOR-228). 실패하면 자리를 거둔다.
+  const [publishStatusLoading, setPublishStatusLoading] = useState(true);
+  const refreshPublishStatus = () => {
+    setPublishStatusLoading(true);
+    void loadPublishStatus()
+      .then(setPublishStatus)
+      .catch(() => undefined)
+      .finally(() => setPublishStatusLoading(false));
+  };
   /** 책은 폼으로 다루는 것이 기본이고, 원본 마크다운은 필요할 때 연다. */
   const [editingSource, setEditingSource] = useState(false);
   const [selected, setSelected] = useState<DocumentEntry | null>(null);
@@ -80,9 +91,7 @@ export function App() {
     setDocumentProblems(nextDocuments.problems);
     setTrash(nextTrash);
     // 발행 상태는 블로그를 새로 받아 비교하므로 느리다. 목록을 막지 않고 따로 채운다(NOR-209).
-    void loadPublishStatus()
-      .then(setPublishStatus)
-      .catch(() => undefined);
+    refreshPublishStatus();
   }, []);
 
   useEffect(() => {
@@ -224,7 +233,9 @@ export function App() {
     setBusy(true);
     setError(null);
     try {
-      setPublishResult(await confirmPublish(selected.id, publishReview.reviewId, selectedAssetIds));
+      const result = await confirmPublish(selected.id, publishReview.reviewId, selectedAssetIds);
+      setPublishResult(result);
+      trackPublish(result.outboxRef, selected.title);
     } catch (caught) {
       setError(toMessage(caught));
     } finally {
@@ -312,6 +323,7 @@ export function App() {
         <DocumentList
           blogOnly={publishStatus?.blogOnly.length ?? 0}
           onImport={() => setImporting(true)}
+          statusesLoading={publishStatusLoading && publishStatus === null}
           statuses={Object.fromEntries(
             (publishStatus?.documents ?? []).map((item) => [item.documentId, item.status]),
           )}
@@ -424,6 +436,7 @@ export function App() {
           <p className="p-8 text-sm text-muted">앱 달력을 불러오는 중입니다.</p>
         )}
       </main>
+      <PublishToasts onMerged={refreshPublishStatus} />
     </div>
   );
 }

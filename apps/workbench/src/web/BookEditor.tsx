@@ -18,6 +18,7 @@ import { BookPublishReview } from './BookPublishReview.js';
 import { BookNotes } from './BookNotes.js';
 import { bookExportId } from './bookExportId.js';
 import { PublicQuotes } from './PublicQuotes.js';
+import { trackPublish } from './publish/trackPublish.js';
 
 interface Props {
   readonly document: DocumentEntry;
@@ -109,7 +110,9 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
     if (review === null) return;
     setBusy(true);
     try {
-      setResult(await confirmBook(bookId, review.reviewId));
+      const published = await confirmBook(bookId, review.reviewId);
+      setResult(published);
+      trackPublish(published.outboxRef, `책 · ${form.title}`);
     } catch (caught) {
       onError(caught instanceof Error ? caught.message : '내보내지 못했습니다.');
     } finally {

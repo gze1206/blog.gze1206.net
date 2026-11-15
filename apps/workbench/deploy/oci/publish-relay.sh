@@ -21,6 +21,9 @@ HELPER="$HERE/relay-helper.py"
 MAX_EXPORT_BYTES=$((20 * 1024 * 1024))
 REPO="$STATE/blog"
 LEDGER="$STATE/ledger"
+# 컨테이너가 읽기 전용으로 마운트하는 ledger 사본(NOR-228). 진행 표시에만 쓴다.
+# 이름·브랜치·고정 사유 코드만 담기므로 공개해도 된다. STATE 자체(0700)는 열지 않는다.
+PUBLIC="$STATE/public"
 INCOMING=refs/relay/incoming
 export GIT_AUTHOR_NAME="${RELAY_AUTHOR_NAME:-workbench-relay}"
 export GIT_AUTHOR_EMAIL="${RELAY_AUTHOR_EMAIL:-workbench-relay@users.noreply.github.com}"
@@ -38,6 +41,13 @@ fi
 trap 'rm -rf "$STATE/.lock"' EXIT
 
 touch "$LEDGER"
+mkdir -p "$PUBLIC" && chmod 0755 "$PUBLIC"
+# 임시 파일에 쓰고 rename 한다. 읽는 쪽이 반쯤 쓴 파일을 보지 않는다.
+publish_ledger() {
+  cp "$LEDGER" "$PUBLIC/.ledger.tmp" && chmod 0644 "$PUBLIC/.ledger.tmp" && mv -f "$PUBLIC/.ledger.tmp" "$PUBLIC/ledger" ||
+    echo "ledger 공개 사본을 쓰지 못했다(발행은 계속한다)" >&2
+}
+publish_ledger
 G() { git -C "$REPO" -c core.hooksPath=/dev/null -c fetch.fsckObjects=true -c transfer.fsckObjects=true "$@"; }
 if [ ! -d "$REPO/.git" ]; then
   git clone -q "$REMOTE" "$REPO" || exit 1
@@ -49,6 +59,7 @@ record() {
   local status=$2
   [[ $status =~ ^(ok\ content/[a-z0-9._-]+|stale\ [a-z-]+|rejected\ [a-z-]+)$ ]] || status="rejected unknown"
   printf '%s %s\n' "$1" "$status" >>"$LEDGER"
+  publish_ledger
 }
 seen() { awk -v name="$1" '$1 == name { found = 1 } END { exit !found }' "$LEDGER"; }
 

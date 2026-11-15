@@ -83,13 +83,14 @@ systemd-analyze security workspace-backup.service
 저장소 자격이 없고, 릴레이 계정만 deploy key 를 갖는다. 절차는
 [tailnet-workbench.md](./tailnet-workbench.md) "확정한 커밋을 공개 블로그로 보내기".
 
-| 무엇        | 값                                                                                             |
-| ----------- | ---------------------------------------------------------------------------------------------- |
-| 실행 계정   | 시스템 계정 `workbench-relay`. outbox 는 `CAP_DAC_READ_SEARCH` 로 읽기만 한다                  |
-| 상태        | `/var/lib/workbench-relay` (clone, `ledger`, `.ssh`)                                           |
-| 자격        | 이 저장소의 write deploy key. main 은 ruleset(필수 체크·강제 push 금지)이 막는다               |
-| 관문        | base 가 main 의 조상, bundle 커밋 일치, 바뀐 경로가 모두 `content-paths.regex` 안·일반 파일만  |
-| 내보내는 것 | 받은 이력이 아니라 최종 트리로 base 위에 새로 만든 커밋 하나(중간 커밋·작성자·메시지는 버린다) |
+| 무엇        | 값                                                                                                             |
+| ----------- | -------------------------------------------------------------------------------------------------------------- |
+| 실행 계정   | 시스템 계정 `workbench-relay`. outbox 는 `CAP_DAC_READ_SEARCH` 로 읽기만 한다                                  |
+| 상태        | `/var/lib/workbench-relay` (clone, `ledger`, `.ssh`)                                                           |
+| 진행 사본   | `/var/lib/workbench-relay/public/ledger`(0755/0644). 컨테이너가 `/data/relay` 로 읽기 전용 마운트한다(NOR-228) |
+| 자격        | 이 저장소의 write deploy key. main 은 ruleset(필수 체크·강제 push 금지)이 막는다                               |
+| 관문        | base 가 main 의 조상, bundle 커밋 일치, 바뀐 경로가 모두 `content-paths.regex` 안·일반 파일만                  |
+| 내보내는 것 | 받은 이력이 아니라 최종 트리로 base 위에 새로 만든 커밋 하나(중간 커밋·작성자·메시지는 버린다)                 |
 
 ```sh
 sudo useradd --system --home-dir /var/lib/workbench-relay --create-home --shell /usr/sbin/nologin workbench-relay
@@ -107,6 +108,9 @@ sudo systemctl daemon-reload && sudo systemctl enable --now publish-relay.timer
 ```
 
 저장소 설정: Allow auto-merge 켬, Actions 의 "Allow GitHub Actions to create and approve pull requests" 켬.
+발행 진행 토스트(NOR-228)는 ledger 의 공개 사본과 공개 저장소의 GitHub API(자격 없음)로 단계를 읽는다.
+사본에는 매니페스트 이름·브랜치 이름·고정 사유 코드만 있다. 릴레이를 한 번 돌려 `public/` 이 생긴 뒤에
+compose 를 올린다(`create_host_path: false` 라 없으면 컨테이너가 뜨지 않는다).
 콘텐츠 경로를 넓힐 때는 `content-paths.regex` 를 고치고 호스트에도 다시 설치한다(워크플로는 main 의 것을 읽는다).
 
 ## 이미지 갱신
