@@ -69,7 +69,7 @@ it(
         entries: { collection: string; id: string; data: unknown }[];
         problems: { path: string }[];
       };
-      expect(listed.entries).toEqual([
+      expect(listed.entries).toMatchObject([
         { collection: 'profile', id: 'profile', data: JSON.parse(PROFILE) },
         { collection: 'series', id: 'a', data: JSON.parse(SERIES) },
       ]);
@@ -143,3 +143,65 @@ it('NOR-208 AC-5: 검토 뒤 입력이 바뀌면 발행하지 않는다', { time
     await f.close();
   }
 });
+
+it(
+  'NOR-208 AC-9: 편집을 시작한 뒤 main 이 바뀌었거나 새 항목이 이미 있으면 검토를 거절한다',
+  { timeout: 30000 },
+  async () => {
+    const f = await fixture();
+    try {
+      const listed = (await f.adapter['listSite']?.()) as {
+        entries: { id: string; hash?: string }[];
+      };
+      const series = listed.entries.find((entry) => entry.id === 'a');
+      expect(series).toHaveProperty('hash');
+      expect(series?.hash).toMatch(/^[0-9a-f]{64}$/u);
+      const data = { name: '시리즈', slug: 'a', description: '새 설명' };
+      await expect(
+        f.adapter['reviewSite']?.({
+          collection: 'series',
+          id: 'a',
+          data,
+          baseHash: 'f'.repeat(64),
+        }),
+      ).rejects.toThrow('site content changed on main');
+      await expect(
+        f.adapter['reviewSite']?.({ collection: 'series', id: 'a', data, baseHash: null }),
+      ).rejects.toThrow('site content changed on main');
+      const review = (await f.adapter['reviewSite']?.({
+        collection: 'series',
+        id: 'a',
+        data,
+        baseHash: series?.hash,
+      })) as { kind: string };
+      expect(review.kind).toBe('write');
+    } finally {
+      await f.close();
+    }
+  },
+);
+
+it(
+  'NOR-208 AC-9: 같은 검토를 동시에 두 번 확정하면 하나만 발행한다',
+  { timeout: 30000 },
+  async () => {
+    const f = await fixture();
+    try {
+      const change = {
+        collection: 'series',
+        id: 'a',
+        data: { name: '시리즈', slug: 'a', description: '동시' },
+      };
+      const review = (await f.adapter['reviewSite']?.(change)) as { reviewId: string };
+      const confirm = { confirmPublish: true, reviewId: review.reviewId };
+      const results = await Promise.allSettled([
+        f.adapter['publishSite']?.(change, confirm),
+        f.adapter['publishSite']?.(change, confirm),
+      ]);
+      expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+      expect((await readdir(f.outbox)).filter((name) => name.endsWith('.json'))).toHaveLength(1);
+    } finally {
+      await f.close();
+    }
+  },
+);

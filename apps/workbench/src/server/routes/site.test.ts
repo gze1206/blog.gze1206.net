@@ -120,3 +120,63 @@ describe('/api/site', () => {
     expect(calls).toHaveLength(2);
   });
 });
+
+describe('/api/site 입력 제한', () => {
+  it('NOR-208 AC-9: 256KB 를 넘는 요청 본문은 받지 않는다', async () => {
+    calls.length = 0;
+    const response = await (
+      await app()
+    ).request(
+      '/api/site/review',
+      post({
+        collection: 'series',
+        id: 'a',
+        data: { name: 'n', slug: 'a', description: 'x'.repeat(300 * 1024) },
+      }),
+    );
+    expect(response.status).toBe(413);
+    expect(calls).toEqual([]);
+  });
+
+  it('NOR-208 AC-9: baseHash 를 검토 요청과 함께 넘긴다', async () => {
+    calls.length = 0;
+    const response = await (
+      await app()
+    ).request(
+      '/api/site/review',
+      post({
+        collection: 'series',
+        id: 'a',
+        data: { name: 'n', slug: 'a', description: 'd' },
+        baseHash: 'a'.repeat(64),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(calls).toEqual([
+      {
+        collection: 'series',
+        id: 'a',
+        data: { name: 'n', slug: 'a', description: 'd' },
+        baseHash: 'a'.repeat(64),
+      },
+    ]);
+  });
+});
+
+it('NOR-208 AC-9: main 이 바뀌어 검토를 거절하면 409 와 이유를 돌려준다', async () => {
+  const { SiteReviewError } = await import('../adapters/publicBlog.js');
+  const root = await mkdtemp(path.join(tmpdir(), 'site-api-'));
+  const stale = {
+    ...publisher,
+    async reviewSite() {
+      throw new SiteReviewError('site content changed on main; reload and edit again', 409);
+    },
+  } as unknown as PublicBlogPublisher;
+  const response = await createApp(new ServerFileStore(root), stale).request(
+    '/api/site/review',
+    post({ collection: 'series', id: 'a', data: { name: 'n', slug: 'a', description: 'd' } }),
+  );
+  expect(response.status).toBe(409);
+  const body = (await response.json()) as { error: { message: string } };
+  expect(body.error.message).toContain('changed on main');
+});

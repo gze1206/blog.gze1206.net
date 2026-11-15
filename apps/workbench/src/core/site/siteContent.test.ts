@@ -82,3 +82,30 @@ describe('사이트 콘텐츠 계획', () => {
     expect(planSiteChange({ collection: 'series', id: 'a', delete: true }, null).kind).toBe('noop');
   });
 });
+
+describe('사이트 콘텐츠 검수 반영', () => {
+  it('NOR-208 AC-8: 시리즈의 slug 는 파일 이름과 같아야 한다', async () => {
+    const { validateSiteChange } = await site();
+    const issues = validateSiteChange({
+      collection: 'series',
+      id: 'a',
+      data: { name: 'n', slug: 'b', description: 'd' },
+    });
+    expect(issues.map((issue) => issue.path)).toEqual(['slug']);
+  });
+
+  it('NOR-208 AC-9: main 에 없던 스키마 밖 최상위 키는 받지 않는다', async () => {
+    const mod = await site();
+    expect(mod).toHaveProperty('unknownKeyIssues');
+    const unknownKeyIssues = Reflect.get(mod, 'unknownKeyIssues') as (
+      collection: string,
+      data: Record<string, unknown>,
+      current: string | null,
+    ) => { path: string }[];
+    const data = { title: 't', summary: 's', stack: ['a'], id: 'x', secret: 'memo' };
+    expect(
+      unknownKeyIssues('portfolio', data, '{"title":"t","id":"x"}').map((i) => i.path),
+    ).toEqual(['secret']);
+    expect(unknownKeyIssues('portfolio', data, null).map((i) => i.path)).toEqual(['id', 'secret']);
+  });
+});

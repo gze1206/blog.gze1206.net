@@ -52,12 +52,24 @@ describe('사이트 콘텐츠 폼', () => {
     });
     expect(
       toFormValue(media, { media: [{ src: '/a.webp', alt: '그림', width: 960, height: 600 }] }),
-    ).toEqual([{ src: '/a.webp', alt: '그림', width: '960', height: '600', caption: '' }]);
+    ).toMatchObject([{ src: '/a.webp', alt: '그림', width: '960', height: '600', caption: '' }]);
   });
 
   it('NOR-208 AC-6: 새 항목은 컬렉션의 빈 틀에서 시작한다', async () => {
     const { newSiteData } = await form();
     expect(newSiteData('series')).toEqual({ name: '', slug: '', description: '' });
     expect(newSiteData('experience')).toMatchObject({ highlights: [], visible: true });
+  });
+});
+
+it('NOR-208 AC-9: 행 목록을 고쳐도 행에 있던 화면 밖 필드는 남는다', async () => {
+  const { SITE_FIELDS, toFormValue, applyFormValue } = await form();
+  const links = SITE_FIELDS.profile.find((field) => field.key === 'links');
+  if (!links) throw new Error('missing field');
+  const data = { links: [{ label: 'GitHub', url: 'https://github.com/x', icon: 'gh' }] };
+  const rows = toFormValue(links, data) as Record<string, string>[];
+  const edited = rows.map((row) => ({ ...row, label: '깃허브' }));
+  expect(applyFormValue(data, links, edited)).toEqual({
+    links: [{ label: '깃허브', url: 'https://github.com/x', icon: 'gh' }],
   });
 });
