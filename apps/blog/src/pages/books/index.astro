@@ -12,13 +12,20 @@ import ListLayout from '../../layouts/ListLayout.astro';
 import EmptyState from '../../components/EmptyState.astro';
 import { getVisibleBooks, groupBooksByYear } from '../../lib/books';
 import { bookStatusLabel, bookFormatLabel } from '../../lib/book-labels';
-import { spineTitle, spineTone } from '../../lib/book-shelf';
+import { coverLoading, spineTitle, spineTone } from '../../lib/book-shelf';
 import { getTagGroups } from '../../lib/content';
 import { bookPath, postPath, tagPath } from '../../lib/routes';
 import { toSlug } from '../../lib/slug';
 
 const [books, tagGroups] = await Promise.all([getVisibleBooks(), getTagGroups()]);
 const groups = groupBooksByYear(books);
+/** 화면 순서로 센 표지 있는 책의 차례. 첫 줄만 바로 불러온다(NOR-34 AC-1). */
+const coverIndex = new Map(
+  groups
+    .flatMap((group) => group.books)
+    .filter((book) => book.data.cover)
+    .map((book, index) => [book.id, index] as const),
+);
 /**
  * 태그 페이지는 **글**에서 파생된다. 책에만 붙은 태그는 갈 곳이 없으므로 링크하지 않는다 —
  * 존재하지 않는 주소로 보내는 칩은 장식보다 나쁘다. 책과 글의 태그 체계를 합치는 일은
@@ -55,7 +62,7 @@ const linkableTagSlugs = new Set(tagGroups.map((group) => group.slug));
                       alt={`${book.data.title} 표지`}
                       width={book.data.cover.width}
                       height={book.data.cover.height}
-                      loading="lazy"
+                      {...coverLoading(coverIndex.get(book.id) ?? Number.POSITIVE_INFINITY)}
                       decoding="async"
                     />
                   ) : (

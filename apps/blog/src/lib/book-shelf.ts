@@ -33,3 +33,15 @@ export function spineTitle(title: string): string {
   const [head = title] = title.split(/\s*[:—–]\s*/u);
   return head.length > 24 ? `${head.slice(0, 23)}…` : head;
 }
+
+/** 첫 화면에 보이는 책장 표지의 수. 그 뒤는 지연 로드한다. */
+const EAGER_COVERS = 6;
+
+/**
+ * 표지 `<img>` 의 불러오기 속성 (NOR-34 AC-1). 첫 표지는 LCP 라서 높은 우선순위로 요청하고,
+ * 첫 줄은 바로 불러온다. 첫 화면까지 지연 로드하면 LCP 가 크게 늦어진다.
+ */
+export function coverLoading(index: number): { loading: 'eager' | 'lazy'; fetchpriority?: 'high' } {
+  if (index === 0) return { loading: 'eager', fetchpriority: 'high' };
+  return index < EAGER_COVERS ? { loading: 'eager' } : { loading: 'lazy' };
+}

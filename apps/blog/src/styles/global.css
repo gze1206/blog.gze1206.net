@@ -1101,6 +1101,13 @@ summary:focus-visible {
   font-weight: 700;
 }
 
+.toc-list a {
+  /* 터치 대상은 24px 이상이어야 한다(WCAG 2.5.8, NOR-34 AC-2). */
+  display: inline-block;
+  min-height: 1.5rem;
+  padding-block: 0.125rem;
+}
+
 .toc-list a:hover {
   color: var(--theme-accent);
   text-decoration: underline;
