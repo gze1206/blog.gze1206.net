@@ -101,3 +101,47 @@ it(
     }
   },
 );
+
+it('NOR-209 AC-5: 동시에 온 발행 상태 조회는 한 번만 계산한다', { timeout: 30000 }, async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'publish-status-once-'));
+  const source = path.join(root, 'source');
+  await mkdir(path.join(source, POSTS), { recursive: true });
+  await mkdir(path.join(root, 'workspace'));
+  await mkdir(path.join(root, 'work'));
+  await mkdir(path.join(root, 'outbox'));
+  await writeFile(path.join(source, 'README.md'), 'x\n');
+  await git(source, 'init', '-b', 'main');
+  await git(source, 'config', 'user.name', 'Fixture');
+  await git(source, 'config', 'user.email', 'fixture@example.test');
+  await git(source, 'add', '.');
+  await git(source, 'commit', '-m', 'initial');
+  const server = await startHttpsGitServer(source);
+  try {
+    const adapter = new PublicBlogAdapter({
+      privateRoot: path.join(root, 'workspace'),
+      remote: server.remote,
+      branch: 'main',
+      workBase: path.join(root, 'work'),
+      outboxRoot: path.join(root, 'outbox'),
+      author: { name: 'Fixture', email: 'fixture@example.test' },
+      remotePolicy: new LoopbackTestRemotePolicy(server.certificateAuthority),
+    });
+    const manager = Reflect.get(adapter, 'cloneManager') as { create: () => Promise<unknown> };
+    let clones = 0;
+    const create = manager.create.bind(manager);
+    manager.create = () => {
+      clones += 1;
+      return create();
+    };
+    const call = () =>
+      (adapter as unknown as Record<string, (drafts: unknown[]) => Promise<unknown>>)[
+        'publishStatus'
+      ]?.([]);
+    const [first, second] = await Promise.all([call(), call()]);
+    expect(second).toEqual(first);
+    expect(clones).toBe(1);
+  } finally {
+    await server.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});

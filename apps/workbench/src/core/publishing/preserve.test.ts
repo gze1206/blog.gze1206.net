@@ -70,3 +70,24 @@ describe('발행 표기 보존', () => {
     expect(run(null, SAME)).toBe(SAME);
   });
 });
+
+describe('발행 표기 보존 검수 반영', () => {
+  it('NOR-209 AC-5: anchor·alias 를 공유한 필드도 의도한 값 그대로 나온다', async () => {
+    const run = await preserve();
+    const { parse } = await import('yaml');
+    const current = '---\ntitle: &t 옛 제목\ndescription: *t\nslug: a\n---\n본문\n';
+    const next = '---\ntitle: 새 제목\ndescription: 옛 제목\nslug: a\n---\n본문\n';
+    const result = run(current, next);
+    const yaml = /^---\n([\s\S]*?)\n---\n/u.exec(result)?.[1] ?? '';
+    expect(parse(yaml)).toEqual({ title: '새 제목', description: '옛 제목', slug: 'a' });
+  });
+
+  it('NOR-209 AC-5: 상속 속성 이름의 키도 의도에 없으면 지운다', async () => {
+    const run = await preserve();
+    const current = '---\ntitle: 글\nconstructor: 비밀\ntoString: 메모\n---\n본문\n';
+    const next = '---\ntitle: 글\n---\n본문\n';
+    const result = run(current, next);
+    expect(result).not.toContain('constructor');
+    expect(result).not.toContain('toString');
+  });
+});
