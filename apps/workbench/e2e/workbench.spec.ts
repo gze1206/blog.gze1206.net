@@ -270,6 +270,7 @@ test('NOR-205 AC-5: 문서를 지우면 휴지통으로 가고 복원하면 돌�
   await expect(documents.getByRole('button', { name: /지울 문서/u })).toBeVisible();
   // 휴지통이 비면 그 영역은 사라진다.
   await expect(trash).toHaveCount(0);
+});
 
 test('NOR-204 AC-4: 쉼표로 구분하는 칸에 여러 이름을 그대로 칠 수 있다', async ({ page }) => {
   await page.goto('/');
