@@ -100,4 +100,15 @@ describe('checkDomains', () => {
     const failures = await mod.checkDomains(fakeFetch({}).fetchFn, options);
     expect(failures).toHaveLength(4);
   });
+
+  it('NOR-199 AC-7: 네트워크 오류(DNS 실패 등)도 던지지 않고 실패 항목으로 모은다', async () => {
+    const mod = await import('./check.ts');
+    expect(mod).toHaveProperty('checkDomains');
+    const rejecting = async (input: string): Promise<Response> => {
+      throw new Error(`fetch failed: ${input}`);
+    };
+    await expect(mod.checkDomains(rejecting, options)).resolves.toHaveLength(4);
+    const failures = await mod.checkDomains(rejecting, options);
+    expect(failures[0]).toContain('fetch failed');
+  });
 });
