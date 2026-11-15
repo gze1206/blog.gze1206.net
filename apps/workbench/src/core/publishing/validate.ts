@@ -136,7 +136,13 @@ function assertAllAssetReferencesResolved(
   existing: ReadonlySet<string> = new Set(),
 ): void {
   const approved = new Set(assets.map(({ draftReference }) => draftReference));
-  for (const { reference } of parseAssetReferences(content)) {
+  const references = parseAssetReferences(content);
+  // 고른 자산은 모두 본문이 써야 한다. 참조를 지운 이미지가 공개 저장소로 나가지 않게 한다(NOR-219 AC-7).
+  const used = new Set(references.map(({ reference }) => reference));
+  for (const { draftReference } of assets)
+    if (!used.has(draftReference))
+      throw new PublicDraftValidationError(`unreferenced asset: ${draftReference}`);
+  for (const { reference } of references) {
     if (approved.has(reference)) continue;
     if (isSafeSitePath(reference) && existing.has(reference)) continue;
     throw new PublicDraftValidationError(`unresolved asset reference: ${reference}`);

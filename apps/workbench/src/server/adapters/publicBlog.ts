@@ -746,7 +746,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     const target = await resolveWorkspacePath(this.options.privateRoot, relativePath);
     await mkdir(path.dirname(target), { recursive: true });
     await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
-    await writeFile(target, bytes, { mode: 0o644 });
+    await writeHashedFile(target, bytes);
     return { src: `${SITE_IMAGE_PREFIX}${name}`, width: size.width, height: size.height };
   }
 
@@ -767,7 +767,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     const target = await resolveWorkspacePath(this.options.privateRoot, relativePath);
     await mkdir(path.dirname(target), { recursive: true });
     await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
-    await writeFile(target, bytes, { mode: 0o644 });
+    await writeHashedFile(target, bytes);
     return { id: assetId(documentId, name), reference: name, size: bytes.length };
   }
 
@@ -1318,7 +1318,8 @@ function imageFileName(
 ): { name: string; size: { width: number; height: number } } {
   const size =
     bytes.length > 0 && bytes.length <= MAX_SITE_IMAGE_BYTES ? readImageSize(bytes) : null;
-  if (!size) throw new SiteReviewError('JPEG·PNG·WebP 이미지만 5MB 까지 올릴 수 있습니다.', 400);
+  if (!size || !isCompleteImage(bytes, size.type))
+    throw new SiteReviewError('JPEG·PNG·WebP 이미지만 5MB 까지 올릴 수 있습니다.', 400);
   const extension = size.type === 'jpeg' ? 'jpg' : size.type;
   const base =
     path
@@ -1328,8 +1329,38 @@ function imageFileName(
       .replace(/[^a-z0-9]+/gu, '-')
       .replace(/^-+|-+$/gu, '')
       .slice(0, 40) || 'image';
-  const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 8);
+  const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 16);
   return { name: `${base}-${hash}.${extension}`, size };
+}
+
+/** 형식의 끝까지 갖춘 파일인지 본다(PNG IEND·JPEG EOI·WebP RIFF 길이). 잘린 파일이 공개되지 않게 한다. */
+function isCompleteImage(bytes: Uint8Array, type: 'jpeg' | 'png' | 'webp'): boolean {
+  const length = bytes.length;
+  if (type === 'png')
+    return (
+      length >= 12 &&
+      Buffer.from(bytes.subarray(length - 8, length - 4)).toString('latin1') === 'IEND'
+    );
+  if (type === 'jpeg')
+    return length >= 4 && bytes[length - 2] === 0xff && bytes[length - 1] === 0xd9;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return length >= 12 && view.getUint32(4, true) + 8 === length;
+}
+
+/**
+ * 해시 이름의 파일을 쓴다. 같은 이름이 이미 있으면 내용이 같을 때만 그대로 두고, 다르면 거절한다
+ * (드문 해시 충돌로 이미 쓰는 이미지가 바뀌지 않게).
+ */
+async function writeHashedFile(target: string, bytes: Uint8Array): Promise<void> {
+  const existing = await readFile(target).catch((error: unknown) => {
+    if (isNodeError(error) && error.code === 'ENOENT') return null;
+    throw error;
+  });
+  if (existing !== null) {
+    if (Buffer.compare(existing, Buffer.from(bytes)) === 0) return;
+    throw new SiteReviewError('같은 이름의 다른 이미지가 이미 있습니다.', 409);
+  }
+  await writeFile(target, bytes, { mode: 0o644, flag: 'wx' });
 }
 
 function sha256(text: string): string {
