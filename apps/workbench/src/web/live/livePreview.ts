@@ -5,7 +5,7 @@
  * 장식 계산(`previewDecorations`)은 DOM 없이 `EditorState` 만으로 하므로 단위 테스트할 수 있다.
  */
 import { markdown, markdownLanguage as baseMarkdown } from '@codemirror/lang-markdown';
-import { syntaxTree } from '@codemirror/language';
+import { ensureSyntaxTree, syntaxTree } from '@codemirror/language';
 import {
   EditorSelection,
   EditorState,
@@ -88,7 +88,9 @@ export function previewDecorations(state: EditorState): PreviewItem[] {
     if (!isActive(from)) items.push({ from, to: end, kind: 'hide' });
   };
 
-  syntaxTree(state).iterate({
+  // 파서는 시간 예산 안에서만 트리를 만든다. 덜 된 트리로 계산하면 뒤쪽 장식이 빠진다.
+  const tree = ensureSyntaxTree(state, state.doc.length, 200) ?? syntaxTree(state);
+  tree.iterate({
     from: fmEnd,
     enter(node) {
       if (node.from < fmEnd || skip(node.from)) return;
@@ -208,7 +210,12 @@ const livePreviewPlugin = ViewPlugin.fromClass(
       this.decorations = toDecorations(view.state);
     }
     update(update: ViewUpdate) {
-      if (update.docChanged || update.selectionSet || update.viewportChanged)
+      if (
+        update.docChanged ||
+        update.selectionSet ||
+        update.viewportChanged ||
+        syntaxTree(update.startState) !== syntaxTree(update.state)
+      )
         this.decorations = toDecorations(update.state);
     }
   },
