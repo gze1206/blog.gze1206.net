@@ -315,4 +315,36 @@ describe('publish-relay.sh', () => {
     ).toBe(true);
     expect(f.remoteRef('content/victim-1')).not.toBeNull();
   });
+
+  it('NOR-214 AC-3: 브랜치 이름에 다른 글자가 있어도 커밋으로 가져와 처리한다', async () => {
+    const f = await fixture();
+    expect(existsSync(SCRIPT)).toBe(true);
+    git(f.author, 'checkout', '-q', '-B', 'content/book-니체', f.base);
+    await mkdir(path.join(f.author, 'apps/blog/src/content/books'), { recursive: true });
+    await writeFile(path.join(f.author, 'apps/blog/src/content/books/니체의-초월자.json'), '{}\n');
+    git(f.author, 'add', '.');
+    git(f.author, 'commit', '-q', '-m', 'book');
+    const commit = git(f.author, 'rev-parse', 'HEAD');
+    const outbox = path.join(f.root, 'outbox');
+    git(
+      f.author,
+      'bundle',
+      'create',
+      '-q',
+      path.join(outbox, 'book-x.bundle'),
+      `${f.base}..content/book-니체`,
+    );
+    await writeFile(
+      path.join(outbox, 'book-x.json'),
+      JSON.stringify({
+        baseSha: f.base,
+        branch: 'content/book-니체',
+        commit,
+        exportFormat: 'bundle',
+        exportRef: 'book-x.bundle',
+      }),
+    );
+    expect(f.run().status).toBe(0);
+    expect(f.remoteRef('content/book-x')).not.toBeNull();
+  });
 });
