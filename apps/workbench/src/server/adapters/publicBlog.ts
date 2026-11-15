@@ -316,7 +316,9 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
           entry.name,
           await readFile(path.join(postsDirectory, entry.name), 'utf8'),
         );
-        if (!slugs.has(post.slug)) blogOnly.push({ slug: post.slug, title: post.title, repoPath });
+        // draft 글(스모크 테스트·픽스처)은 공개되지 않으므로 알리지 않는다.
+        if (!post.draft && !slugs.has(post.slug))
+          blogOnly.push({ slug: post.slug, title: post.title, repoPath });
       }
       blogOnly.sort((left, right) => left.slug.localeCompare(right.slug));
       return { documents, blogOnly };
