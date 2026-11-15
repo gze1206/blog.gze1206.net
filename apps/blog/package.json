@@ -23,7 +23,6 @@
     "@astrojs/markdown-remark": "^7.2.1",
     "@astrojs/rss": "4.0.19",
     "@astrojs/sitemap": "3.7.3",
-    "@fontsource/noto-serif-kr": "5.3.0",
     "@gze1206/content-contract": "workspace:*",
     "@gze1206/theme": "workspace:*",
     "@markdoc/markdoc": "^0.5.8",
