@@ -183,13 +183,12 @@ test('reviews a public draft before explicitly creating an outbox publish artifa
   expect(reviewPayload).not.toHaveProperty('source');
   expect(reviewPayload).not.toHaveProperty('assets');
 
-  const confirmButton = page.getByRole('button', { name: 'outbox 산출물 생성' });
+  const confirmButton = page.getByRole('button', { name: '발행', exact: true });
   await expect(confirmButton).toBeDisabled();
   await page.getByLabel('검토 내용을 확인했습니다').check();
   await confirmButton.click();
-  await expect(page.getByRole('status')).toContainText('outbox에');
-  await expect(page.getByRole('status')).toContainText('git bundle verify');
-  await expect(page.getByRole('status')).toContainText('git merge-base --is-ancestor');
+  await expect(page.getByRole('status')).toContainText('PR');
+  await expect(page.getByRole('status')).not.toContainText('git bundle verify');
   expect(confirmPayload).toMatchObject({
     assetIds: [expect.stringMatching(/^[A-Za-z0-9_-]{43}$/u)],
     confirmPublish: true,

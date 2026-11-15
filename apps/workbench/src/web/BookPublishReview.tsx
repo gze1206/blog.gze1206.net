@@ -1,4 +1,5 @@
 import type { BookPublishReviewData, PublishResult } from './api.js';
+import { PublishHandoff } from './PublishHandoff.js';
 
 export function BookPublishReview({
   review,
@@ -46,7 +47,11 @@ export function BookPublishReview({
           확정
         </button>
       </div>
-      {result ? <p role="status">outbox에 {result.exportRef} 산출물이 준비되었습니다.</p> : null}
+      {result ? (
+        <div role="status">
+          <PublishHandoff exportRef={result.exportRef} />
+        </div>
+      ) : null}
     </section>
   );
 }

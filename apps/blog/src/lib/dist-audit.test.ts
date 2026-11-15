@@ -172,3 +172,35 @@ it('NOR-201 AC-4: 감사는 _headers 가 없거나 인라인 스크립트 해시
     ]),
   ).toEqual([]);
 });
+
+it('NOR-210 AC-10: 감사는 글 본문 안의 script 와 on* 속성을 찾는다', () => {
+  const page = (body: string) =>
+    `<html><head><script>theme()</script></head><body><article><div class="post-body article__body">${body}</div><div class="article__after"></div></article><script type="module">island()</script></body></html>`;
+  const rules = (html: string) =>
+    auditDist({
+      files: [{ path: 'blog/x/index.html', html }],
+      assets: [],
+      draftSlugs: [],
+      draftTitles: [],
+      smoke: false,
+    }).map((finding) => finding.rule);
+  expect(rules(page('<p>안전한 본문 <code>&lt;script&gt;</code></p>'))).toEqual([]);
+  expect(rules(page('<p>x</p><script>alert(1)</script>'))).toEqual(['content-script']);
+  expect(rules(page('<img src="a.png" onerror="alert(1)">'))).toEqual(['content-script']);
+});
+
+it('NOR-210 AC-10: 글 페이지에서 본문 경계를 찾지 못하면 실패로 본다', () => {
+  const findings = auditDist({
+    files: [
+      {
+        path: 'blog/x/index.html',
+        html: '<article><div class="body"><script>alert(1)</script></div><div class="article__after"></div></article>',
+      },
+    ],
+    assets: [],
+    draftSlugs: [],
+    draftTitles: [],
+    smoke: false,
+  });
+  expect(findings.map((finding) => finding.rule)).toEqual(['content-script']);
+});

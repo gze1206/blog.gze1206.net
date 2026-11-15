@@ -1,0 +1,52 @@
+name: content-pr
+
+# 워크벤치 발행(NOR-210). 호스트의 릴레이가 content/* 브랜치로 push 하면 main 으로 가는 PR 을 만들고,
+# 바뀐 경로가 모두 콘텐츠 허용 목록 안이면 자동 병합을 켠다. CI 의 필수 체크는 같은 push 에서 돈다
+# (ci.yml). GITHUB_TOKEN 으로 만든 PR 은 pull_request 워크플로를 깨우지 않기 때문이다.
+#
+# 이 워크플로는 push 된 브랜치의 파일로 실행된다. 그래서 진짜 관문은 릴레이다(콘텐츠 경로만 push).
+# 여기서는 허용 목록을 브랜치가 아니라 main 에서 읽어 한 번 더 확인한다.
+on:
+  push:
+    branches: ['content/**']
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: content-pr-${{ github.ref }}
+
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { fetch-depth: 0 }
+      - name: 바뀐 경로가 콘텐츠 허용 목록(main) 안인지 본다
+        id: scope
+        run: |
+          git show origin/main:apps/workbench/deploy/oci/content-paths.regex > "$RUNNER_TEMP/paths.regex"
+          outside=$(git diff --name-only origin/main...HEAD | grep -vE -f "$RUNNER_TEMP/paths.regex" || true)
+          if [ -n "$outside" ]; then
+            printf '허용 목록 밖의 변경:\n%s\n' "$outside"
+            echo "allowed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: PR 을 열고 자동 병합을 켠다
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+          ALLOWED: ${{ steps.scope.outputs.allowed }}
+        run: |
+          title=$(git log -1 --format=%s)
+          if ! gh pr view "$BRANCH" --json number > /dev/null 2>&1; then
+            gh pr create --base main --head "$BRANCH" --title "$title" \
+              --body "워크벤치 발행(NOR-210 릴레이). CI 가 통과하면 자동으로 병합한다."
+          fi
+          if [ "$ALLOWED" = true ]; then
+            gh pr merge "$BRANCH" --auto --merge --delete-branch
+          else
+            gh pr comment "$BRANCH" --body "콘텐츠 허용 목록 밖의 변경이 있어 자동 병합을 켜지 않았다. 사람이 검토한다."
+          fi

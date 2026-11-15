@@ -36,3 +36,26 @@ it('NOR-196 AC-13: 책 내보내기 표지 메타데이터 경고를 표시한�
   );
   expect(html).toContain('표지 메타데이터 경고');
 });
+
+it('NOR-210 AC-8: 책 내보내기 결과도 자동 전달을 알린다', () => {
+  const html = renderToStaticMarkup(
+    <BookPublishReview
+      review={{ reviewId: 'id', kind: 'write', diff: '+a', targetPath: 'book.json' }}
+      cover="표지 없음"
+      busy={false}
+      result={{
+        outboxRef: 'book-x.json',
+        exportRef: 'book-x.bundle',
+        exportFormat: 'bundle',
+        baseSha: 'a'.repeat(40),
+        branch: 'content/book-x',
+        commit: 'b'.repeat(40),
+        targetPath: 'book.json',
+      }}
+      onClose={() => undefined}
+      onConfirm={() => undefined}
+    />,
+  );
+  expect(html).toContain('PR');
+  expect(html).toContain('자동으로 병합');
+});

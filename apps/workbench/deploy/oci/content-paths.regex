@@ -1,0 +1,4 @@
+^apps/blog/src/content/posts/[a-z0-9][a-z0-9-]*\.mdoc$
+^apps/blog/src/content/books/[^/.][^/]*\.json$
+^apps/blog/public/assets/posts/[a-z0-9][a-z0-9-]*/[A-Za-z0-9][A-Za-z0-9._-]*\.(png|jpg|jpeg|webp|avif|gif)$
+^apps/blog/public/assets/books/[^/.][^/]*\.(png|jpg|jpeg|webp|avif|gif)$

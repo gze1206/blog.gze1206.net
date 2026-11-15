@@ -23,7 +23,7 @@ const review = {
 };
 
 describe('PublishReview', () => {
-  it('shows only the patch outbox file and the format-patch human push procedure', () => {
+  it('NOR-210 AC-8: 확정 결과는 자동 전달을 알리고 손으로 칠 git 명령을 보여 주지 않는다', () => {
     const html = renderToStaticMarkup(
       <PublishReview
         review={review}
@@ -43,8 +43,10 @@ describe('PublishReview', () => {
     );
 
     expect(html).toContain('safe-publish-20260813.patch');
-    expect(html).toContain('git am');
-    expect(html).toContain('merge-base --is-ancestor');
+    expect(html).toContain('PR');
+    expect(html).toContain('자동으로 병합');
+    expect(html).not.toContain('git am');
+    expect(html).not.toContain('merge-base --is-ancestor');
     expect(html).not.toContain('https://');
     expect(html).not.toContain('/run/publish');
   });
