@@ -7,11 +7,13 @@
  */
 import { createHash } from 'node:crypto';
 
-/** Report-Only 로 실제 사이트를 확인한 뒤 `enforce` 로 바꾼다(AC-6). */
-export const CSP_MODE: CspMode = 'report-only';
+/** 2026-11-15 실제 사이트 Report-Only 확인을 마치고 강제한다(AC-6). 출처를 더할 때는 Report-Only 로 먼저 본다. */
+export const CSP_MODE: CspMode = 'enforce';
 export type CspMode = 'report-only' | 'enforce';
 
 const COMMENTS = 'https://comments.gze1206.net';
+// Cloudflare Pages 가 모든 페이지에 넣는 Web Analytics 비컨.
+const CF_BEACON = 'https://static.cloudflareinsights.com';
 const SCRIPT = /<script\b([^>]*)>([\s\S]*?)<\/script>/giu;
 const SRC = /\ssrc\s*=/iu;
 const TYPE = /\stype\s*=\s*["']?([^"'\s>]+)/iu;
@@ -33,12 +35,19 @@ export function buildCsp(hashes: readonly string[]): string {
   const directives: [string, ...string[]][] = [
     ['default-src', "'self'"],
     // Pagefind 검색이 WebAssembly 를 쓴다. 문자열 eval 은 허용하지 않는다.
-    ['script-src', "'self'", "'wasm-unsafe-eval'", COMMENTS, ...inline],
+    ['script-src', "'self'", "'wasm-unsafe-eval'", COMMENTS, CF_BEACON, ...inline],
     // 스타일 속성이 많고 Mermaid·KaTeX·Comentario 가 스타일을 주입한다.
     ['style-src', "'self'", "'unsafe-inline'", COMMENTS],
     ['img-src', "'self'", 'data:', COMMENTS, 'https://i.ytimg.com'],
-    ['font-src', "'self'", 'data:'],
-    ['connect-src', "'self'", COMMENTS, 'wss://comments.gze1206.net'],
+    // Comentario CSS 가 자기 서버의 폰트를 부른다(no-fonts 를 줘도).
+    ['font-src', "'self'", 'data:', COMMENTS],
+    [
+      'connect-src',
+      "'self'",
+      COMMENTS,
+      'wss://comments.gze1206.net',
+      'https://cloudflareinsights.com',
+    ],
     ['frame-src', 'https://www.youtube-nocookie.com'],
     ['object-src', "'none'"],
     ['base-uri', "'self'"],

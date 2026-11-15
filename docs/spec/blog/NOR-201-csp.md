@@ -17,16 +17,18 @@
 
 ```text
 default-src 'self';
-script-src 'self' 'wasm-unsafe-eval' https://comments.gze1206.net <인라인 해시들>;
+script-src 'self' 'wasm-unsafe-eval' https://comments.gze1206.net https://static.cloudflareinsights.com <인라인 해시들>;
 style-src 'self' 'unsafe-inline' https://comments.gze1206.net;
 img-src 'self' data: https://comments.gze1206.net https://i.ytimg.com;
-font-src 'self' data:;
-connect-src 'self' https://comments.gze1206.net wss://comments.gze1206.net;
+font-src 'self' data: https://comments.gze1206.net;
+connect-src 'self' https://comments.gze1206.net wss://comments.gze1206.net https://cloudflareinsights.com;
 frame-src https://www.youtube-nocookie.com;
 object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 ```
 
 `'wasm-unsafe-eval'` 은 Pagefind 검색의 WebAssembly 때문이다. 문자열 `eval` 은 허용하지 않는다.
+`cloudflareinsights` 는 Cloudflare Pages 가 모든 페이지에 넣는 Web Analytics 비컨이고, 댓글 서버의 `font-src` 는
+Comentario CSS 의 폰트다(`no-fonts` 를 줘도 불러온다). 둘 다 2026-11-15 Report-Only 실측에서 나왔다.
 
 ## 수용 기준
 
