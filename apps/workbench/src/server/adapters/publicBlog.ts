@@ -119,7 +119,8 @@ export interface SiteListing {
   readonly problems: readonly { readonly path: string; readonly message: string }[];
 }
 
-export type PublishState = 'published' | 'differs' | 'unpublished' | 'invalid';
+/** `draft` 는 `draft: true` 인 글이 블로그와 같거나 블로그에 없을 때다(NOR-227). 블로그에 보이지 않는다. */
+export type PublishState = 'published' | 'differs' | 'unpublished' | 'invalid' | 'draft';
 
 export interface PublishStatusReport {
   readonly documents: readonly {
@@ -310,8 +311,11 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       const slugs = new Set<string>();
       for (const draft of drafts) {
         let slug: string | null = null;
+        let hidden = false;
         try {
-          slug = parseDocument(draft.source).slug ?? null;
+          const parsed = parseDocument(draft.source);
+          slug = parsed.slug ?? null;
+          hidden = parsed.draft === true;
         } catch {
           slug = null;
         }
@@ -338,6 +342,8 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         } catch {
           status = 'invalid';
         }
+        // draft 글은 블로그와 같아도 공개된 것이 아니다. 다르면 다시 발행할 거리가 있으므로 그대로 둔다.
+        if (hidden && (status === 'published' || status === 'unpublished')) status = 'draft';
         documents.push({ documentId: draft.documentId, slug, status });
       }
       const postsDirectory = path.join(clone.repositoryRoot, POSTS_DIRECTORY);

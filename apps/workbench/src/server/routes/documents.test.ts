@@ -154,3 +154,20 @@ it('읽지 못한 파일을 목록과 함께 알린다', async () => {
   expect(body.problems).toHaveLength(1);
   expect(body.problems[0]?.relativePath).toBe('notes/broken.md');
 });
+
+it('NOR-227 AC-1: 목록 요약은 문서의 카테고리를 싣는다', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'workbench-api-'));
+  await mkdir(path.join(root, 'drafts'));
+  await writeFile(
+    path.join(root, 'drafts', 'post.md'),
+    `---\ntitle: 글\nkind: public-draft\ncreatedAt: 2026-11-15\nupdatedAt: 2026-11-15\npublicEligible: true\nslug: post\ncategory: Programming\n---\n본문\n`,
+  );
+  const app = createApp(new ServerFileStore(root));
+  const listed = (await (await app.request('/api/documents')).json()) as {
+    documents: Array<Record<string, unknown>>;
+    problems: unknown[];
+  };
+  expect(listed.problems).toEqual([]);
+  expect(listed.documents).toHaveLength(1);
+  expect(listed.documents[0]).toHaveProperty('category', 'Programming');
+});

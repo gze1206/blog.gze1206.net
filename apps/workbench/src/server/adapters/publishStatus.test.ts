@@ -194,3 +194,47 @@ it(
     }
   },
 );
+
+it(
+  'NOR-227 AC-2: draft: true 인 글은 블로그와 같거나 블로그에 없으면 draft 다',
+  { timeout: 30000 },
+  async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'publish-status-draft-'));
+    const source = path.join(root, 'source');
+    const workspace = path.join(root, 'workspace');
+    await mkdir(path.join(source, POSTS), { recursive: true });
+    await mkdir(path.join(workspace, 'drafts'), { recursive: true });
+    await mkdir(path.join(root, 'work'));
+    await mkdir(path.join(root, 'outbox'));
+    const hidden = (slug: string) => draft(slug).replace('tags:', 'draft: true\ntags:');
+    await writeFile(
+      path.join(source, POSTS, 'hidden.mdoc'),
+      transformPublicDraft({ source: hidden('hidden'), privateRoot: workspace, assets: [] }).source,
+    );
+    await git(source, 'init', '-b', 'main');
+    await git(source, 'config', 'user.name', 'Fixture');
+    await git(source, 'config', 'user.email', 'fixture@example.test');
+    await git(source, 'add', '.');
+    await git(source, 'commit', '-m', 'initial');
+    const server = await startHttpsGitServer(source);
+    try {
+      const adapter = new PublicBlogAdapter({
+        privateRoot: workspace,
+        remote: server.remote,
+        branch: 'main',
+        workBase: path.join(root, 'work'),
+        outboxRoot: path.join(root, 'outbox'),
+        author: { name: 'Fixture', email: 'fixture@example.test' },
+        remotePolicy: new LoopbackTestRemotePolicy(server.certificateAuthority),
+      });
+      const status = await adapter.publishStatus([
+        { documentId: id('hidden'), source: hidden('hidden') },
+        { documentId: id('hidden-new'), source: hidden('hidden-new') },
+      ]);
+      expect(status.documents.map((document) => document.status)).toEqual(['draft', 'draft']);
+    } finally {
+      await server.close();
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+);

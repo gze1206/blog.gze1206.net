@@ -11,6 +11,8 @@ const STATE_LABEL: Record<PublishState, { text: string; className: string }> = {
   differs: { text: '블로그와 다름', className: 'text-notice-foreground' },
   unpublished: { text: '미발행', className: 'text-muted' },
   invalid: { text: '검사 실패', className: 'text-danger' },
+  // draft: true 인 글. 블로그에 올라가 있어도 보이지 않는다(NOR-227).
+  draft: { text: '비공개 초안', className: 'text-muted' },
 };
 
 /** 문서 종류의 읽는 이름(NOR-221). */
