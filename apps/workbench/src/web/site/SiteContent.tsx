@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   confirmSite,
@@ -35,6 +35,45 @@ const COLLECTIONS: readonly { id: SiteCollection; label: string }[] = [
 
 type Data = Readonly<Record<string, unknown>>;
 
+function entryKey(entry: { readonly collection: string; readonly id: string }): string {
+  return `${entry.collection}/${entry.id}`;
+}
+
+/**
+ * 파일 이름 칸 (NOR-220 AC-3). 새 항목은 언제나, 기존 항목은 경력·포트폴리오만 바꿀 수 있다.
+ * 시리즈는 글이 파일 이름으로 참조하므로 바꾸지 않는다.
+ */
+export function FileNameField({
+  collection,
+  isNew,
+  value,
+  onChange,
+}: {
+  readonly collection: SiteCollection;
+  readonly isNew: boolean;
+  readonly value: string;
+  readonly onChange: (value: string) => void;
+}) {
+  if (collection === 'profile') return null;
+  if (!isNew && collection !== 'experience' && collection !== 'portfolio') return null;
+  return (
+    <label className="mb-4 block text-sm font-medium">
+      파일 이름
+      <input
+        className={inputClass}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="영문 소문자·숫자·하이픈"
+        value={value}
+      />
+      {isNew ? null : (
+        <span className="mt-1 block text-xs font-normal text-muted">
+          바꾸면 발행할 때 옛 파일을 지우고 새 이름으로 옮깁니다.
+        </span>
+      )}
+    </label>
+  );
+}
+
 function entryTitle(entry: SiteEntryData): string {
   for (const key of ['name', 'title', 'organization']) {
     const value = entry.data[key];
@@ -48,8 +87,11 @@ export function SiteList({
   selected,
   onSelect,
   onCreate,
+  pending = new Set(),
 }: {
   readonly entries: readonly SiteEntryData[];
+  /** 발행했지만 아직 main 에 반영되지 않은 항목(`컬렉션/id`). */
+  readonly pending?: ReadonlySet<string>;
   readonly selected: { readonly collection: SiteCollection; readonly id: string } | null;
   readonly onSelect: (entry: SiteEntryData) => void;
   readonly onCreate: (collection: SiteCollection) => void;
@@ -89,6 +131,9 @@ export function SiteList({
                     type="button"
                   >
                     {entryTitle(entry)}
+                    {pending.has(entryKey(entry)) ? (
+                      <span className="ml-2 text-xs text-notice-foreground">반영 대기</span>
+                    ) : null}
                   </button>
                 </li>
               ))}
@@ -374,6 +419,35 @@ interface Current {
   readonly session: number;
   /** 편집을 시작한 때의 main 원본 해시. 새 항목은 null 이다. */
   readonly baseHash: string | null;
+  /** 연 때의 id. 바꾸면 이름 바꾸기다(NOR-220). */
+  readonly originalId: string;
+  /** 발행했지만 아직 반영되지 않은 항목이면 다시 검토하지 않는다. */
+  readonly pending: boolean;
+}
+
+/** 발행했지만 main 에 아직 없는 변경(NOR-220 AC-4). */
+interface PendingChange {
+  readonly key: string;
+  readonly entry: SiteEntryData | null;
+  readonly removed: string | null;
+}
+
+/** main 목록에 아직 반영되지 않은 발행을 겹쳐 보인다. 반영된 것은 대기에서 뺀다. */
+function mergePending(
+  main: readonly SiteEntryData[],
+  pending: readonly PendingChange[],
+): { entries: SiteEntryData[]; pending: PendingChange[] } {
+  const byKey = new Map(main.map((entry) => [entryKey(entry), entry]));
+  const waiting = pending.filter((change) => {
+    const landed = change.entry
+      ? JSON.stringify(byKey.get(change.key)?.data) === JSON.stringify(change.entry.data)
+      : !byKey.has(change.key);
+    return !(landed && (change.removed === null || !byKey.has(change.removed)));
+  });
+  const hidden = new Set(waiting.flatMap((change) => [change.key, change.removed ?? '']));
+  const entries = main.filter((entry) => !hidden.has(entryKey(entry)));
+  for (const change of waiting) if (change.entry) entries.push(change.entry);
+  return { entries, pending: waiting };
 }
 
 /** 사이트 콘텐츠 편집·발행 화면 (NOR-208 AC-6·7). */
@@ -388,6 +462,24 @@ export function SiteContent() {
   const [result, setResult] = useState<PublishResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [pending, setPending] = useState<readonly PendingChange[]>([]);
+  const pendingKeys = new Set(pending.map((change) => change.key));
+
+  /** main 을 새로 읽는다. 반영되지 않은 발행은 겹쳐 보인다. */
+  const reload = useCallback(async (waiting: readonly PendingChange[]) => {
+    try {
+      const listing = await listSite();
+      const merged = mergePending(listing.entries, waiting);
+      setEntries(merged.entries);
+      setPending(merged.pending);
+      setProblems(listing.problems);
+    } catch (cause) {
+      setError(message(cause));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -440,6 +532,31 @@ export function SiteContent() {
     setError(null);
     try {
       setResult(await confirmSite(review.change, review.data.reviewId));
+      // 병합되기 전까지 목록이 main 의 옛 내용을 보이지 않게, 발행한 내용을 대기로 겹친다.
+      const change = review.change;
+      const removed =
+        'renameFrom' in change && change.renameFrom
+          ? `${change.collection}/${change.renameFrom}`
+          : null;
+      const published: PendingChange =
+        'delete' in change
+          ? { key: entryKey(change), entry: null, removed: null }
+          : {
+              key: entryKey(change),
+              removed,
+              entry: {
+                collection: change.collection,
+                id: change.id,
+                data:
+                  'renameFrom' in change && (change.data as Data)['id'] === change.renameFrom
+                    ? { ...(change.data as Data), id: change.id }
+                    : (change.data as Data),
+              },
+            };
+      const next = [...pending.filter((item) => item.key !== published.key), published];
+      setPending(next);
+      setEntries((current) => mergePending(current, next).entries);
+      setCurrent((open) => (open ? { ...open, pending: true } : open));
     } catch (cause) {
       setError(message(cause));
     } finally {
@@ -451,8 +568,20 @@ export function SiteContent() {
     <section aria-label="사이트 콘텐츠" className="flex min-h-0 flex-1">
       <div className="w-64 shrink-0 overflow-y-auto border-r border-border p-5">
         {loading ? <p className="text-sm text-muted">main 을 읽는 중입니다.</p> : null}
+        <button
+          className="mb-4 rounded border border-border px-2.5 py-1 text-xs text-muted hover:text-foreground disabled:opacity-50"
+          disabled={loading}
+          onClick={() => {
+            setLoading(true);
+            void reload(pending);
+          }}
+          type="button"
+        >
+          main 다시 읽기
+        </button>
         <SiteList
           entries={entries}
+          pending={pendingKeys}
           onCreate={(collection) =>
             open({
               collection,
@@ -460,6 +589,8 @@ export function SiteContent() {
               data: newSiteData(collection),
               isNew: true,
               baseHash: null,
+              originalId: '',
+              pending: false,
               drafts: {},
               session: nextSession(),
             })
@@ -471,6 +602,8 @@ export function SiteContent() {
               data: { ...entry.data },
               isNew: false,
               baseHash: entry.hash ?? null,
+              originalId: entry.id,
+              pending: pendingKeys.has(entryKey(entry)),
               drafts: {},
               session: nextSession(),
             })
@@ -500,16 +633,17 @@ export function SiteContent() {
                 current.isNew ? '새 항목' : current.id
               }`}
             </h2>
-            {current.isNew && current.collection !== 'profile' ? (
-              <label className="mb-4 block text-sm font-medium">
-                파일 이름
-                <input
-                  className={inputClass}
-                  onChange={(event) => open({ ...current, id: event.target.value })}
-                  placeholder="영문 소문자·숫자·하이픈"
-                  value={current.id}
-                />
-              </label>
+            <FileNameField
+              collection={current.collection}
+              isNew={current.isNew}
+              onChange={(id) => setCurrent({ ...current, id })}
+              value={current.id}
+            />
+            {current.pending ? (
+              <p className="mb-4 rounded-md bg-notice px-4 py-3 text-sm text-notice-foreground">
+                발행한 내용이 블로그에 반영되기를 기다리는 중입니다(PR 병합). 반영된 뒤 &quot;main
+                다시 읽기&quot; 를 누르면 다시 고칠 수 있습니다.
+              </p>
             ) : null}
             <SiteForm
               collection={current.collection}
@@ -520,13 +654,16 @@ export function SiteContent() {
             <div className="mt-6 flex gap-3">
               <button
                 className="rounded-md bg-foreground px-4 py-2 text-sm text-background disabled:bg-border-strong"
-                disabled={busy}
+                disabled={busy || current.pending}
                 onClick={() =>
                   void startReview({
                     collection: current.collection,
                     id: current.id,
                     data: current.data,
                     baseHash: current.baseHash,
+                    ...(!current.isNew && current.id !== current.originalId
+                      ? { renameFrom: current.originalId }
+                      : {}),
                   })
                 }
                 type="button"
@@ -536,11 +673,11 @@ export function SiteContent() {
               {!current.isNew && current.collection !== 'profile' ? (
                 <button
                   className="rounded-md px-4 py-2 text-sm text-muted hover:text-danger"
-                  disabled={busy}
+                  disabled={busy || current.pending}
                   onClick={() =>
                     void startReview({
                       collection: current.collection,
-                      id: current.id,
+                      id: current.originalId,
                       delete: true,
                       baseHash: current.baseHash,
                     })

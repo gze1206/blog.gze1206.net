@@ -453,3 +453,19 @@ test('NOR-219 AC-6: 공개 초안 편집기에서 이미지를 올리면 본문�
   );
   await expect(page.getByRole('checkbox', { name: /shot-[0-9a-f]{16}\.png/u })).toBeChecked();
 });
+
+test('NOR-220 AC-4: 발행한 항목은 반영 대기로 보이고 다시 검토할 수 없다', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '사이트 콘텐츠' }).click();
+  const site = page.getByRole('region', { name: '사이트 콘텐츠' });
+  await site.getByRole('button', { name: 'E2E 시리즈' }).click();
+  await site.getByLabel('설명').fill('대기 확인');
+  await site.getByRole('button', { name: '검토' }).click();
+  await site.getByRole('button', { name: '발행' }).click();
+  await expect(site.getByRole('status')).toContainText('발행을 맡겼습니다');
+  const list = site.getByRole('navigation', { name: '사이트 콘텐츠 목록' });
+  await expect(list).toContainText('반영 대기');
+  await list.getByRole('button', { name: /E2E 시리즈/u }).click();
+  await expect(site.getByRole('button', { name: '검토' })).toBeDisabled();
+  await expect(site.getByRole('button', { name: 'main 다시 읽기' })).toBeVisible();
+});

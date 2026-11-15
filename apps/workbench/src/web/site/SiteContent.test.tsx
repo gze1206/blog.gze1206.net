@@ -70,3 +70,23 @@ it('NOR-219 AC-5: 포트폴리오 폼은 이미지 행과 썸네일에 올리기
   expect(html).toContain('alt="이미지 1 미리보기"');
   expect(html).toContain('src="/api/site/images/a-12345678.png"');
 });
+
+it('NOR-220 AC-3: 경력·포트폴리오는 기존 항목도 파일 이름을 고치고, 시리즈는 새 항목만 고친다', async () => {
+  const mod = await import('./SiteContent.js');
+  expect(mod).toHaveProperty('FileNameField');
+  const FileNameField = Reflect.get(mod, 'FileNameField') as (props: {
+    collection: string;
+    isNew: boolean;
+    value: string;
+    onChange: (value: string) => void;
+  }) => React.ReactElement | null;
+  const render = (collection: string, isNew: boolean) =>
+    renderToStaticMarkup(
+      <FileNameField collection={collection} isNew={isNew} onChange={() => undefined} value="a" />,
+    );
+  expect(render('portfolio', false)).toContain('파일 이름');
+  expect(render('experience', false)).toContain('파일 이름');
+  expect(render('series', false)).toBe('');
+  expect(render('series', true)).toContain('파일 이름');
+  expect(render('profile', false)).toBe('');
+});

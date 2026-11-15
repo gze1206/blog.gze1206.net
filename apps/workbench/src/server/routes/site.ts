@@ -24,6 +24,7 @@ const changeSchema = z.union([
       id: idSchema,
       data: z.record(z.string(), z.unknown()),
       baseHash: baseHashSchema,
+      renameFrom: z.string().min(1).max(80).optional(),
     })
     .strict(),
   z

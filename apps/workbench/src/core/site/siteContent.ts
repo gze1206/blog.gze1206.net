@@ -19,7 +19,14 @@ export type SiteChange = (
       readonly data: Readonly<Record<string, unknown>>;
     }
   | { readonly collection: SiteCollection; readonly id: string; readonly delete: true }
-) & { readonly baseHash?: string | null };
+) & {
+  readonly baseHash?: string | null;
+  /** 이름을 바꿀 때 옛 id(NOR-220). 경력·포트폴리오에서만 쓴다. */
+  readonly renameFrom?: string;
+};
+
+/** 이름을 바꿀 수 있는 컬렉션. 시리즈는 글이 파일 이름으로 참조하므로 뺀다. */
+export const RENAMEABLE_COLLECTIONS: readonly SiteCollection[] = ['experience', 'portfolio'];
 
 export interface SiteIssue {
   /** 점으로 이은 필드 경로. 항목 전체에 대한 오류는 빈 문자열이다. */
@@ -60,6 +67,21 @@ export function validateSiteChange(change: SiteChange): SiteIssue[] {
     sitePath(change.collection, change.id);
   } catch (error) {
     return [{ path: '', message: (error as Error).message }];
+  }
+  if (change.renameFrom !== undefined) {
+    const valid =
+      RENAMEABLE_COLLECTIONS.includes(change.collection) &&
+      !('delete' in change) &&
+      change.renameFrom !== change.id &&
+      SLUG_PATTERN.test(change.renameFrom) &&
+      change.renameFrom.length <= 80;
+    if (!valid)
+      return [
+        {
+          path: 'renameFrom',
+          message: '경력·포트폴리오만 다른 영문 소문자 이름으로 바꿀 수 있습니다.',
+        },
+      ];
   }
   if ('delete' in change) {
     return SITE_COLLECTIONS[change.collection].single

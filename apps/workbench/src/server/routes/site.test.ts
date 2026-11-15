@@ -210,3 +210,27 @@ it('NOR-219 AC-2: 이미지 올리기와 읽기 경로를 연다', async () => {
   expect(read.headers.get('content-type')).toBe('image/png');
   expect((await app.request('/api/site/images/nope.png')).status).toBe(404);
 });
+
+it('NOR-220 AC-1: renameFrom 을 검토 요청과 함께 넘긴다', async () => {
+  calls.length = 0;
+  const response = await (
+    await app()
+  ).request(
+    '/api/site/review',
+    post({
+      collection: 'portfolio',
+      id: 'boss-toss',
+      renameFrom: 'blog-v4',
+      data: { title: 't', summary: 's', stack: ['a'] },
+    }),
+  );
+  expect(response.status).toBe(200);
+  expect(calls).toEqual([
+    {
+      collection: 'portfolio',
+      id: 'boss-toss',
+      renameFrom: 'blog-v4',
+      data: { title: 't', summary: 's', stack: ['a'] },
+    },
+  ]);
+});
