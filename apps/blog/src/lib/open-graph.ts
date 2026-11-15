@@ -4,6 +4,7 @@
  * **빌드타임 전용**이다. 런타임 클라이언트 fetch 는 하지 않는다(ADR 0008).
  * 어떤 실패도 예외로 전파하지 않고 `null` 을 반환한다 — 호출부는 폴백 렌더로 받는다.
  */
+import { safeFetch } from './safe-fetch';
 
 /** 외부 요청 타임아웃. 무한 대기는 CI 를 잡아먹는 가장 흔한 실패 모드다. */
 const TIMEOUT_MS = 5_000;
@@ -174,8 +175,8 @@ export async function fetchOpenGraph(url: string): Promise<OpenGraphMeta | null>
   }
 
   try {
-    const response = await fetch(url, {
-      redirect: 'follow',
+    // 작성자가 적은 URL 이다. 내부 주소로 가지 않게 safeFetch 로만 요청한다(NOR-211).
+    const { response, url: finalUrl } = await safeFetch(url, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
       headers: {
         'user-agent': USER_AGENT,
@@ -194,7 +195,7 @@ export async function fetchOpenGraph(url: string): Promise<OpenGraphMeta | null>
       return null;
     }
 
-    return parseOpenGraph(await readCapped(response, MAX_HTML_BYTES), response.url || url);
+    return parseOpenGraph(await readCapped(response, MAX_HTML_BYTES), finalUrl);
   } catch (error) {
     warn(url, error instanceof Error ? error.message : String(error));
     return null;
