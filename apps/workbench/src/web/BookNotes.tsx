@@ -26,6 +26,8 @@ const LABELS = {
     text: '옮긴 문장 (책에 있는 그대로)',
     memo: '이 구절에 대한 메모',
     memoHint: '이 문장을 두고 든 생각. 책 전체에 대한 것은 옆의 독서 메모로.',
+    // 공개 범위를 늘 보이게 둔다. 입력 칸 안의 안내는 쓰기 시작하면 사라진다(NOR-230).
+    note: '공개로 표시한 구절은 블로그 책 페이지에 나갑니다. 공개 구절이면 메모도 블로그에 함께 나갑니다.',
   },
   memos: {
     title: '독서 메모',
@@ -34,6 +36,7 @@ const LABELS = {
     text: '읽으면서 든 생각',
     memo: null,
     memoHint: null,
+    note: null,
   },
 } as const;
 
@@ -129,6 +132,7 @@ export function BookNotes({ documentId, bookId, list, items, onChanged, onError 
           {editing === 'new' ? '접기' : labels.add}
         </button>
       </div>
+      {labels.note === null ? null : <p className="mt-1 text-[11px] text-muted">{labels.note}</p>}
 
       {editing === 'new' ? (
         <Form

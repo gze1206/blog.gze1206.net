@@ -73,16 +73,20 @@ export function planBookExport(input: {
   return { kind: 'write', path, content, ...(cover === undefined ? {} : { cover }) };
 }
 
-/** `public: true` 이고 id 가 있는 구절만. 메모는 나가지 않는다(NOR-215). */
+/**
+ * `public: true` 이고 id 가 있는 구절만(NOR-215). 그 구절의 메모도 함께 나간다(NOR-230).
+ * 비공개 구절의 메모와 독서 메모(`memos`)는 나가지 않는다.
+ */
 function publicQuotes(
   record: BookDocument,
-): { id: string; text: string; page?: number }[] | undefined {
+): { id: string; text: string; page?: number; memo?: string }[] | undefined {
   const quotes = (record.excerpts ?? [])
     .filter((excerpt) => excerpt.public === true && excerpt.id !== undefined)
     .map((excerpt) => ({
       id: excerpt.id as string,
       text: excerpt.text,
       ...(excerpt.page === undefined ? {} : { page: excerpt.page }),
+      ...(excerpt.memo === undefined || excerpt.memo.trim() === '' ? {} : { memo: excerpt.memo }),
     }));
   return quotes.length === 0 ? undefined : quotes;
 }

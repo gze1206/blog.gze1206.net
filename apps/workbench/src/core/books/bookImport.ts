@@ -30,6 +30,7 @@ export function planBookImport(
               text: quote.text,
               public: true,
               ...(quote.page === undefined ? {} : { page: quote.page }),
+              ...(quote.memo === undefined ? {} : { memo: quote.memo }),
             })),
           }),
     },
