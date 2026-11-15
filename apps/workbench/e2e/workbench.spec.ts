@@ -360,3 +360,22 @@ test('NOR-206 AC-8: 다른 문서를 연 뒤 실행 취소해도 이전 문서 �
   await expect(editor).not.toContainText('첫 문서에만 있는 줄');
   await expect(page.getByRole('button', { name: '저장됨' })).toBeDisabled();
 });
+
+test('NOR-208 AC-6·7: 사이트 콘텐츠를 폼으로 고치고 검토한 뒤 발행한다', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '사이트 콘텐츠' }).click();
+  const site = page.getByRole('region', { name: '사이트 콘텐츠' });
+  await site.getByRole('button', { name: 'E2E 시리즈' }).click();
+  await site.getByLabel('설명').fill('고친 설명');
+  await site.getByRole('button', { name: '검토' }).click();
+  const diff = site.getByLabel('사이트 콘텐츠 diff');
+  await expect(diff).toContainText('+  "description": "고친 설명"');
+  await site.getByRole('button', { name: '발행' }).click();
+  await expect(site.getByRole('status')).toContainText('발행을 맡겼습니다');
+
+  await site.getByRole('button', { name: '새 경력' }).click();
+  await site.getByLabel('파일 이름').fill('new-company');
+  await site.getByLabel('회사').fill('새 회사');
+  await site.getByRole('button', { name: '검토' }).click();
+  await expect(site.getByRole('alert')).toContainText('role');
+});

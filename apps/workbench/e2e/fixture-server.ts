@@ -107,11 +107,22 @@ const seededAsset = path.join(workspaceRoot, 'assets/public', seededDraftId, 'im
 await mkdir(path.dirname(seededAsset), { recursive: true });
 await writeFile(seededAsset, 'approved-image');
 await writeFile(path.join(publicBlogRoot, 'README.md'), 'public blog fixture\n');
+// 사이트 콘텐츠(NOR-208). 워크벤치는 이 main 을 읽고 고친다.
+const siteContent = path.join(publicBlogRoot, 'apps/blog/src/content');
+await mkdir(path.join(siteContent, 'series'), { recursive: true });
+await writeFile(
+  path.join(siteContent, 'profile.json'),
+  '{\n  "name": "E2E",\n  "headline": "직함",\n  "introduction": "소개",\n  "skills": ["C#"]\n}\n',
+);
+await writeFile(
+  path.join(siteContent, 'series/e2e-series.json'),
+  '{\n  "name": "E2E 시리즈",\n  "slug": "e2e-series",\n  "description": "설명"\n}\n',
+);
 for (const args of [
   ['init', '-b', BLOG_LAYOUT.publishBranch],
   ['config', 'user.name', 'E2E Publisher'],
   ['config', 'user.email', 'publisher@example.test'],
-  ['add', 'README.md'],
+  ['add', '.'],
   ['commit', '-m', 'initial'],
 ]) {
   await run('git', ['-C', publicBlogRoot, ...args]);
