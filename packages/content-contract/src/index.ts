@@ -16,6 +16,8 @@ export {
   BOOK_FORMATS,
   BOOK_SOURCES,
   bookCoverSchema,
+  bookQuoteSchema,
+  BOOK_QUOTE_TOTAL_LIMIT,
   bookObject,
   bookSchema,
   strictBookSchema,

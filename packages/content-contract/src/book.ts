@@ -8,6 +8,18 @@ export const bookCoverSchema = z.object({
   height: z.number().int().positive(),
   source: z.string().min(1).optional(),
 });
+/** 같은 책의 공개 구절 누적 상한(글자). 맥락 없이 많은 분량을 옮기지 않는다(NOR-196, NOR-215). */
+export const BOOK_QUOTE_TOTAL_LIMIT = 2000;
+
+/** 공개 구절 하나. 워크벤치 구절 중 `public: true` 인 것만 이 모양으로 나간다(NOR-215). */
+export const bookQuoteSchema = z
+  .object({
+    id: z.string().regex(/^[0-7][0-9A-HJKMNP-TV-Z]{25}$/u),
+    text: z.string().min(1),
+    page: z.number().int().positive().optional(),
+  })
+  .strict();
+
 export const bookObject = z.object({
   title: z.string().min(1),
   authors: z.array(z.string().min(1)).min(1),
@@ -31,6 +43,15 @@ export const bookObject = z.object({
   oneLiner: z.string().min(1).optional(),
   /** 감상을 글로 썼다면 그 글의 slug. */
   relatedPost: z.string().min(1).optional(),
+  /** 공개 구절. 블로그 /books 에 보이고, 글의 bookquote 인용과 같은 원본이다. */
+  quotes: z
+    .array(bookQuoteSchema)
+    .default([])
+    .refine(
+      (quotes) =>
+        quotes.reduce((total, quote) => total + quote.text.length, 0) <= BOOK_QUOTE_TOTAL_LIMIT,
+      { message: `공개 구절은 책마다 ${BOOK_QUOTE_TOTAL_LIMIT}자까지다` },
+    ),
 });
 
 export const bookSchema = bookObject;

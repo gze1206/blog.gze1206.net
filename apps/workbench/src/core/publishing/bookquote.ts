@@ -1,6 +1,7 @@
 import { isBookId, renderBookquote } from '@gze1206/content-contract';
 import type { BookDocument } from '../document/document.js';
 import { PublicDraftValidationError } from './validate.js';
+import { BOOK_QUOTE_TOTAL_LIMIT } from '@gze1206/content-contract';
 
 export type BookLookup = (bookId: string) => BookDocument | undefined;
 export interface ExpandedQuote {
@@ -9,7 +10,7 @@ export interface ExpandedQuote {
   length: number;
   bookPublicTotal: number;
 }
-export const QUOTE_LIMITS = { single: 500, bookTotal: 2000 } as const;
+export const QUOTE_LIMITS = { single: 500, bookTotal: BOOK_QUOTE_TOTAL_LIMIT } as const;
 export function expandBookquotes(
   body: string,
   lookup: BookLookup,

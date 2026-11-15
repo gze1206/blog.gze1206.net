@@ -22,7 +22,7 @@ export function bookIdOf(record: { title: string; isbn13?: string | undefined })
 export function toPublicBook(record: BookDocument, cover?: PublicCover): PublicBook {
   const values: Record<string, unknown> = {};
   for (const key of PUBLIC_BOOK_FIELDS) {
-    const value = key === 'cover' ? cover : record[key];
+    const value = key === 'cover' ? cover : key === 'quotes' ? publicQuotes(record) : record[key];
     if (value !== undefined) values[key] = value;
   }
   return strictBookSchema.parse(values);
@@ -31,6 +31,8 @@ export function serializePublicBook(book: PublicBook): string {
   const ordered: Record<string, unknown> = {};
   for (const key of PUBLIC_BOOK_FIELDS) {
     const value = book[key];
+    // 공개 구절이 없으면 키를 쓰지 않는다. 모든 책 파일에 빈 배열이 생기지 않게 한다.
+    if (key === 'quotes' && Array.isArray(value) && value.length === 0) continue;
     if (value !== undefined)
       ordered[key] = value instanceof Date ? value.toISOString().slice(0, 10) : value;
   }
@@ -100,4 +102,18 @@ export function planBookExport(input: {
   const content = serializePublicBook(toPublicBook(input.record, info));
   if (content === input.current) return { kind: 'noop', path };
   return { kind: 'write', path, content, ...(cover === undefined ? {} : { cover }) };
+}
+
+/** `public: true` 이고 id 가 있는 구절만. 메모는 나가지 않는다(NOR-215). */
+function publicQuotes(
+  record: BookDocument,
+): { id: string; text: string; page?: number }[] | undefined {
+  const quotes = (record.excerpts ?? [])
+    .filter((excerpt) => excerpt.public === true && excerpt.id !== undefined)
+    .map((excerpt) => ({
+      id: excerpt.id as string,
+      text: excerpt.text,
+      ...(excerpt.page === undefined ? {} : { page: excerpt.page }),
+    }));
+  return quotes.length === 0 ? undefined : quotes;
 }

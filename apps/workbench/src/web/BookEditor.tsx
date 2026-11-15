@@ -17,6 +17,7 @@ import { bookSlug } from '../core/books/metadata.js';
 import { BookPublishReview } from './BookPublishReview.js';
 import { BookNotes } from './BookNotes.js';
 import { bookExportId } from './bookExportId.js';
+import { PublicQuotes } from './PublicQuotes.js';
 
 interface Props {
   readonly document: DocumentEntry;
@@ -413,6 +414,11 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
           </Field>
         </div>
 
+        <PublicQuotes
+          authors={form.authors}
+          excerpts={document.excerpts ?? []}
+          title={form.title}
+        />
         <div className="mt-5 grid grid-cols-2 gap-6 border-t border-border pt-5">
           <BookNotes
             documentId={document.id}
