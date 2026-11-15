@@ -31,6 +31,7 @@ describe('csp', () => {
       "'self'",
       "'wasm-unsafe-eval'",
       'https://comments.gze1206.net',
+      'https://static.cloudflareinsights.com',
       "'sha256-a'",
       "'sha256-b'",
     ]);
@@ -38,6 +39,9 @@ describe('csp', () => {
     expect(directives['object-src']).toEqual(["'none'"]);
     expect(directives['frame-ancestors']).toEqual(["'none'"]);
     expect(directives['connect-src']).toContain('wss://comments.gze1206.net');
+    // Cloudflare Pages 가 넣는 Web Analytics 비컨과 Comentario CSS 의 폰트 (실제 사이트 Report-Only 결과)
+    expect(directives['connect-src']).toContain('https://cloudflareinsights.com');
+    expect(directives['font-src']).toContain('https://comments.gze1206.net');
     expect(directives['frame-src']).toEqual(['https://www.youtube-nocookie.com']);
     expect(directives['img-src']).toContain('https://i.ytimg.com');
     expect(policy).not.toContain("'unsafe-eval'");
@@ -53,5 +57,11 @@ describe('csp', () => {
     expect(mod.renderHeaders("default-src 'self'", 'enforce')).toBe(
       "/*\n  Content-Security-Policy: default-src 'self'\n",
     );
+  });
+
+  it('NOR-201 AC-6: 실제 사이트 확인을 마치고 강제한다', async () => {
+    const mod = await import('./csp.ts');
+    expect(mod).toHaveProperty('CSP_MODE');
+    expect(mod.CSP_MODE).toBe('enforce');
   });
 });
