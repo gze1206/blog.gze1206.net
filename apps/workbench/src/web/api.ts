@@ -375,6 +375,16 @@ export interface BookUpdate {
   readonly relatedPost?: string;
 }
 
+/** 표지만 바꾼다 (NOR-204). 올려 둔 파일, 조회한 주소, 지우기 중 하나. */
+export type BookCoverChange =
+  | { readonly cover: string; readonly coverSource?: string }
+  | { readonly coverUrl: string; readonly coverSource?: string }
+  | { readonly remove: true };
+
+export async function changeBookCover(documentId: string, change: BookCoverChange): Promise<void> {
+  await request(`/api/books/${documentId}/cover`, { method: 'PUT', body: JSON.stringify(change) });
+}
+
 export async function updateBook(documentId: string, update: BookUpdate): Promise<void> {
   await request(`/api/books/${documentId}`, { method: 'PUT', body: JSON.stringify(update) });
 }

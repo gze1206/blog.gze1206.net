@@ -119,6 +119,15 @@ const updateSchema = z
   })
   .strict();
 
+const coverPath = z.string().regex(/^assets\/books\/[^/]+$/u, '표지 경로가 올바르지 않습니다.');
+
+/** 표지 바꾸기 요청 (NOR-204). 셋 중 하나만 온다. */
+const coverChangeSchema = z.union([
+  z.object({ cover: coverPath, coverSource: z.string().min(1).optional() }).strict(),
+  z.object({ coverUrl: z.string().url(), coverSource: z.string().min(1).optional() }).strict(),
+  z.object({ remove: z.literal(true) }).strict(),
+]);
+
 export interface BookRouteOptions {
   readonly createId?: () => string;
   readonly today: () => string;
@@ -237,6 +246,53 @@ export function createBookRoutes(
   });
 
   /** 책 한 권을 통째로 고친다. 사람이 마크다운을 짜 맞추지 않아도 되게. */
+  /**
+   * 표지만 바꾼다 (NOR-204). 등록할 때만 붙일 수 있었던 표지를 나중에 붙이거나 바꾸는 길이다.
+   * 올려 둔 파일 경로, 조회한 표지 주소(서버가 받아 저장), 지우기 셋 중 하나를 받는다.
+   */
+  routes.put('/api/books/:id/cover', async (context) => {
+    const found = await findBook(context.req.param('id'));
+    if ('error' in found) return context.json(found.error, found.status);
+    const input = coverChangeSchema.safeParse(await context.req.json().catch(() => null));
+    if (!input.success) {
+      return context.json(
+        { error: { code: 'invalid_request', message: '표지 정보가 올바르지 않습니다.' } },
+        400,
+      );
+    }
+    const change = input.data;
+    let cover: string | undefined;
+    let coverSource: string | undefined;
+    if ('cover' in change) {
+      cover = change.cover;
+      coverSource = change.coverSource;
+    } else if ('coverUrl' in change) {
+      const document = parseDocument((await store.readDocument(found.relativePath)).source);
+      const key =
+        (document.isbn13 === undefined ? null : normalizeIsbn(document.isbn13)) ??
+        options.slugify(document.title);
+      const saved = await assets.saveCover(key, change.coverUrl);
+      if (saved === null) {
+        return context.json(
+          { error: { code: 'cover_unavailable', message: '표지를 받아 오지 못했습니다.' } },
+          502,
+        );
+      }
+      cover = saved;
+      coverSource = change.coverSource;
+    }
+    await writeBook(found.relativePath, (document) => {
+      const { cover: _cover, coverSource: _source, ...rest } = document;
+      return {
+        ...rest,
+        updatedAt: options.today(),
+        ...(cover === undefined ? {} : { cover }),
+        ...(coverSource === undefined ? {} : { coverSource }),
+      };
+    });
+    return context.json({ cover: cover ?? null }, 200);
+  });
+
   routes.put('/api/books/:id', async (context) => {
     const found = await findBook(context.req.param('id'));
     if ('error' in found) return context.json(found.error, found.status);

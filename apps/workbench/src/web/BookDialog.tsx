@@ -42,6 +42,7 @@ export function BookDialog({ onClose, onCreated }: Props) {
   const [isbn, setIsbn] = useState('');
   const [title, setTitle] = useState('');
   const [authors, setAuthors] = useState('');
+  const [translators, setTranslators] = useState('');
   const [status, setStatus] = useState<BookInput['status']>('reading');
   const [format, setFormat] = useState<BookInput['format']>('ebook');
   const [source, setSource] = useState<BookInput['source']>('library');
@@ -105,6 +106,7 @@ export function BookDialog({ onClose, onCreated }: Props) {
         status,
         format,
         source,
+        ...(splitNames(translators).length === 0 ? {} : { translators: splitNames(translators) }),
         ...(isbn.trim() === '' ? {} : { isbn13: isbn.trim() }),
         ...(found?.publisher === undefined ? {} : { publisher: found.publisher }),
         ...(found?.publishedYear === undefined ? {} : { publishedYear: found.publishedYear }),
@@ -172,6 +174,14 @@ export function BookDialog({ onClose, onCreated }: Props) {
               className="mt-1 w-full rounded border border-border-strong px-2 py-1 text-sm"
               onChange={(event) => setAuthors(event.target.value)}
               value={authors}
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs text-muted">역자 (선택, 쉼표로 구분)</span>
+            <input
+              className="mt-1 w-full rounded border border-border-strong px-2 py-1 text-sm"
+              onChange={(event) => setTranslators(event.target.value)}
+              value={translators}
             />
           </label>
 
@@ -273,4 +283,11 @@ function Choice<T extends string>({
 
 function toMessage(error: unknown): string {
   return error instanceof Error ? error.message : '등록에 실패했습니다.';
+}
+
+function splitNames(value: string): string[] {
+  return value
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry !== '');
 }
