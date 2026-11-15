@@ -78,3 +78,61 @@ describe('책 공개 변환', () => {
     expect(toPublicBook(document)).toEqual(expected);
   });
 });
+
+describe('NOR-213 책 JSON 형식', () => {
+  const book = {
+    title: '니체의 초월자',
+    authors: ['프리드리히 니체'],
+    translators: ['김철'],
+    publisher: '히읏',
+    publishedYear: 2025,
+    isbn13: '9791192559100',
+    status: 'reading',
+    startedAt: '2026-08-06',
+    format: 'ebook',
+    source: 'library',
+    tags: ['철학', '고전', '독일', '근대 사상', '도덕 계보학', '권력 의지', '영원 회귀', '초인'],
+    cover: {
+      src: '/assets/books/니체의-초월자.jpg',
+      width: 400,
+      height: 600,
+      source: 'Open Library',
+    },
+  };
+
+  it('NOR-213 AC-2: 직렬화 결과는 저장소 Prettier 형식과 같다', async () => {
+    const prettier = await import('prettier');
+    const text = serializePublicBook(book as never);
+    const formatted = await prettier.format(text, {
+      parser: 'json',
+      printWidth: 100,
+      tabWidth: 2,
+      trailingComma: 'all',
+    });
+    expect(text).toBe(formatted);
+  });
+
+  it('NOR-213 AC-3: 값이 같으면 기존 Prettier 형식 파일과 같은 글자다', () => {
+    const existing = `{
+  "title": "니체의 초월자",
+  "authors": ["프리드리히 니체"],
+  "status": "reading",
+  "startedAt": "2026-08-06",
+  "format": "ebook",
+  "source": "library",
+  "tags": ["철학"]
+}
+`;
+    expect(
+      serializePublicBook({
+        title: '니체의 초월자',
+        authors: ['프리드리히 니체'],
+        status: 'reading',
+        startedAt: '2026-08-06',
+        format: 'ebook',
+        source: 'library',
+        tags: ['철학'],
+      } as never),
+    ).toBe(existing);
+  });
+});
