@@ -26,6 +26,7 @@ import {
   SITE_COLLECTION_NAMES,
   planSiteChange,
   sitePath,
+  unknownKeyIssues,
   validateSiteChange,
   type SiteChange,
   type SiteEntry,
@@ -78,9 +79,20 @@ export interface SiteReview {
   readonly kind: SitePlan['kind'];
 }
 
+/** 사이트 콘텐츠 검토를 거절하는 이유. 라우트가 400(입력)·409(main 이 바뀜)으로 돌려준다. */
+export class SiteReviewError extends Error {
+  public constructor(
+    message: string,
+    public readonly status: 400 | 409,
+    public readonly issues: readonly { readonly path: string; readonly message: string }[] = [],
+  ) {
+    super(message);
+  }
+}
+
 export interface SiteListing {
   readonly commit: string;
-  readonly entries: readonly SiteEntry[];
+  readonly entries: readonly (SiteEntry & { readonly hash: string })[];
   readonly problems: readonly { readonly path: string; readonly message: string }[];
 }
 
@@ -161,6 +173,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
   private readonly cloneManager: EphemeralCloneManager;
   private readonly outbox: PublishOutbox;
   private readonly sessions: PublishSessionRegistry;
+  private readonly sitePublishing = new Set<string>();
 
   public constructor(private readonly options: PublicBlogAdapterOptions) {
     this.cloneManager = new EphemeralCloneManager({
@@ -435,7 +448,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     const clone = await this.cloneManager.create();
     try {
       const commit = await this.cloneManager.git(clone, ['rev-parse', 'HEAD']);
-      const entries: SiteEntry[] = [];
+      const entries: (SiteEntry & { hash: string })[] = [];
       const problems: { path: string; message: string }[] = [];
       for (const collection of SITE_COLLECTION_NAMES) {
         const target = SITE_COLLECTIONS[collection];
@@ -451,7 +464,12 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
             relativePath = sitePath(collection, id);
             const source = await this.readOutput(clone.repositoryRoot, relativePath);
             if (source === null) continue;
-            entries.push({ collection, id, data: JSON.parse(source) as unknown });
+            entries.push({
+              collection,
+              id,
+              data: JSON.parse(source) as unknown,
+              hash: sha256(source),
+            });
           } catch (error) {
             problems.push({ path: relativePath, message: (error as Error).message });
           }
@@ -482,6 +500,18 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
   public async publishSite(change: SiteChange, confirm: BookConfirm): Promise<PublishResult> {
     if (confirm.confirmPublish !== true)
       throw new Error('publishing requires confirmPublish: true');
+    // 같은 검토를 동시에 두 번 확정하면, 실패한 쪽이 세션을 지우며 진행 중인 clone 까지 지운다.
+    if (this.sitePublishing.has(confirm.reviewId))
+      throw new SiteReviewError('site publish is already in progress', 409);
+    this.sitePublishing.add(confirm.reviewId);
+    try {
+      return await this.publishSiteOnce(change, confirm);
+    } finally {
+      this.sitePublishing.delete(confirm.reviewId);
+    }
+  }
+
+  private async publishSiteOnce(change: SiteChange, confirm: BookConfirm): Promise<PublishResult> {
     const session = await this.sessions.lookup(confirm.reviewId);
     const clone = {
       sessionDir: session.cloneDir,
@@ -562,12 +592,22 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
 
   private async createSiteReview(change: SiteChange, clone: EphemeralClone) {
     const issues = validateSiteChange(change);
-    if (issues.length > 0) throw new Error('invalid site content');
+    if (issues.length > 0) throw new SiteReviewError('invalid site content', 400, issues);
     const targetPath = sitePath(change.collection, change.id);
     const [current, baseHead] = await Promise.all([
       this.readOutput(clone.repositoryRoot, targetPath),
       this.cloneManager.git(clone, ['rev-parse', 'HEAD']),
     ]);
+    // 편집을 시작한 뒤 main 이 바뀌었으면 그 변경을 되돌리는 diff 가 되므로 거절한다(새 항목은 파일이 없어야 한다).
+    if (
+      change.baseHash !== undefined &&
+      (current === null ? null : sha256(current)) !== change.baseHash
+    )
+      throw new SiteReviewError('site content changed on main; reload and edit again', 409);
+    if (!('delete' in change)) {
+      const unknown = unknownKeyIssues(change.collection, change.data, current);
+      if (unknown.length > 0) throw new SiteReviewError('invalid site content', 400, unknown);
+    }
     const plan = planSiteChange(change, current);
     const diff =
       plan.kind === 'noop'
@@ -961,6 +1001,10 @@ function fingerprint(prepared: PreparedPublish, state: ReviewState): string {
     .update('\0')
     .update(JSON.stringify(state.destinationStates))
     .digest('hex');
+}
+
+function sha256(text: string): string {
+  return createHash('sha256').update(text).digest('hex');
 }
 
 function assetId(documentId: string, reference: string): string {

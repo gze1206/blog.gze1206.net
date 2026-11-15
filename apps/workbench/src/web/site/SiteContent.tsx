@@ -207,6 +207,8 @@ interface Current {
   readonly id: string;
   readonly data: Record<string, unknown>;
   readonly isNew: boolean;
+  /** 편집을 시작한 때의 main 원본 해시. 새 항목은 null 이다. */
+  readonly baseHash: string | null;
 }
 
 /** 사이트 콘텐츠 편집·발행 화면 (NOR-208 AC-6·7). */
@@ -276,7 +278,7 @@ export function SiteContent() {
         <SiteList
           entries={entries}
           onCreate={(collection) =>
-            open({ collection, id: '', data: newSiteData(collection), isNew: true })
+            open({ collection, id: '', data: newSiteData(collection), isNew: true, baseHash: null })
           }
           onSelect={(entry) =>
             open({
@@ -284,6 +286,7 @@ export function SiteContent() {
               id: entry.id,
               data: { ...entry.data },
               isNew: false,
+              baseHash: entry.hash ?? null,
             })
           }
           selected={current}
@@ -336,6 +339,7 @@ export function SiteContent() {
                     collection: current.collection,
                     id: current.id,
                     data: current.data,
+                    baseHash: current.baseHash,
                   })
                 }
                 type="button"
@@ -351,6 +355,7 @@ export function SiteContent() {
                       collection: current.collection,
                       id: current.id,
                       delete: true,
+                      baseHash: current.baseHash,
                     })
                   }
                   type="button"

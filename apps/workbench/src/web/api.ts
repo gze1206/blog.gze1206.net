@@ -498,10 +498,13 @@ export interface SiteEntryData {
   readonly collection: SiteCollection;
   readonly id: string;
   readonly data: Readonly<Record<string, unknown>>;
+  /** main 원본의 해시. 검토할 때 그대로 돌려보내 그 사이 바뀌었는지 가린다. */
+  readonly hash?: string;
 }
-export type SiteChangeInput =
+export type SiteChangeInput = (
   | { readonly collection: SiteCollection; readonly id: string; readonly data: object }
-  | { readonly collection: SiteCollection; readonly id: string; readonly delete: true };
+  | { readonly collection: SiteCollection; readonly id: string; readonly delete: true }
+) & { readonly baseHash: string | null };
 export interface SiteReviewData {
   readonly reviewId: string;
   readonly kind: 'write' | 'delete' | 'noop';

@@ -3,12 +3,41 @@ import { z } from 'zod';
 import { seriesSchema } from './series.ts';
 
 // 블로그 사이트 콘텐츠(프로필·경력·포트폴리오)의 계약. 워크벤치가 같은 스키마로 검사해 발행한다(NOR-208).
+/**
+ * 주소는 정해진 scheme 만 받는다(NOR-208 AC-8). 콘텐츠가 자동 병합되므로 `javascript:`·`data:` 를 막는다.
+ * 브라우저는 앞뒤 공백·제어 문자를 지우고 해석하므로, 그런 문자가 섞인 주소는 통째로 받지 않는다.
+ */
+function safeUrl(protocols: readonly string[]) {
+  return z.string().refine(
+    (value) => {
+      if ([...value].some((char) => char.charCodeAt(0) <= 0x20 || char.charCodeAt(0) === 0x7f))
+        return false;
+      try {
+        return protocols.includes(new URL(value).protocol);
+      } catch {
+        return false;
+      }
+    },
+    { message: `${protocols.join(', ')} 주소만 쓸 수 있습니다` },
+  );
+}
+
+const httpUrl = safeUrl(['http:', 'https:']);
+
+/** 사이트 안의 경로(`/img/...`). 다른 출처(`//host`)나 상위 경로(`..`)는 받지 않는다. */
+const sitePathSchema = z
+  .string()
+  .regex(/^\/(?!\/)[A-Za-z0-9._~\-/]+$/u, {
+    message: '/ 로 시작하는 사이트 안 경로만 쓸 수 있습니다',
+  })
+  .refine((value) => !value.split('/').includes('..'), { message: '.. 은 쓸 수 없습니다' });
+
 const portfolioLinkSchema = z
   .object({
-    repo: z.string().url().optional(),
-    demo: z.string().url().optional(),
-    video: z.string().url().optional(),
-    article: z.string().url().optional(),
+    repo: httpUrl.optional(),
+    demo: httpUrl.optional(),
+    video: httpUrl.optional(),
+    article: httpUrl.optional(),
   })
   .refine((link) => Object.values(link).some((v) => v !== undefined), {
     message: 'links 항목에 최소 1개의 URL이 필요합니다',
@@ -21,7 +50,7 @@ const portfolioLinkSchema = z
  * `alt` 는 필수다 — 작업을 설명하는 이미지가 스크린리더에게 침묵하면 그 항목은 반쪽이 된다.
  */
 const portfolioMediaSchema = z.object({
-  src: z.string().min(1),
+  src: sitePathSchema,
   alt: z.string().min(1),
   width: z.number().int().positive(),
   height: z.number().int().positive(),
@@ -42,7 +71,7 @@ export const portfolioSchema = z.object({
   links: z.array(portfolioLinkSchema).default([]),
   media: z.array(portfolioMediaSchema).default([]),
   highlights: z.array(z.string().min(1)).default([]),
-  thumbnail: z.string().optional(),
+  thumbnail: sitePathSchema.optional(),
 });
 
 export const profileSchema = z.object({
@@ -68,7 +97,7 @@ export const profileSchema = z.object({
     .array(
       z.object({
         label: z.string().min(1),
-        url: z.string().url(),
+        url: safeUrl(['http:', 'https:', 'mailto:']),
         /** 화면에 노출할 계정명 등. 없으면 라벨만 보여 준다. */
         handle: z.string().min(1).optional(),
       }),

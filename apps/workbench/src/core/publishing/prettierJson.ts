@@ -15,12 +15,13 @@ function formatJson(
   options: FormatOptions,
   prefix = '',
   inArray = false,
+  comma = false,
 ): string {
   const pad = ' '.repeat(indent);
   const inner = ' '.repeat(indent + 2);
   const fits = (text: string) =>
     !text.includes('\n') &&
-    pad.length + displayWidth(prefix) + displayWidth(text) + 1 <= PRINT_WIDTH;
+    pad.length + displayWidth(prefix) + displayWidth(text) + (comma ? 1 : 0) <= PRINT_WIDTH;
   if (Array.isArray(value)) {
     if (value.length === 0) return '[]';
     const items = value.map((item) => formatJson(item, indent + 2, options, '', true));
@@ -31,7 +32,9 @@ function formatJson(
       value.every((item) => isPlainObject(item) && Object.keys(item).length > 1);
     if (!objectList && fits(inline)) return inline;
     // 펼친 배열 안의 객체는 펼친다. 한 줄 객체는 배열 전체가 한 줄일 때만 쓴다.
-    const broken = value.map((item) => formatJson(item, indent + 2, options));
+    const broken = value.map((item, index) =>
+      formatJson(item, indent + 2, options, '', false, index < value.length - 1),
+    );
     return `[\n${broken.map((item) => `${inner}${item}`).join(',\n')}\n${pad}]`;
   }
   if (isPlainObject(value)) {
@@ -46,9 +49,10 @@ function formatJson(
       if (fits(inline)) return inline;
     }
     return `{\n${entries
-      .map(([key, item]) => {
+      .map(([key, item], index) => {
         const head = `${JSON.stringify(key)}: `;
-        return `${inner}${head}${formatJson(item, indent + 2, options, head)}`;
+        const more = index < entries.length - 1;
+        return `${inner}${head}${formatJson(item, indent + 2, options, head, false, more)}`;
       })
       .join(',\n')}\n${pad}}`;
   }
@@ -63,9 +67,12 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 const WIDE =
   /[\u1100-\u115F\u2E80-\u303E\u3041-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uA960-\uA97F\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFF60\uFFE0-\uFFE6]/u;
 
+/** Prettier(string-width)처럼 그림 문자(이모지)도 두 칸으로 센다. */
+const EMOJI = /\p{Extended_Pictographic}/u;
+
 function displayWidth(text: string): number {
   let width = 0;
-  for (const char of text) width += WIDE.test(char) ? 2 : 1;
+  for (const char of text) width += WIDE.test(char) || EMOJI.test(char) ? 2 : 1;
   return width;
 }
 

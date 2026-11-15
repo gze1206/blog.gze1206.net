@@ -9,13 +9,17 @@ import { formatPrettierJson } from '../publishing/prettierJson.js';
 
 export const SITE_COLLECTION_NAMES = Object.keys(SITE_COLLECTIONS) as SiteCollection[];
 
-export type SiteChange =
+/**
+ * `baseHash` 는 편집을 시작한 때의 원본 해시다(NOR-208 AC-9). 새 항목은 `null`, 넘기지 않으면 검사하지 않는다.
+ */
+export type SiteChange = (
   | {
       readonly collection: SiteCollection;
       readonly id: string;
       readonly data: Readonly<Record<string, unknown>>;
     }
-  | { readonly collection: SiteCollection; readonly id: string; readonly delete: true };
+  | { readonly collection: SiteCollection; readonly id: string; readonly delete: true }
+) & { readonly baseHash?: string | null };
 
 export interface SiteIssue {
   /** 점으로 이은 필드 경로. 항목 전체에 대한 오류는 빈 문자열이다. */
@@ -63,11 +67,39 @@ export function validateSiteChange(change: SiteChange): SiteIssue[] {
       : [];
   }
   const result = SITE_COLLECTIONS[change.collection].schema.safeParse(change.data);
-  if (result.success) return [];
-  return result.error.issues.map((issue) => ({
-    path: issue.path.join('.'),
-    message: issue.message,
-  }));
+  if (!result.success)
+    return result.error.issues.map((issue) => ({
+      path: issue.path.join('.'),
+      message: issue.message,
+    }));
+  // 글은 시리즈를 파일 이름으로, 주소는 slug 로 찾는다. 둘이 어긋나면 글이 시리즈에서 빠진다.
+  if (change.collection === 'series' && change.data['slug'] !== change.id)
+    return [{ path: 'slug', message: 'slug 는 파일 이름과 같아야 합니다.' }];
+  return [];
+}
+
+/**
+ * main 의 원본(`current`)에도, 스키마에도 없는 최상위 키 (NOR-208 AC-9).
+ * 이미 있던 키는 남기되, 공개 저장소에 새로 섞여 들어가는 키는 받지 않는다.
+ */
+export function unknownKeyIssues(
+  collection: SiteCollection,
+  data: Readonly<Record<string, unknown>>,
+  current: string | null,
+): SiteIssue[] {
+  const known = new Set(Object.keys(SITE_COLLECTIONS[collection].schema.shape));
+  if (current !== null) {
+    try {
+      const parsed: unknown = JSON.parse(current);
+      if (parsed !== null && typeof parsed === 'object')
+        for (const key of Object.keys(parsed)) known.add(key);
+    } catch {
+      // 읽지 못한 원본은 기존 키가 없는 것으로 본다.
+    }
+  }
+  return Object.keys(data)
+    .filter((key) => !known.has(key))
+    .map((key) => ({ path: key, message: '스키마에 없는 새 필드는 쓸 수 없습니다.' }));
 }
 
 /** 사이트 콘텐츠 JSON 을 저장소 Prettier 형식으로 쓴다. */

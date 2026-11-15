@@ -125,7 +125,8 @@ export function toFormValue(field: SiteField, data: Data): FormValue {
       return Array.isArray(value)
         ? value.map((item) => {
             const record = (item ?? {}) as Record<string, unknown>;
-            const row: Row = {};
+            // 원래 행을 함께 들고 다녀, 되돌려 쓸 때 화면에 없는 필드와 순서를 지킨다.
+            const row: Row = { [ROW_SOURCE]: JSON.stringify(record) };
             for (const column of field.columns)
               row[column.key] = record[column.key] === undefined ? '' : String(record[column.key]);
             return row;
@@ -162,10 +163,13 @@ export function applyFormValue(
     case 'rows': {
       const rows = Array.isArray(value) ? value : [];
       next[field.key] = rows.map((row) => {
-        const item: Record<string, unknown> = {};
+        const item = parseRowSource(row[ROW_SOURCE]);
         for (const column of field.columns) {
           const cell = (row[column.key] ?? '').trim();
-          if (cell === '' && column.optional) continue;
+          if (cell === '' && column.optional) {
+            Reflect.deleteProperty(item, column.key);
+            continue;
+          }
           item[column.key] = column.number && /^\d+$/u.test(cell) ? Number(cell) : cell;
         }
         return item;
@@ -185,6 +189,21 @@ export function applyFormValue(
       next[field.key] = text;
       return next;
     }
+  }
+}
+
+/** 행에 원래 객체를 담아 두는 칸. 화면에는 보이지 않는다. */
+const ROW_SOURCE = '\u0000source';
+
+function parseRowSource(source: string | undefined): Record<string, unknown> {
+  if (source === undefined) return {};
+  try {
+    const parsed: unknown = JSON.parse(source);
+    return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? { ...(parsed as Record<string, unknown>) }
+      : {};
+  } catch {
+    return {};
   }
 }
 

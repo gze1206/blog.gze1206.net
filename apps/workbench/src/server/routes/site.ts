@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { z } from 'zod';
 
-import type { PublicBlogPublisher } from '../adapters/publicBlog.js';
+import { SiteReviewError, type PublicBlogPublisher } from '../adapters/publicBlog.js';
 import {
   SITE_COLLECTION_NAMES,
   validateSiteChange,
@@ -12,21 +13,54 @@ type SitePublisher = Required<Pick<PublicBlogPublisher, 'listSite' | 'reviewSite
 
 const collectionSchema = z.enum(SITE_COLLECTION_NAMES as [string, ...string[]]);
 const idSchema = z.string().min(1).max(80);
+const baseHashSchema = z.union([z.string().regex(/^[0-9a-f]{64}$/u), z.null()]).optional();
 const changeSchema = z.union([
   z
     .object({
       collection: collectionSchema,
       id: idSchema,
       data: z.record(z.string(), z.unknown()),
+      baseHash: baseHashSchema,
     })
     .strict(),
-  z.object({ collection: collectionSchema, id: idSchema, delete: z.literal(true) }).strict(),
+  z
+    .object({
+      collection: collectionSchema,
+      id: idSchema,
+      delete: z.literal(true),
+      baseHash: baseHashSchema,
+    })
+    .strict(),
 ]);
+/** 사이트 콘텐츠 JSON 은 작다. 큰 본문은 읽기 전에 막는다(NOR-208 AC-9). */
+const MAX_BODY = 256 * 1024;
 const opaqueIdSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/u);
 
 /** 사이트 콘텐츠 편집·발행 (NOR-208). 원본은 공개 저장소의 JSON 이다. */
 export function createSiteRoutes(publisher: SitePublisher): Hono {
   const routes = new Hono();
+
+  routes.use(
+    '/api/site/*',
+    bodyLimit({
+      maxSize: MAX_BODY,
+      onError: (context) => context.json(errorBody('too_large', 'Request body is too large'), 413),
+    }),
+  );
+  routes.onError((error, context) => {
+    if (error instanceof SiteReviewError)
+      return context.json(
+        {
+          error: {
+            code: error.status === 409 ? 'conflict' : 'invalid_content',
+            message: error.message,
+            issues: error.issues,
+          },
+        },
+        error.status,
+      );
+    throw error;
+  });
 
   routes.get('/api/site', async (context) => context.json(await publisher.listSite()));
 
