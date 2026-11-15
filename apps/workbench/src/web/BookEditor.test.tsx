@@ -47,3 +47,14 @@ describe('책 편집 화면', () => {
     expect(html).toContain('역자');
   });
 });
+
+it('NOR-212 AC-2: 책 편집 화면은 파일 이름을 내보내기 id 로 쓴다', async () => {
+  const mod = await import('./bookExportId.js');
+  expect(mod).toHaveProperty('bookExportId');
+  expect(
+    mod.bookExportId({
+      label: '니체의-초월자',
+      book: { isbn13: '9791192559100', title: '바뀐 제목' },
+    }),
+  ).toBe('니체의-초월자');
+});

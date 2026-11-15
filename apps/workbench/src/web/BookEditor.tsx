@@ -16,6 +16,7 @@ import {
 import { bookSlug } from '../core/books/metadata.js';
 import { BookPublishReview } from './BookPublishReview.js';
 import { BookNotes } from './BookNotes.js';
+import { bookExportId } from './bookExportId.js';
 
 interface Props {
   readonly document: DocumentEntry;
@@ -91,7 +92,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
     }
   };
 
-  const bookId = initial?.isbn13 ?? bookSlug(initial?.title ?? '');
+  const bookId = bookExportId(document);
   const runReview = async () => {
     setBusy(true);
     try {

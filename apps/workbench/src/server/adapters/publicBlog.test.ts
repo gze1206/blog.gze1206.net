@@ -298,6 +298,25 @@ async function git(root: string, ...args: string[]): Promise<string> {
 }
 
 describe('NOR-196 책 내보내기', { timeout: 30_000 }, () => {
+  it('NOR-212 AC-1: 파일 이름과 다른 ISBN·제목을 가진 책도 파일 이름으로 내보낸다', async () => {
+    const fixture = await createFixture();
+    try {
+      await mkdir(path.join(fixture.privateRoot, 'books'), { recursive: true });
+      await writeFile(
+        path.join(fixture.privateRoot, 'books/니체의-초월자.md'),
+        '---\ntitle: 니체의 초월자 (개정)\nkind: book\ncreatedAt: 2026-01-01\nupdatedAt: 2026-01-01\nauthors: [니체]\nisbn13: "9791192559100"\nstatus: finished\nformat: paper\nsource: purchase\n---\n',
+      );
+      const adapter = fixture.adapter();
+      const pending = Reflect.apply(Reflect.get(adapter, 'reviewBook'), adapter, ['니체의-초월자']);
+      await expect(pending).resolves.toMatchObject({
+        targetPath: `${BLOG_LAYOUT.booksDir}/니체의-초월자.json`,
+        diff: expect.stringContaining('니체의 초월자 (개정)'),
+      });
+    } finally {
+      await fixture.close();
+    }
+  });
+
   it('NOR-196 AC-13: 책 내보내기 검토는 diff 를 돌려주고 확정하면 책 JSON 과 표지를 커밋한다', async () => {
     const fixture = await createFixture();
     try {

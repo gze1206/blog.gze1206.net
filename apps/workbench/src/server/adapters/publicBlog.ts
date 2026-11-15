@@ -5,7 +5,7 @@ import { BLOG_LAYOUT, isBookId } from '@gze1206/content-contract';
 
 import { parseDocument, type BookDocument } from '../../core/document/document.js';
 import { parseFrontmatter } from '../../core/document/frontmatter.js';
-import { bookIdOf, planBookExport, type BookExportPlan } from '../../core/books/publicBook.js';
+import { planBookExport, type BookExportPlan } from '../../core/books/publicBook.js';
 import { findImageMetadata, readImageSize } from '../../core/books/imageSize.js';
 import { resolveWorkspacePath } from './paths.js';
 import type { BlogPost } from '../../core/import/blogImport.js';
@@ -405,8 +405,8 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     const documentFile = await resolveWorkspacePath(this.options.privateRoot, documentPath);
     await assertRegularFile(documentFile);
     const record = parseDocument(await readFile(documentFile, 'utf8'));
-    if (record.kind !== 'book' || bookIdOf(record) !== id)
-      throw new Error('book id does not match document');
+    // 책 id 는 파일 이름이다(NOR-212). 등록 뒤 ISBN·제목을 고쳐도 바뀌지 않는다.
+    if (record.kind !== 'book') throw new Error('not a book document');
     const targetPath = `${BLOG_LAYOUT.booksDir}/${id}.json`;
     const [current, baseHead, coverStates] = await Promise.all([
       this.readOutput(clone.repositoryRoot, targetPath),
@@ -453,7 +453,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         },
       };
     }
-    let plan = planBookExport({ record, current, ...(cover === undefined ? {} : { cover }) });
+    let plan = planBookExport({ id, record, current, ...(cover === undefined ? {} : { cover }) });
     // 책 JSON 이 같아도 표지 파일이 다르거나(같은 확장자·크기의 새 이미지) 옛 표지가 남아 있으면 내보낸다.
     if (plan.kind === 'noop' && record.visible !== false && current !== null) {
       const desiredCover =
