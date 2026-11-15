@@ -4,10 +4,10 @@
 
 ## 현재 상태
 
-`v4` 브랜치는 정적 자산으로 빌드된다. 공개 사이트에는 작성 UI나 동적 작성 API가 없으며, 작성과
-비공개 보관, 공개용 변환은 private Tailnet 워크벤치가 담당한다. 아래 로컬 검증을 통과했지만,
-Cloudflare·DNS·Google·Waline 조작은 아직 실행하지 않았다. 현재 운영 중인 `main`(옛 `master`) 블로그와
-도메인/DNS에는 이 작업으로 변경을 가하지 않았다.
+2026-11-15 에 `v4` 를 `main` 에 병합하고 정본 도메인 `https://gze1206.net` 에 연결했다(NOR-199,
+[blog/launch.md](./operations/blog/launch.md)). 블로그는 정적 자산으로 빌드된다. 공개 사이트에는 작성 UI나
+동적 작성 API가 없으며, 작성과 비공개 보관, 공개용 변환은 private Tailnet 워크벤치가 담당한다.
+Google·Waline(댓글) 조작은 아직 실행하지 않았다.
 
 - `pnpm test`, `pnpm lint`, `pnpm build`, `pnpm format:check` 통과
 - 생성 HTML의 내부 링크, `404.html`, RSS, 사이트맵 XML, draft 제외 확인

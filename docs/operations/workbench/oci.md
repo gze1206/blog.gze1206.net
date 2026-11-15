@@ -79,11 +79,11 @@ systemd-analyze security workspace-backup.service
 
 ## 이미지 갱신
 
-CI 가 `main` push 나 `workbench-v*` 태그에서 arm64 이미지를 게시하고 실행 요약에 `IMAGE_DIGEST` 를
-남긴다. 기본 브랜치에 워크플로가 생기기 전(런칭 전)에는 태그로 게시한다.
+CI 가 `main` push(워크벤치·계약 패키지 변경 시)나 `workbench-v*` 태그에서 arm64 이미지를 게시하고 실행
+요약에 `IMAGE_DIGEST` 를 남긴다. 변경 없이 다시 게시할 때만 태그를 쓴다.
 
 ```sh
-git tag -a workbench-v<버전> -m "<요약>" v4 && git push origin workbench-v<버전>
+git tag -a workbench-v<버전> -m "<요약>" origin/main && git push origin workbench-v<버전>
 ```
 
 호스트에서는 `.env` 의 `IMAGE_DIGEST` 를 바꾸고 다음을 실행한다. 롤백은 이전 digest 로 같은 일을 한다.
