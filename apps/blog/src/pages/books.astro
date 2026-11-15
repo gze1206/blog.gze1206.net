@@ -105,11 +105,12 @@ const linkableTagSlugs = new Set(tagGroups.map((group) => group.slug));
                       )}
                     </ul>
                   )}
-                  {book.data.quotes.length > 0 && (
+                  {/* Pages 빌드 캐시가 예전 스키마로 파싱한 항목을 다시 쓰면 기본값([])이 비어 온다(NOR-215). */}
+                  {(book.data.quotes ?? []).length > 0 && (
                     <details class="book-card__quotes">
-                      <summary>남긴 구절 {book.data.quotes.length}</summary>
+                      <summary>남긴 구절 {(book.data.quotes ?? []).length}</summary>
                       <ul>
-                        {book.data.quotes.map((quote) => (
+                        {(book.data.quotes ?? []).map((quote) => (
                           <li class="book-card__quote" id={`${book.id}-${quote.id}`}>
                             <blockquote>{quote.text}</blockquote>
                             {quote.page !== undefined && (
