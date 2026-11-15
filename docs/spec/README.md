@@ -36,6 +36,7 @@
 | NOR-199 | [블로그 공개 배포와 도메인 (하위 프로젝트 4)](./blog/NOR-199-blog-launch.md)      | done        |
 | NOR-200 | [댓글 서버 (하위 프로젝트 5)](./blog/NOR-200-comments.md)                         | done        |
 | NOR-201 | [공개 블로그 CSP 와 댓글 서버 레이트 리밋](./blog/NOR-201-csp.md)                 | done        |
+| NOR-202 | [블로그 작은 라벨과 고정폭 한글 시인성](./blog/NOR-202-label-legibility.md)       | in-progress |
 
 ### 워크벤치 (`workbench/`)
 
