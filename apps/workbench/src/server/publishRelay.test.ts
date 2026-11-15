@@ -193,7 +193,7 @@ describe('publish-relay.sh', () => {
     const ledger = await f.ledger();
     expect(ledger).toContainEqual(expect.stringMatching(/^evil-1\.json rejected/u));
     // 경로는 허용 목록 안이지만 심볼릭 링크(120000)라서 거절한다.
-    expect(ledger).toContainEqual(expect.stringMatching(/^link-1\.json rejected mode:120000:/u));
+    expect(ledger).toContainEqual(expect.stringMatching(/^link-1\.json rejected mode$/u));
   });
 
   it('NOR-210 AC-4: 처리한 매니페스트는 다시 처리하지 않는다', async () => {
@@ -295,5 +295,24 @@ describe('publish-relay.sh', () => {
     expect(ledger).toContainEqual(expect.stringMatching(/^aaa-bad\.json rejected/u));
     expect(ledger).toContainEqual(expect.stringMatching(/^aab-array\.json rejected/u));
     expect(ledger).toContainEqual(expect.stringMatching(/^aac-link\.json rejected/u));
+  });
+
+  it('NOR-210 AC-4: 거절 사유는 고정된 코드라 경로에 개행을 넣어 ledger 를 위조할 수 없다', async () => {
+    const f = await fixture();
+    expect(existsSync(SCRIPT)).toBe(true);
+    await f.publish('forge-1', {
+      'apps/blog/src/content/posts/x.mdoc\nvictim-1.json ok content/victim-1': 'x\n',
+    });
+    await f.publish('victim-1', { 'apps/blog/src/content/posts/v.mdoc': 'v\n' });
+    expect(f.run().status).toBe(0);
+    const ledger = await f.ledger();
+    expect(
+      ledger.every((line) =>
+        /^[A-Za-z0-9._-]+\.json (ok content\/[a-z0-9._-]+|stale [a-z-]+|rejected [a-z-]+)$/u.test(
+          line,
+        ),
+      ),
+    ).toBe(true);
+    expect(f.remoteRef('content/victim-1')).not.toBeNull();
   });
 });

@@ -188,3 +188,19 @@ it('NOR-210 AC-10: 감사는 글 본문 안의 script 와 on* 속성을 찾는�
   expect(rules(page('<p>x</p><script>alert(1)</script>'))).toEqual(['content-script']);
   expect(rules(page('<img src="a.png" onerror="alert(1)">'))).toEqual(['content-script']);
 });
+
+it('NOR-210 AC-10: 글 페이지에서 본문 경계를 찾지 못하면 실패로 본다', () => {
+  const findings = auditDist({
+    files: [
+      {
+        path: 'blog/x/index.html',
+        html: '<article><div class="body"><script>alert(1)</script></div><div class="article__after"></div></article>',
+      },
+    ],
+    assets: [],
+    draftSlugs: [],
+    draftTitles: [],
+    smoke: false,
+  });
+  expect(findings.map((finding) => finding.rule)).toEqual(['content-script']);
+});
