@@ -25,6 +25,7 @@ import {
 import { OG_IMAGE_TYPE, type OgCardInput } from '../../lib/og-card';
 import { renderOgImageOrFallback } from '../../lib/og-render';
 import { buildOgTargets, type OgTarget } from '../../lib/og-targets';
+import { getVisibleBooks } from '../../lib/books';
 import { DEFAULT_DESCRIPTION, SITE_NAME } from '../../lib/site-meta';
 
 /**
@@ -34,16 +35,22 @@ import { DEFAULT_DESCRIPTION, SITE_NAME } from '../../lib/site-meta';
  * 템플릿(`kind: 'about'`)은 이미 있다.
  */
 async function listOgTargets(): Promise<OgTarget[]> {
-  const [posts, seriesById, categories, tags, seriesEntries] = await Promise.all([
+  const [posts, seriesById, categories, tags, seriesEntries, books] = await Promise.all([
     getVisiblePosts(),
     getSeriesById(),
     getCategoryGroups(),
     getTagGroups(),
     getSeriesWithPosts(),
+    getVisibleBooks(),
   ]);
 
   return buildOgTargets({
     brand: SITE_NAME,
+    books: books.map((book) => ({
+      id: book.id,
+      title: book.data.title,
+      authors: book.data.authors,
+    })),
     siteDescription: DEFAULT_DESCRIPTION,
     posts: posts.map((post) => ({
       slug: post.data.slug,

@@ -127,3 +127,12 @@ it('NOR-197 AC-5: 소개·책·포트폴리오 OG 대상을 만든다', () => {
   );
   expect(targets.find((target) => target.path === '/og/about.png')?.card.kind).toBe('about');
 });
+
+it('NOR-216 AC-4: 책 상세 페이지마다 OG 타깃이 있다', () => {
+  const targets = buildOgTargets({
+    ...input(),
+    books: [{ id: '니체의-초월자', title: '니체의 초월자', authors: ['프리드리히 니체'] }],
+  } as OgTargetsInput);
+  // 페이지 메타와 같은 인코딩된 경로다(태그와 같은 규칙).
+  expect(paths(targets)).toContain(ogImagePath(`/books/${encodeURIComponent('니체의-초월자')}`));
+});

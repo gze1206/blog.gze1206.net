@@ -18,5 +18,5 @@
 - **AC-1** 계약의 `bookSchema` 는 `quotes` 를 받고, 같은 책의 구절 누적 글자 수가 2,000자를 넘으면 거부한다. `PUBLIC_BOOK_FIELDS` 는 `quotes` 를 담고 `excerpts` 는 담지 않는다.
 - **AC-2** `toPublicBook` 은 `id` 가 있는 `public: true` 구절만 `quotes` 로 내보낸다. 메모와 비공개 구절은 내보내지 않는다.
 - **AC-3** `planBookImport` 는 `quotes` 를 공개 구절로 되돌리고, 다시 `toPublicBook` 하면 같은 `quotes` 가 된다.
-- **AC-4** 블로그 `/books` 는 책 JSON 의 구절 수만큼 구절을 보여 준다.
+- **AC-4** 블로그는 책 JSON 의 구절 수만큼 구절을 보여 준다. NOR-216 부터는 책 상세 페이지(`/books/<id>`)에 보인다.
 - **AC-5** 워크벤치 책 편집 화면은 공개 구절 목록과 누적 글자 수(`/ 2,000자`)를 보여 준다.

@@ -29,7 +29,7 @@ describe('NOR-196 AC-7: 책 인용 출처', () => {
       publisher: '출판사',
       year: '2020',
       page: 'p. 42',
-      href: '/books#%EC%B1%85',
+      href: '/books/%EC%B1%85',
     });
   });
   it('선택 출처와 책장 링크가 없을 수 있다', () => {
@@ -75,4 +75,13 @@ it('NOR-196 AC-7: figcaption 은 저자, 『제목』, 역자, 출판사, 연도
       ),
     ),
   ).toEqual(['가', '『제목』']);
+});
+
+it('NOR-216 AC-1: 책장에 있는 책의 출처 링크는 책 상세 페이지다', () => {
+  expect(
+    formatBookquoteCaption(
+      { book: '책', title: '제목', authors: ['가'], translators: [] },
+      new Set(['책']),
+    ).href,
+  ).toBe('/books/%EC%B1%85');
 });

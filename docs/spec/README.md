@@ -38,7 +38,8 @@
 | NOR-201 | [공개 블로그 CSP 와 댓글 서버 레이트 리밋](./blog/NOR-201-csp.md)                 | done        |
 | NOR-202 | [블로그 작은 라벨과 고정폭 한글 시인성](./blog/NOR-202-label-legibility.md)       | done        |
 | NOR-207 | [시리즈 진입점을 푸터에서 탐색으로](./blog/NOR-207-series-in-topics.md)           | done        |
-| NOR-211 | [블로그 빌드 중 외부 메타 조회의 SSRF 차단](./blog/NOR-211-build-fetch-ssrf.md)   | in-progress |
+| NOR-211 | [블로그 빌드 중 외부 메타 조회의 SSRF 차단](./blog/NOR-211-build-fetch-ssrf.md)   | done        |
+| NOR-216 | [읽은 책 상세 페이지](./blog/NOR-216-book-detail.md)                              | in-progress |
 
 ### 워크벤치 (`workbench/`)
 
@@ -64,7 +65,7 @@
 
 ### 공유 계약 (`contract/`)
 
-| 일감    | 제목                                                                                | 상태        |
-| ------- | ----------------------------------------------------------------------------------- | ----------- |
-| NOR-196 | [책 공개와 구절 인용 (하위 프로젝트 1b)](./contract/NOR-196-books-and-bookquote.md) | done        |
-| NOR-215 | [공개 구절을 책 페이지와 워크벤치에서 보이게](./contract/NOR-215-public-quotes.md)  | in-progress |
+| 일감    | 제목                                                                                | 상태 |
+| ------- | ----------------------------------------------------------------------------------- | ---- |
+| NOR-196 | [책 공개와 구절 인용 (하위 프로젝트 1b)](./contract/NOR-196-books-and-bookquote.md) | done |
+| NOR-215 | [공개 구절을 책 페이지와 워크벤치에서 보이게](./contract/NOR-215-public-quotes.md)  | done |

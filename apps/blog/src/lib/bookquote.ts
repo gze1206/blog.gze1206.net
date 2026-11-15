@@ -1,5 +1,5 @@
 import type { BookquoteSource } from '@gze1206/content-contract';
-import { booksPath } from './routes';
+import { bookPath } from './routes';
 
 export interface BookquoteCaption {
   authors: string;
@@ -21,7 +21,7 @@ export function formatBookquoteCaption(
     ...(source.publisher !== undefined ? { publisher: source.publisher } : {}),
     ...(source.year !== undefined ? { year: String(source.year) } : {}),
     ...(source.page !== undefined ? { page: `p. ${source.page}` } : {}),
-    ...(shelfIds.has(source.book) ? { href: booksPath(source.book) } : {}),
+    ...(shelfIds.has(source.book) ? { href: bookPath(source.book) } : {}),
   };
 }
 
