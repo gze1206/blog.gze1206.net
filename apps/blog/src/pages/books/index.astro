@@ -1,22 +1,21 @@
 ---
 /**
- * 읽은 책 (NOR-153, NOR-188).
+ * 읽은 책 (NOR-153, NOR-188, NOR-216).
  *
- * 무엇을 읽었는지는 공개하고, 밑줄과 메모는 워크벤치에 비공개로 남는다. 그래서 이 화면에는
- * 감상이 있으면 한 줄, 길게 쓴 것이 있으면 그 글로 가는 링크만 있다 — 책마다 상세 페이지를
- * 만들지 않는다. 한 줄짜리 책이 수백 개인 사이트에 페이지 수백 개를 만들 이유가 없다.
+ * 무엇을 읽었는지 책장처럼 보여 준다. 구절과 자세한 서지는 책 상세 페이지(`/books/<id>`)에 둔다
+ * (NOR-216). 카드 안에서 구절을 펼치면 좁아 읽기 어려웠다.
  *
  * 표지를 세워 책장처럼 보인다(NOR-188). 표지를 못 구한 책은 제목으로 색을 정해 그 자리에
  * 세운다 — 표지 없는 책이 흔하므로, 빈 자리가 사고처럼 보이면 안 된다.
  */
-import ListLayout from '../layouts/ListLayout.astro';
-import EmptyState from '../components/EmptyState.astro';
-import { getVisibleBooks, groupBooksByYear } from '../lib/books';
-import { bookStatusLabel, bookFormatLabel } from '../lib/book-labels';
-import { spineTitle, spineTone } from '../lib/book-shelf';
-import { getTagGroups } from '../lib/content';
-import { postPath, tagPath } from '../lib/routes';
-import { toSlug } from '../lib/slug';
+import ListLayout from '../../layouts/ListLayout.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import { getVisibleBooks, groupBooksByYear } from '../../lib/books';
+import { bookStatusLabel, bookFormatLabel } from '../../lib/book-labels';
+import { spineTitle, spineTone } from '../../lib/book-shelf';
+import { getTagGroups } from '../../lib/content';
+import { bookPath, postPath, tagPath } from '../../lib/routes';
+import { toSlug } from '../../lib/slug';
 
 const [books, tagGroups] = await Promise.all([getVisibleBooks(), getTagGroups()]);
 const groups = groupBooksByYear(books);
@@ -74,7 +73,11 @@ const linkableTagSlugs = new Set(tagGroups.map((group) => group.slug));
                 </div>
 
                 <div class="book-card__body">
-                  <h3 class="book-card__title">{book.data.title}</h3>
+                  <h3 class="book-card__title">
+                    <a href={bookPath(book.id)} class="book-card__link">
+                      {book.data.title}
+                    </a>
+                  </h3>
                   <p class="book-card__authors">
                     {book.data.authors.join(', ')}
                     {book.data.translators.length > 0 &&
@@ -105,21 +108,10 @@ const linkableTagSlugs = new Set(tagGroups.map((group) => group.slug));
                       )}
                     </ul>
                   )}
-                  {/* Pages 빌드 캐시가 예전 스키마로 파싱한 항목을 다시 쓰면 기본값([])이 비어 온다(NOR-215). */}
                   {(book.data.quotes ?? []).length > 0 && (
-                    <details class="book-card__quotes">
-                      <summary>남긴 구절 {(book.data.quotes ?? []).length}</summary>
-                      <ul>
-                        {(book.data.quotes ?? []).map((quote) => (
-                          <li class="book-card__quote" id={`${book.id}-${quote.id}`}>
-                            <blockquote>{quote.text}</blockquote>
-                            {quote.page !== undefined && (
-                              <p class="book-card__quote-page">p. {quote.page}</p>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    </details>
+                    <p class="book-card__quote-count">
+                      <a href={bookPath(book.id)}>남긴 구절 {(book.data.quotes ?? []).length}</a>
+                    </p>
                   )}
                   {book.data.relatedPost && (
                     <p class="book-card__related">

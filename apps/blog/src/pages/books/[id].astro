@@ -1,0 +1,139 @@
+---
+/**
+ * 읽은 책 상세 (NOR-216).
+ *
+ * 서지·읽은 기록·한 줄 감상과 **공개 구절**(NOR-215)을 넓게 보여 준다. 목록 카드 안에서 구절을
+ * 펼치면 좁아 읽기 어려웠다. 구절마다 `#q-<구절 id>` 앵커가 있어 글의 인용에서 바로 올 수 있다.
+ */
+import type { GetStaticPaths } from 'astro';
+import type { CollectionEntry } from 'astro:content';
+import ListLayout from '../../layouts/ListLayout.astro';
+import { getVisibleBooks } from '../../lib/books';
+import { bookStatusLabel, bookFormatLabel } from '../../lib/book-labels';
+import { spineTitle, spineTone } from '../../lib/book-shelf';
+import { booksPath, postPath } from '../../lib/routes';
+
+export const getStaticPaths = (async () =>
+  (await getVisibleBooks()).map((book) => ({
+    params: { id: book.id },
+    props: { book },
+  }))) satisfies GetStaticPaths;
+
+interface Props {
+  book: CollectionEntry<'books'>;
+}
+
+const { book } = Astro.props;
+const data = book.data;
+// Pages 빌드 캐시가 예전 스키마로 파싱한 항목을 다시 쓰면 기본값이 비어 온다(NOR-215).
+const quotes = data.quotes ?? [];
+const date = (value: Date | undefined) => value?.toISOString().slice(0, 10);
+const byline = [
+  data.authors.join(', '),
+  data.translators.length > 0 ? `${data.translators.join(', ')} 옮김` : undefined,
+]
+  .filter(Boolean)
+  .join(' · ');
+const imprint = [data.publisher, data.publishedYear?.toString()].filter(Boolean).join(', ');
+const description = data.oneLiner ?? `${byline}${imprint ? ` (${imprint})` : ''}`;
+---
+
+<ListLayout title={data.title} description={description} eyebrow="읽은 책" heading={data.title}>
+  <article class="book-detail">
+    <div class="book-detail__head">
+      <div class="book-detail__cover">
+        {
+          data.cover ? (
+            <img
+              src={data.cover.src}
+              alt={`${data.title} 표지`}
+              width={data.cover.width}
+              height={data.cover.height}
+              decoding="async"
+            />
+          ) : (
+            <div
+              class={`book-card__blank book-card__blank--t${spineTone(data.title)}`}
+              aria-hidden="true"
+            >
+              <p class="book-card__blank-title">{spineTitle(data.title)}</p>
+              <p class="book-card__blank-author">{data.authors[0]}</p>
+            </div>
+          )
+        }
+      </div>
+      <dl class="book-detail__facts">
+        <div>
+          <dt>지은이</dt>
+          <dd>{byline}</dd>
+        </div>
+        {
+          imprint && (
+            <div>
+              <dt>펴낸 곳</dt>
+              <dd>{imprint}</dd>
+            </div>
+          )
+        }
+        <div>
+          <dt>읽은 기록</dt>
+          <dd>
+            {bookStatusLabel(data.status)} · {bookFormatLabel(data.format)}
+            {data.rating && ` · ★ ${data.rating}/5`}
+          </dd>
+        </div>
+        {
+          (data.startedAt || data.finishedAt) && (
+            <div>
+              <dt>기간</dt>
+              <dd>
+                {date(data.startedAt) ?? '?'} ~ {date(data.finishedAt) ?? ''}
+              </dd>
+            </div>
+          )
+        }
+        {
+          data.tags.length > 0 && (
+            <div>
+              <dt>태그</dt>
+              <dd>{data.tags.map((tag) => `#${tag}`).join(' ')}</dd>
+            </div>
+          )
+        }
+      </dl>
+    </div>
+
+    {data.oneLiner && <p class="book-detail__one-liner">{data.oneLiner}</p>}
+    {
+      data.relatedPost && (
+        <p class="book-detail__related">
+          <a href={postPath(data.relatedPost)} class="home-text-link">
+            이 책에 대해 쓴 글 →
+          </a>
+        </p>
+      )
+    }
+
+    {
+      quotes.length > 0 && (
+        <section class="book-detail__quotes" aria-labelledby="book-quotes-heading">
+          <h2 id="book-quotes-heading" class="taxonomy-section__title">
+            남긴 구절 {quotes.length}
+          </h2>
+          <ul>
+            {quotes.map((quote) => (
+              <li class="book-quote" id={`q-${quote.id}`}>
+                <blockquote>{quote.text}</blockquote>
+                {quote.page !== undefined && <p class="book-quote__page">p. {quote.page}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    <p class="book-detail__back">
+      <a href={booksPath()} class="home-text-link">← 읽은 책 전체</a>
+    </p>
+  </article>
+</ListLayout>

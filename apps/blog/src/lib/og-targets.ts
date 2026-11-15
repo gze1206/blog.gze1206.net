@@ -27,6 +27,7 @@ import {
   seriesPath,
   tagPath,
   topicsPath,
+  bookPath,
 } from './routes';
 
 /** 만들어야 할 이미지 한 장. */
@@ -58,6 +59,12 @@ export interface OgTargetsInput {
     readonly slug: string;
     readonly label: string;
     readonly count: number;
+  }[];
+  /** 읽은 책 상세(NOR-216). */
+  readonly books?: readonly {
+    readonly id: string;
+    readonly title: string;
+    readonly authors: readonly string[];
   }[];
   readonly seriesList: readonly {
     readonly slug: string;
@@ -119,6 +126,18 @@ export function buildOgTargets(input: OgTargetsInput): OgTarget[] {
       brand,
     }),
   ];
+
+  for (const book of input.books ?? []) {
+    targets.push(
+      target(bookPath(book.id), {
+        kind: 'list',
+        title: book.title,
+        eyebrow: '읽은 책',
+        description: book.authors.join(', '),
+        brand,
+      }),
+    );
+  }
 
   // 2페이지부터. `/blog/1` 은 존재하지 않는다(`blogPagePath` 규칙).
   for (let page = 2; page <= input.blogPageCount; page++) {
