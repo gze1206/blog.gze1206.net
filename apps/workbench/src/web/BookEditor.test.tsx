@@ -78,3 +78,18 @@ it('NOR-215 AC-5: 책 편집 화면은 공개 구절 목록과 누적 글자 수
   expect(html).toContain('6 / 2,000자');
   expect(html).toContain('p. 3');
 });
+
+it('NOR-206 AC-5: 문서 편집기는 편집·나란히·미리보기 전환을 둔다', async () => {
+  const { Editor } = await import('./Editor.js');
+  const html = renderToStaticMarkup(
+    <Editor
+      dirty={false}
+      onChange={() => undefined}
+      onSave={() => undefined}
+      saving={false}
+      source="# 제목"
+      title="글"
+    />,
+  );
+  for (const label of ['편집', '나란히', '미리보기']) expect(html).toContain(`>${label}</button>`);
+});
