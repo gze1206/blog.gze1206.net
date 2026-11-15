@@ -2,9 +2,10 @@
 Description=Run the workbench publish relay every minute
 
 [Timer]
-OnBootSec=1min
-OnUnitInactiveSec=1min
-AccuracySec=10s
+# 매분 0초. OnUnitInactiveSec 는 손으로 먼저 돌린 실행과 엮이면 다음 시각이 잡히지 않았다.
+OnCalendar=*-*-* *:*:00
+AccuracySec=5s
+Persistent=false
 
 [Install]
 WantedBy=timers.target
