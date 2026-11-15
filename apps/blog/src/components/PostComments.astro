@@ -1,0 +1,72 @@
+---
+/**
+ * 글 상세 본문 뒤의 댓글 영역 (NOR-200).
+ *
+ * 첫 화면에 외부 스크립트를 넣지 않는다. 영역이 화면에 가까워지면 Comentario 스크립트를 한 번만
+ * 붙인다. 사이트 테마가 바뀌면(`themechange`) `theme` 속성을 바꾸고, Comentario 는 그 자리에서 다시 그린다.
+ */
+import { commentsEmbed } from '../lib/comments';
+
+interface Props {
+  slug: string;
+}
+
+const embed = commentsEmbed(Astro.props.slug);
+---
+
+<section
+  id="comments"
+  aria-labelledby="comments-heading"
+  class="border-border mt-12 border-t pt-8"
+  data-comments-src={embed.scriptSrc}
+>
+  <h2 id="comments-heading" class="text-body text-lg font-semibold">댓글</h2>
+  <p class="text-muted mt-1 text-sm">이름만 적으면 남길 수 있습니다. 확인한 뒤 공개합니다.</p>
+  <comentario-comments
+    class="mt-4 block"
+    page-id={embed.pageId}
+    lang={embed.lang}
+    theme="light"
+    max-level="3"
+    no-fonts="true"></comentario-comments>
+  <noscript>
+    <p class="text-muted text-sm">댓글을 보려면 JavaScript 를 켜야 합니다.</p>
+  </noscript>
+</section>
+
+<script>
+  import { commentsTheme } from '../lib/comments';
+
+  const section = document.querySelector<HTMLElement>('section#comments');
+  const tag = section?.querySelector('comentario-comments');
+
+  if (section && tag) {
+    const syncTheme = () =>
+      tag.setAttribute('theme', commentsTheme(document.documentElement.classList.contains('dark')));
+    syncTheme();
+    window.addEventListener('themechange', syncTheme);
+
+    const src = section.dataset.commentsSrc;
+    const load = () => {
+      if (!src || document.querySelector(`script[src="${src}"]`)) return;
+      const script = document.createElement('script');
+      script.src = src;
+      script.defer = true;
+      document.body.append(script);
+    };
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            observer.disconnect();
+            load();
+          }
+        },
+        { rootMargin: '600px 0px' },
+      );
+      observer.observe(section);
+    } else {
+      load();
+    }
+  }
+</script>

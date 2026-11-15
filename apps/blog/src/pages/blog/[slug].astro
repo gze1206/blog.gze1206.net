@@ -9,6 +9,7 @@ import type { GetStaticPaths } from 'astro';
 import { render } from 'astro:content';
 import PostLayout from '../../layouts/PostLayout.astro';
 import SeriesNav from '../../components/SeriesNav.astro';
+import PostComments from '../../components/PostComments.astro';
 import { getSeriesById, getVisiblePosts, type Post, type Series } from '../../lib/content';
 import { derivePostDetail } from '../../lib/post-detail';
 import { buildSeriesNav, type SeriesNavigation } from '../../lib/series-nav';
@@ -57,4 +58,5 @@ const detail = derivePostDetail({
 <PostLayout post={post} detail={detail} series={series}>
   <Content />
   <SeriesNav slot="after-content" nav={seriesNav} />
+  <PostComments slot="after-content" slug={post.data.slug} />
 </PostLayout>

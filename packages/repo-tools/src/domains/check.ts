@@ -12,6 +12,8 @@ export interface DomainCheckOptions {
   hostileProbes: readonly string[];
   /** 정본 호스트에서 200 이어야 하는 옛 사이트 경로 */
   legacyPaths: readonly string[];
+  /** 200 이어야 하는 다른 서비스 URL. 예: 댓글 서버 스크립트 (NOR-200) */
+  services: readonly string[];
 }
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
@@ -86,6 +88,12 @@ export async function checkDomains(
 
   for (const legacy of options.legacyPaths) {
     const url = new URL(legacy, canonicalOrigin).href;
+    const response = await get(url);
+    if (response !== undefined && response.status !== 200)
+      failures.push(`${url}: 200 이 아니라 ${response.status}`);
+  }
+
+  for (const url of options.services) {
     const response = await get(url);
     if (response !== undefined && response.status !== 200)
       failures.push(`${url}: 200 이 아니라 ${response.status}`);

@@ -7,6 +7,7 @@ const failures = await checkDomains(fetch, {
   probes: ['/', '/blog/new-things-on-this-blog/?ref=check-domains'],
   hostileProbes: ['//evil.example/x?next=https://evil.example'],
   legacyPaths: await readLegacyPaths(),
+  services: ['https://comments.gze1206.net/comentario.js'],
 });
 for (const failure of failures) console.error(failure);
 console.log(`check:domains: ${failures.length} failures`);
