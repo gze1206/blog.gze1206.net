@@ -146,3 +146,94 @@ it('NOR-209 AC-4: 문서 목록은 공개 초안의 발행 상태와 블로그�
   expect(html).toContain('블로그와 다름');
   expect(html).toContain('블로그에만 있는 글 2개');
 });
+
+const listDocs = [
+  {
+    id: 'p',
+    relativePath: 'drafts/p.md',
+    category: 'Programming',
+    label: 'p',
+    title: '발행한 글',
+    kind: 'public-draft',
+    updatedAt: '2026-08-12',
+  },
+  {
+    id: 'd',
+    relativePath: 'drafts/d.md',
+    label: 'd',
+    title: '쓰는 중',
+    kind: 'public-draft',
+    updatedAt: '2026-08-12',
+  },
+  {
+    id: 'm',
+    relativePath: 'inbox/m.md',
+    label: 'm',
+    title: '메모',
+    kind: 'capture',
+    updatedAt: '2026-08-12',
+  },
+] as const;
+
+it('NOR-221 AC-1: 종류를 읽는 이름으로, 공개 초안은 발행 상태로 부른다', async () => {
+  const { DocumentList } = await import('./DocumentList.js');
+  const html = renderToStaticMarkup(
+    <DocumentList
+      documents={listDocs as never}
+      onSelect={() => undefined}
+      problems={[]}
+      selectedId={null}
+      statuses={{ p: 'published', d: 'unpublished' }}
+    />,
+  );
+  expect(html).toContain('발행된 글');
+  expect(html).toContain('공개 초안');
+  expect(html).toContain('빠른 메모');
+  expect(html).not.toContain('>public-draft<');
+  const unknown = renderToStaticMarkup(
+    <DocumentList
+      documents={listDocs as never}
+      onSelect={() => undefined}
+      problems={[]}
+      selectedId={null}
+    />,
+  );
+  expect(unknown).toContain('공개 글');
+});
+
+it('NOR-221 AC-2: 문서 유형별로 묶고 블로그 글은 카테고리별로 한 번 더 묶는다', async () => {
+  const { DocumentList } = await import('./DocumentList.js');
+  const html = renderToStaticMarkup(
+    <DocumentList
+      documents={listDocs as never}
+      onSelect={() => undefined}
+      problems={[]}
+      selectedId={null}
+      statuses={{ p: 'published', d: 'unpublished' }}
+    />,
+  );
+  expect(html).toContain('aria-label="블로그 글 2개"');
+  expect(html).toContain('aria-label="Programming 1개"');
+  expect(html).toContain('aria-label="카테고리 없음 1개"');
+  expect(html).toContain('aria-label="메모 1개"');
+  expect(html).not.toContain('aria-label="책');
+  expect(html.indexOf('블로그 글')).toBeLessThan(html.indexOf('aria-label="메모'));
+});
+
+it('NOR-221 AC-3: 발행된 글의 편집기 머리는 발행 상태와 다시 발행 검토를 보인다', async () => {
+  const { Editor } = await import('./Editor.js');
+  const html = renderToStaticMarkup(
+    <Editor
+      dirty={false}
+      onChange={() => undefined}
+      onReviewPublish={() => undefined}
+      onSave={() => undefined}
+      publishState="published"
+      saving={false}
+      source="# 제목"
+      title="글"
+    />,
+  );
+  expect(html).toContain('블로그에 발행된 글');
+  expect(html).toContain('다시 발행 검토');
+});

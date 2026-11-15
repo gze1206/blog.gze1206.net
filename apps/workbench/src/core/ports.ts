@@ -22,6 +22,8 @@ export interface DocumentSummary {
   readonly updatedAt: string;
   /** 책의 표지 경로(작업 공간 기준). 책이 아니거나 표지가 없으면 없다. */
   readonly cover?: string;
+  /** 블로그 글의 카테고리. 목록을 묶는 데 쓴다(NOR-221). */
+  readonly category?: string;
 }
 
 export interface CreateFromTemplateInput {

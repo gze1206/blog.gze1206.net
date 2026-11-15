@@ -248,6 +248,10 @@ export function App() {
     }
   };
 
+  const selectedPublishState = publishStatus?.documents.find(
+    (item) => item.documentId === selected?.id,
+  )?.status;
+
   return (
     <div className="flex h-screen min-h-[38rem] bg-background text-foreground">
       {importing ? (
@@ -387,6 +391,7 @@ export function App() {
                       return uploaded.reference;
                     },
                     onError: setError,
+                    ...(selectedPublishState ? { publishState: selectedPublishState } : {}),
                   }
                 : {})}
               onToggleAsset={(id) =>
