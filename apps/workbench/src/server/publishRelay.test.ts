@@ -119,7 +119,7 @@ async function fixture() {
 }
 
 describe('publish-relay.sh', () => {
-  it('NOR-210 AC-1: bundle 산출물을 매니페스트의 커밋 그대로 content 브랜치로 push 한다', async () => {
+  it('NOR-210 AC-1: 최종 트리만으로 base 위에 커밋 하나를 만들어 content 브랜치로 push 한다', async () => {
     const f = await fixture();
     expect(existsSync(SCRIPT)).toBe(true);
     const commit = await f.publish('hello-1', {
@@ -128,7 +128,13 @@ describe('publish-relay.sh', () => {
     });
     const result = f.run();
     expect(result.status, result.stderr).toBe(0);
-    expect(f.remoteRef('content/hello-1')).toBe(commit);
+    const pushed = f.remoteRef('content/hello-1');
+    expect(pushed).not.toBeNull();
+    const at = (ref: string, format: string) =>
+      git(f.root, '--git-dir', f.origin, 'log', '-1', `--format=${format}`, ref);
+    expect(at(pushed ?? '', '%P')).toBe(f.base);
+    expect(at(pushed ?? '', '%T')).toBe(git(f.author, 'rev-parse', `${commit}^{tree}`));
+    expect(at(pushed ?? '', '%B')).not.toMatch(/TDD:/u);
     expect(await f.ledger()).toEqual([
       expect.stringMatching(/^hello-1\.json ok content\/hello-1$/u),
     ]);
@@ -186,8 +192,8 @@ describe('publish-relay.sh', () => {
     expect(f.remoteRef('content/link-1')).toBeNull();
     const ledger = await f.ledger();
     expect(ledger).toContainEqual(expect.stringMatching(/^evil-1\.json rejected/u));
-    // 경로는 허용 목록 안이지만 심볼릭 링크라서 거절한다.
-    expect(ledger).toContainEqual(expect.stringMatching(/^link-1\.json rejected link:/u));
+    // 경로는 허용 목록 안이지만 심볼릭 링크(120000)라서 거절한다.
+    expect(ledger).toContainEqual(expect.stringMatching(/^link-1\.json rejected mode:120000:/u));
   });
 
   it('NOR-210 AC-4: 처리한 매니페스트는 다시 처리하지 않는다', async () => {
@@ -210,5 +216,84 @@ describe('publish-relay.sh', () => {
     const holder = f.run();
     expect(holder.status).not.toBe(0);
     expect(f.remoteRef('content/locked-1')).toBeNull();
+  });
+
+  it('NOR-210 AC-1: 중간 커밋에 넣었다 지운 파일은 GitHub 에 가지 않는다', async () => {
+    const f = await fixture();
+    expect(existsSync(SCRIPT)).toBe(true);
+    git(f.author, 'checkout', '-q', '-B', 'content/sneaky-1', f.base);
+    await mkdir(path.join(f.author, '.github/workflows'), { recursive: true });
+    await writeFile(path.join(f.author, '.github/workflows/evil.yml'), 'on: push\n');
+    git(f.author, 'add', '.');
+    git(f.author, 'commit', '-q', '-m', 'evil\n\nTDD: red');
+    git(f.author, 'rm', '-q', '.github/workflows/evil.yml');
+    await writeFile(path.join(f.author, 'apps/blog/src/content/posts/s.mdoc'), 's\n');
+    git(f.author, 'add', '.');
+    git(f.author, 'commit', '-q', '-m', 'cover');
+    const tip = git(f.author, 'rev-parse', 'HEAD');
+    const outbox = path.join(f.root, 'outbox');
+    git(
+      f.author,
+      'bundle',
+      'create',
+      '-q',
+      path.join(outbox, 'sneaky-1.bundle'),
+      `${f.base}..content/sneaky-1`,
+    );
+    await writeFile(
+      path.join(outbox, 'sneaky-1.json'),
+      JSON.stringify({
+        baseSha: f.base,
+        branch: 'content/sneaky-1',
+        commit: tip,
+        exportFormat: 'bundle',
+        exportRef: 'sneaky-1.bundle',
+      }),
+    );
+    expect(f.run().status).toBe(0);
+    const pushed = f.remoteRef('content/sneaky-1');
+    expect(pushed).not.toBeNull();
+    const history = git(
+      f.root,
+      '--git-dir',
+      f.origin,
+      'log',
+      '--format=%H',
+      `${f.base}..${pushed ?? ''}`,
+    );
+    expect(history.split('\n')).toHaveLength(1);
+    expect(git(f.root, '--git-dir', f.origin, 'log', '--all', '--format=%B')).not.toMatch(/TDD:/u);
+  });
+
+  it('NOR-210 AC-3: .md 글과 SVG·JS 자산은 받지 않는다', async () => {
+    const f = await fixture();
+    expect(existsSync(SCRIPT)).toBe(true);
+    await f.publish('md-1', { 'apps/blog/src/content/posts/raw.md': '<script>x</script>\n' });
+    await f.publish('svg-1', { 'apps/blog/public/assets/posts/a/x.svg': '<svg/>' });
+    await f.publish('js-1', { 'apps/blog/public/assets/posts/a/x.js': 'alert(1)' });
+    expect(f.run().status).toBe(0);
+    for (const name of ['md-1', 'svg-1', 'js-1']) expect(f.remoteRef(`content/${name}`)).toBeNull();
+    const ledger = await f.ledger();
+    for (const name of ['md-1', 'svg-1', 'js-1'])
+      expect(ledger).toContainEqual(
+        expect.stringMatching(new RegExp(`^${name}\\.json rejected`, 'u')),
+      );
+  });
+
+  it('NOR-210 AC-4: 잘못된 매니페스트는 거절로 남기고 다음 발행을 처리한다', async () => {
+    const f = await fixture();
+    expect(existsSync(SCRIPT)).toBe(true);
+    const outbox = path.join(f.root, 'outbox');
+    await writeFile(path.join(outbox, 'aaa-bad.json'), '{not json');
+    await writeFile(path.join(outbox, 'aab-array.json'), '[]');
+    await symlink('/etc/hosts', path.join(outbox, 'aac-link.json'));
+    await f.publish('zzz-good', { 'apps/blog/src/content/posts/g.mdoc': 'g\n' });
+    const result = f.run();
+    expect(result.status, result.stderr).toBe(0);
+    expect(f.remoteRef('content/zzz-good')).not.toBeNull();
+    const ledger = await f.ledger();
+    expect(ledger).toContainEqual(expect.stringMatching(/^aaa-bad\.json rejected/u));
+    expect(ledger).toContainEqual(expect.stringMatching(/^aab-array\.json rejected/u));
+    expect(ledger).toContainEqual(expect.stringMatching(/^aac-link\.json rejected/u));
   });
 });
