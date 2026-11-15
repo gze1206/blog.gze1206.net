@@ -71,9 +71,9 @@ it(
     const f = await fixture();
     try {
       await expect(f.adapter['reviewSite']?.(renamed)).resolves.toMatchObject({
-      targetPath: `${PORTFOLIO}/boss-toss.json`,
-    });
-    const review = (await f.adapter['reviewSite']?.(renamed)) as {
+        targetPath: `${PORTFOLIO}/boss-toss.json`,
+      });
+      const review = (await f.adapter['reviewSite']?.(renamed)) as {
         reviewId: string;
         diff: string;
         targetPath: string;

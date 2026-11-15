@@ -657,6 +657,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         plan,
         fingerprint: contentFingerprint,
         assets,
+        removePath,
       } = await this.createSiteReview(change, clone);
       // 검토한 입력·base 와 다르면 여기서 멈춘다.
       await this.sessions.get(confirm.reviewId, contentFingerprint, review.baseHead);
@@ -669,6 +670,10 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         await this.writeOutput(clone.repositoryRoot, plan.path, plan.content);
         await chmod(path.join(clone.repositoryRoot, plan.path), 0o644);
       }
+      if (removePath !== null) {
+        await assertNoSymlinkAncestors(clone.repositoryRoot, removePath);
+        await rm(path.join(clone.repositoryRoot, removePath));
+      }
       for (const asset of assets) {
         await this.writeApprovedAsset(clone.repositoryRoot, asset.bytes, asset.relativePath);
         await chmod(path.join(clone.repositoryRoot, asset.relativePath), 0o644);
@@ -678,6 +683,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         '-A',
         '--',
         plan.path,
+        ...(removePath === null ? [] : [removePath]),
         ...assets.map((asset) => asset.relativePath),
       ]);
       const message =
@@ -847,20 +853,37 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     return { assets, issues, warnings };
   }
 
-  private async createSiteReview(change: SiteChange, clone: EphemeralClone) {
-    const issues = validateSiteChange(change);
+  private async createSiteReview(requested: SiteChange, clone: EphemeralClone) {
+    const issues = validateSiteChange(requested);
     if (issues.length > 0) throw new SiteReviewError('invalid site content', 400, issues);
-    const targetPath = sitePath(change.collection, change.id);
+    const targetPath = sitePath(requested.collection, requested.id);
+    // 이름을 바꾸면(NOR-220) 옛 파일이 원본이다. 기준 해시도 옛 파일과 견준다.
+    const sourcePath =
+      requested.renameFrom === undefined
+        ? targetPath
+        : sitePath(requested.collection, requested.renameFrom);
     const [current, baseHead] = await Promise.all([
-      this.readOutput(clone.repositoryRoot, targetPath),
+      this.readOutput(clone.repositoryRoot, sourcePath),
       this.cloneManager.git(clone, ['rev-parse', 'HEAD']),
     ]);
     // 편집을 시작한 뒤 main 이 바뀌었으면 그 변경을 되돌리는 diff 가 되므로 거절한다(새 항목은 파일이 없어야 한다).
     if (
-      change.baseHash !== undefined &&
-      (current === null ? null : sha256(current)) !== change.baseHash
+      requested.baseHash !== undefined &&
+      (current === null ? null : sha256(current)) !== requested.baseHash
     )
       throw new SiteReviewError('site content changed on main; reload and edit again', 409);
+    let change = requested;
+    let removePath: string | null = null;
+    if (requested.renameFrom !== undefined && !('delete' in requested)) {
+      if (current === null)
+        throw new SiteReviewError('site content to rename was not found on main', 409);
+      if ((await this.readOutput(clone.repositoryRoot, targetPath)) !== null)
+        throw new SiteReviewError(`site content already exists: ${requested.id}`, 409);
+      removePath = sourcePath;
+      // JSON 안의 id 가 옛 이름이면 새 이름으로 맞춘다.
+      if (requested.data['id'] === requested.renameFrom)
+        change = { ...requested, data: { ...requested.data, id: requested.id } };
+    }
     if (!('delete' in change)) {
       const unknown = unknownKeyIssues(change.collection, change.data, current);
       if (unknown.length > 0) throw new SiteReviewError('invalid site content', 400, unknown);
@@ -868,14 +891,16 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     const images = await this.siteImages(change, clone.repositoryRoot);
     if (images.issues.length > 0)
       throw new SiteReviewError('invalid site content', 400, images.issues);
-    let plan = planSiteChange(change, current);
+    let plan = planSiteChange(change, removePath === null ? current : null);
     // JSON 이 같아도 이미지가 새로 들어가면 내보낸다.
     if (plan.kind === 'noop' && images.assets.length > 0 && current !== null)
       plan = { kind: 'write', path: plan.path, content: current };
     let diff =
-      plan.kind === 'noop' || current === (plan.kind === 'write' ? plan.content : null)
-        ? ''
-        : unifiedDiff(targetPath, current, plan.kind === 'write' ? plan.content : null);
+      removePath !== null && plan.kind === 'write'
+        ? unifiedDiff(removePath, current, null) + unifiedDiff(targetPath, null, plan.content)
+        : plan.kind === 'noop' || current === (plan.kind === 'write' ? plan.content : null)
+          ? ''
+          : unifiedDiff(targetPath, current, plan.kind === 'write' ? plan.content : null);
     for (const asset of images.assets)
       diff += `이미지 추가/교체: ${asset.relativePath} (${asset.width}×${asset.height}, ${Math.ceil(asset.bytes.length / 1024)} KB)\n`;
     const review = {
@@ -887,14 +912,14 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       kind: plan.kind,
     };
     const fingerprint = createHash('sha256')
-      .update(JSON.stringify({ change, plan, review }))
+      .update(JSON.stringify({ change, plan, review, removePath }))
       .update(
         images.assets
           .map((asset) => createHash('sha256').update(asset.bytes).digest('hex'))
           .join(','),
       )
       .digest('hex');
-    return { review, plan, fingerprint, assets: images.assets };
+    return { review, plan, fingerprint, assets: images.assets, removePath };
   }
 
   private async createBookReview(id: string, clone: EphemeralClone) {

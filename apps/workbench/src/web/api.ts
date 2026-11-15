@@ -502,7 +502,13 @@ export interface SiteEntryData {
   readonly hash?: string;
 }
 export type SiteChangeInput = (
-  | { readonly collection: SiteCollection; readonly id: string; readonly data: object }
+  | {
+      readonly collection: SiteCollection;
+      readonly id: string;
+      readonly data: object;
+      /** 이름을 바꿀 때 옛 id(NOR-220). */
+      readonly renameFrom?: string;
+    }
   | { readonly collection: SiteCollection; readonly id: string; readonly delete: true }
 ) & { readonly baseHash: string | null };
 export interface SiteReviewData {
