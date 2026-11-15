@@ -15,6 +15,7 @@ import { bookStatusLabel, bookFormatLabel } from '../../lib/book-labels';
 import { coverLoading, spineTitle, spineTone } from '../../lib/book-shelf';
 import { getTagGroups } from '../../lib/content';
 import { bookPath, postPath, tagPath } from '../../lib/routes';
+import { coverImage } from '../../lib/book-cover';
 import { toSlug } from '../../lib/slug';
 
 const [books, tagGroups] = await Promise.all([getVisibleBooks(), getTagGroups()]);
@@ -58,10 +59,8 @@ const linkableTagSlugs = new Set(tagGroups.map((group) => group.slug));
                   {book.data.cover ? (
                     <img
                       class="book-card__cover"
-                      src={book.data.cover.src}
+                      {...coverImage(book.data.cover, '(max-width: 40rem) 45vw, 12rem')}
                       alt={`${book.data.title} 표지`}
-                      width={book.data.cover.width}
-                      height={book.data.cover.height}
                       {...coverLoading(coverIndex.get(book.id) ?? Number.POSITIVE_INFINITY)}
                       decoding="async"
                     />

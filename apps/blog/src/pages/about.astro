@@ -19,6 +19,7 @@ import { spineTitle, spineTone } from '../lib/book-shelf';
 import { getVisibleBooks } from '../lib/books';
 import { getProfile } from '../lib/content';
 import { getVisibleExperiences } from '../lib/experience';
+import { coverImage } from '../lib/book-cover';
 import { booksPath, portfolioPath } from '../lib/routes';
 
 const [profile, experiences, books] = await Promise.all([
@@ -69,10 +70,8 @@ const paragraphs = profile.data.about.length > 0 ? profile.data.about : [profile
                     {book.data.cover ? (
                       <img
                         class="about__reading-cover"
-                        src={book.data.cover.src}
+                        {...coverImage(book.data.cover, '2.25rem')}
                         alt=""
-                        width={book.data.cover.width}
-                        height={book.data.cover.height}
                         loading="lazy"
                         decoding="async"
                       />
