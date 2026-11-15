@@ -26,4 +26,5 @@ main 은 ruleset(필수 체크, 강제 push·삭제 금지)이 지키므로 depl
 ### GitHub
 
 - **AC-6** (manual) `content/**` push 에서 CI 의 필수 체크(verify, e2e, spec-check, tdd-evidence)가 돈다.
+- **AC-8** 발행 확정 버튼은 "발행" 이고, 결과는 손으로 칠 git 명령 대신 자동 전달(릴레이가 PR 을 만들고 CI 통과 시 자동 병합)을 알린다. 책 내보내기 결과도 같은 안내를 보여 준다.
 - **AC-7** (manual) `content/**` push 에서 main 으로 가는 PR 을 만든다. 바뀐 경로가 모두 허용 목록(main 의 것) 안이면 자동 병합(merge commit)을 켠다. 병합하면 브랜치를 지운다.
