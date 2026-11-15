@@ -225,3 +225,31 @@ test('NOR-196 AC-16: 공개 구절을 글 발행 검토에서 펼친다', async 
   await page.getByRole('button', { name: '발행 검토' }).click();
   await expect(page.getByLabel('통합 diff')).toContainText('{% bookquote book=');
 });
+
+test('NOR-203 AC-5: 테마 전환은 html.dark 를 바꾸고 새로고침 뒤에도 유지된다', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/day/2026-08-12');
+  const html = page.locator('html');
+  await expect(html).not.toHaveClass(/\bdark\b/u);
+  const toDark = page.getByRole('button', { name: /다크 모드로 전환/u });
+  await expect(toDark).toBeVisible();
+  await toDark.click();
+  await expect(html).toHaveClass(/\bdark\b/u);
+  await page.reload();
+  await expect(html).toHaveClass(/\bdark\b/u);
+  await page.getByRole('button', { name: /라이트 모드로 전환/u }).click();
+  await expect(html).not.toHaveClass(/\bdark\b/u);
+});
+
+test('NOR-203 AC-6: 추가 버튼은 한 줄이고 본문 글꼴은 Pretendard 다', async ({ page }) => {
+  await page.goto('/day/2026-08-12');
+  const add = page.getByRole('button', { name: '추가', exact: true });
+  await expect(add).toBeVisible();
+  const { height, lineHeight } = await add.evaluate((el) => ({
+    height: el.getBoundingClientRect().height,
+    lineHeight: parseFloat(getComputedStyle(el).lineHeight),
+  }));
+  expect(height).toBeLessThan(lineHeight * 2 + 16);
+  const family = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
+  expect(family).toMatch(/^"?Pretendard/u);
+});

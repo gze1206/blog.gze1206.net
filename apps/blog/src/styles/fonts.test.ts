@@ -12,3 +12,9 @@ it('NOR-202 AC-1: 고정폭 스택은 generic monospace 앞에 한글 산세리�
   expect(families.indexOf('Malgun Gothic')).toBeGreaterThan(-1);
   expect(families.indexOf('Malgun Gothic')).toBeLessThan(generic);
 });
+
+it('NOR-203 AC-2: 블로그 스타일은 공유 토큰을 가져다 쓰고 --theme 값을 다시 정의하지 않는다', async () => {
+  const css = await readFile(new URL('./global.css', import.meta.url), 'utf8');
+  expect(css).toContain("@import '@gze1206/theme/tokens.css'");
+  expect(css).not.toMatch(/--theme-[a-z-]+:\s*#/u);
+});
