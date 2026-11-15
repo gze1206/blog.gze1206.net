@@ -10,10 +10,16 @@
  * 대신 채운다.
  */
 import { getPortfolio } from '../lib/portfolio';
+import { portfolioCover } from '../lib/portfolio-cover';
 import ListLayout from '../layouts/ListLayout.astro';
 import EmptyState from '../components/EmptyState.astro';
 
 const entries = await getPortfolio();
+const covers = new Map(
+  await Promise.all(
+    entries.map(async (entry) => [entry.id, await portfolioCover(entry.data)] as const),
+  ),
+);
 
 /** 링크 종류를 화면 문구로 바꾼다. 키 이름(`repo`)을 그대로 내보내면 방문자에게는 은어다. */
 const LINK_LABELS: Record<string, string> = {
@@ -39,6 +45,16 @@ const LINK_LABELS: Record<string, string> = {
         {entries.map((entry) => (
           <li>
             <article class="portfolio-card">
+              {covers.get(entry.id) && (
+                <img
+                  class="portfolio-card__image"
+                  src={covers.get(entry.id)?.src}
+                  alt={covers.get(entry.id)?.alt}
+                  width={covers.get(entry.id)?.width}
+                  height={covers.get(entry.id)?.height}
+                  decoding="async"
+                />
+              )}
               {entry.data.media.map((image) => (
                 <img
                   class="portfolio-card__image"

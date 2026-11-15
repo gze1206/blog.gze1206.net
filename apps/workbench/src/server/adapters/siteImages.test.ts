@@ -73,14 +73,14 @@ it('NOR-219 AC-2: 이미지를 저장하고 경로·크기를 돌려준다', { t
       width: number;
       height: number;
     };
-    expect(saved.src).toMatch(/^\/img\/portfolio\/origin-[0-9a-f]{16}\.png$/u);
+    expect(saved.src).toMatch(/^\/img\/portfolio\/origin-[0-9a-f]{16}\.webp$/u);
     expect(saved).toMatchObject({ width: 2, height: 3 });
     const read = (await f.adapter['readSiteImage']?.(saved.src.split('/').pop())) as {
       bytes: Buffer;
       contentType: string;
     };
-    expect(read.contentType).toBe('image/png');
-    expect(Buffer.compare(read.bytes, PNG)).toBe(0);
+    expect(read.contentType).toBe('image/webp');
+    expect(read.bytes.subarray(8, 12).toString('latin1')).toBe('WEBP');
     await expect(f.adapter['saveSiteImage']?.(Buffer.from('not image'), 'a.png')).rejects.toThrow();
     await expect(
       f.adapter['saveSiteImage']?.(Buffer.alloc(6 * 1024 * 1024, 1), 'big.png'),
@@ -141,7 +141,7 @@ it(
         reference: string;
         id: string;
       };
-      expect(saved.reference).toMatch(/^shot-[0-9a-f]{16}\.png$/u);
+      expect(saved.reference).toMatch(/^shot-[0-9a-f]{16}\.webp$/u);
       const assets = (await f.adapter['listAssets']?.(documentId)) as {
         id: string;
         reference: string;
@@ -171,3 +171,41 @@ it('NOR-219 AC-7: 끝이 잘린 이미지는 받지 않는다', { timeout: 30000
     await f.close();
   }
 });
+
+it(
+  'NOR-222 AC-1 · NOR-222 AC-2: 큰 이미지는 줄이고 메타데이터 없는 WebP 로 저장한다',
+  { timeout: 30000 },
+  async () => {
+    const sharp = (await import('sharp')).default;
+    const big = await sharp({
+      create: { width: 2400, height: 300, channels: 3, background: '#336699' },
+    })
+      .png()
+      .withExif({ IFD0: { Copyright: 'secret-author' } })
+      .toBuffer();
+    const f = await fixture();
+    try {
+      const saved = (await f.adapter['saveSiteImage']?.(big, 'wide.png')) as {
+        src: string;
+        width: number;
+        height: number;
+      };
+      expect(saved).toMatchObject({ width: 1200, height: 150 });
+      expect(saved.src).toMatch(/\.webp$/u);
+      const read = (await f.adapter['readSiteImage']?.(saved.src.split('/').pop())) as {
+        bytes: Buffer;
+      };
+      expect(read.bytes.includes(Buffer.from('secret-author'))).toBe(false);
+      const meta = await sharp(read.bytes).metadata();
+      expect(meta).toMatchObject({ format: 'webp', width: 1200, height: 150 });
+      expect(meta.exif).toBeUndefined();
+
+      const body = (await f.adapter['savePublicAsset']?.('b'.repeat(43), big, 'wide.png')) as {
+        reference: string;
+      };
+      expect(body.reference).toMatch(/\.webp$/u);
+    } finally {
+      await f.close();
+    }
+  },
+);

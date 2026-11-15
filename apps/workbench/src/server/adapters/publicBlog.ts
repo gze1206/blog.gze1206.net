@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { chmod, lstat, mkdir, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import sharp from 'sharp';
 import { BLOG_LAYOUT, SITE_COLLECTIONS, isBookId } from '@gze1206/content-contract';
 
 import { parseDocument, type BookDocument } from '../../core/document/document.js';
@@ -746,14 +747,15 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
    * 붙여 같은 이미지는 같은 이름이 되게 한다. 블로그로는 발행할 때 함께 나간다.
    */
   public async saveSiteImage(bytes: Uint8Array, originalName: string): Promise<SiteImage> {
-    const { name, size } = imageFileName(bytes, originalName);
+    const image = await optimizeImage(bytes, originalName, PORTFOLIO_IMAGE_WIDTH);
+    const { name } = image;
     const relativePath = `${SITE_IMAGE_DIRECTORY}/${name}`;
     await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
     const target = await resolveWorkspacePath(this.options.privateRoot, relativePath);
     await mkdir(path.dirname(target), { recursive: true });
     await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
-    await writeHashedFile(target, bytes);
-    return { src: `${SITE_IMAGE_PREFIX}${name}`, width: size.width, height: size.height };
+    await writeHashedFile(target, image.bytes);
+    return { src: `${SITE_IMAGE_PREFIX}${name}`, width: image.width, height: image.height };
   }
 
   /**
@@ -767,14 +769,15 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
   ): Promise<{ readonly id: string; readonly reference: string; readonly size: number }> {
     if (!/^[A-Za-z0-9_-]{43}$/u.test(documentId))
       throw new Error('invalid document id for public assets');
-    const { name } = imageFileName(bytes, originalName);
+    const image = await optimizeImage(bytes, originalName, POST_IMAGE_WIDTH);
+    const { name } = image;
     const relativePath = `assets/public/${documentId}/${name}`;
     await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
     const target = await resolveWorkspacePath(this.options.privateRoot, relativePath);
     await mkdir(path.dirname(target), { recursive: true });
     await assertNoSymlinkAncestors(this.options.privateRoot, relativePath);
-    await writeHashedFile(target, bytes);
-    return { id: assetId(documentId, name), reference: name, size: bytes.length };
+    await writeHashedFile(target, image.bytes);
+    return { id: assetId(documentId, name), reference: name, size: image.bytes.length };
   }
 
   /** 올려 둔 포트폴리오 이미지를 읽는다(미리보기). 이 디렉터리의 파일 하나만 내준다. */
@@ -1333,19 +1336,34 @@ function fingerprint(prepared: PreparedPublish, state: ReviewState): string {
     .digest('hex');
 }
 
+/** 포트폴리오 이미지·썸네일과 글 본문 이미지의 최대 가로 크기(NOR-222). */
+const PORTFOLIO_IMAGE_WIDTH = 1200;
+const POST_IMAGE_WIDTH = 1600;
+
 /**
- * 올린 이미지의 파일 이름 (NOR-219). 형식은 내용으로 판별하고(JPEG·PNG·WebP, 5MB 까지), 원래 이름의 영문·숫자
- * 조각에 내용 해시 8자를 붙인다. 같은 이미지는 같은 이름이 된다.
+ * 올린 이미지를 블로그에 맞게 바꾼다 (NOR-219, NOR-222). 형식을 먼저 내용으로 거른 뒤 sharp 로 끝까지
+ * 디코딩하고, EXIF 방향을 적용해 `maxWidth` 이하로 줄인 WebP 로 쓴다. 메타데이터는 남기지 않는다.
+ * 이름은 원래 이름의 영문·숫자 조각에 결과 내용의 해시 16자를 붙인다.
  */
-function imageFileName(
+async function optimizeImage(
   bytes: Uint8Array,
   originalName: string,
-): { name: string; size: { width: number; height: number } } {
+  maxWidth: number,
+): Promise<{ name: string; bytes: Buffer; width: number; height: number }> {
+  const rejected = new SiteReviewError('JPEG·PNG·WebP 이미지만 5MB 까지 올릴 수 있습니다.', 400);
   const size =
     bytes.length > 0 && bytes.length <= MAX_SITE_IMAGE_BYTES ? readImageSize(bytes) : null;
-  if (!size || !isCompleteImage(bytes, size.type))
-    throw new SiteReviewError('JPEG·PNG·WebP 이미지만 5MB 까지 올릴 수 있습니다.', 400);
-  const extension = size.type === 'jpeg' ? 'jpg' : size.type;
+  if (!size || !isCompleteImage(bytes, size.type)) throw rejected;
+  let output: { data: Buffer; info: { width: number; height: number } };
+  try {
+    output = await sharp(bytes, { failOn: 'error', limitInputPixels: 50_000_000 })
+      .rotate()
+      .resize({ width: maxWidth, withoutEnlargement: true })
+      .webp({ quality: 82 })
+      .toBuffer({ resolveWithObject: true });
+  } catch {
+    throw rejected;
+  }
   const base =
     path
       .parse(originalName)
@@ -1354,8 +1372,13 @@ function imageFileName(
       .replace(/[^a-z0-9]+/gu, '-')
       .replace(/^-+|-+$/gu, '')
       .slice(0, 40) || 'image';
-  const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 16);
-  return { name: `${base}-${hash}.${extension}`, size };
+  const hash = createHash('sha256').update(output.data).digest('hex').slice(0, 16);
+  return {
+    name: `${base}-${hash}.webp`,
+    bytes: output.data,
+    width: output.info.width,
+    height: output.info.height,
+  };
 }
 
 /** 형식의 끝까지 갖춘 파일인지 본다(PNG IEND·JPEG EOI·WebP RIFF 길이). 잘린 파일이 공개되지 않게 한다. */
