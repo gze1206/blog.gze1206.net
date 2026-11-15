@@ -17,10 +17,10 @@ main 은 ruleset(필수 체크, 강제 push·삭제 금지)이 지키므로 depl
 
 ### 릴레이 (`apps/workbench/deploy/oci/publish-relay.sh`)
 
-- **AC-1** outbox 의 매니페스트마다 산출물을 받아 `content/<산출물 이름>` 브랜치로 push 한다. bundle 은 매니페스트의 커밋과 같아야 하고, format-patch 는 base 위에 적용한다.
+- **AC-1** outbox 의 매니페스트마다 산출물을 받아 검사한 뒤, **최종 트리만으로 base 위에 새 커밋 하나**를 만들어 `content/<산출물 이름>` 으로 push 한다. 중간 커밋·작성자·메시지는 가져가지 않는다(릴레이가 정한다). bundle 은 매니페스트의 커밋과 같아야 하고, format-patch 는 base 위에 적용한다.
 - **AC-2** 매니페스트의 base 가 `origin/main` 의 조상이 아니면 push 하지 않고 `stale` 로 기록한다.
-- **AC-3** base 에서 바뀐 경로가 하나라도 허용 목록(`content-paths.regex`) 밖이거나, 심볼릭 링크·서브모듈이면 push 하지 않고 `rejected` 로 기록한다.
-- **AC-4** 처리한 매니페스트는 기록(ledger)에 남기고 다시 처리하지 않는다. outbox 는 고치지 않는다.
+- **AC-3** base 에서 바뀐 경로가 하나라도 허용 목록(`content-paths.regex`) 밖이거나, 일반 파일(`100644`)이 아니면 push 하지 않고 `rejected` 로 기록한다. 허용 목록은 글 `.mdoc`(원시 HTML 을 그리지 않는다), 책 JSON, 래스터 이미지(png·jpg·webp·avif·gif)뿐이다.
+- **AC-4** 처리한 매니페스트는 기록(ledger)에 남기고 다시 처리하지 않는다. 잘못된 매니페스트(이름·JSON·심볼릭 링크·크기)는 `rejected` 로 남기고 다음 것을 처리한다. outbox 는 고치지 않는다.
 - **AC-5** 동시에 두 번 돌지 않는다(잠금).
 
 ### GitHub
@@ -28,3 +28,8 @@ main 은 ruleset(필수 체크, 강제 push·삭제 금지)이 지키므로 depl
 - **AC-6** (manual) `content/**` push 에서 CI 의 필수 체크(verify, e2e, spec-check, tdd-evidence)가 돈다.
 - **AC-8** 발행 확정 버튼은 "발행" 이고, 결과는 손으로 칠 git 명령 대신 자동 전달(릴레이가 PR 을 만들고 CI 통과 시 자동 병합)을 알린다. 책 내보내기 결과도 같은 안내를 보여 준다.
 - **AC-7** (manual) `content/**` push 에서 main 으로 가는 PR 을 만든다. 바뀐 경로가 모두 허용 목록(main 의 것) 안이면 자동 병합(merge commit)을 켠다. 병합하면 브랜치를 지운다.
+
+### 블로그 (콘텐츠가 자동 병합되므로)
+
+- **AC-9** JSON-LD 는 `<` 를 `\u003c` 로 이스케이프한다. frontmatter 의 `</script>` 로 태그를 닫을 수 없다.
+- **AC-10** 산출물 감사는 글 본문(`.post-body`) 안의 `<script>` 와 `on*` 속성을 실패로 본다. 빌드 뒤 CSP 가 인라인 해시를 모으므로, 본문에서 온 스크립트가 허용되지 않게 막는다.
