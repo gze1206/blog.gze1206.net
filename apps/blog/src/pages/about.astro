@@ -79,6 +79,7 @@ const paragraphs = profile.data.about.length > 0 ? profile.data.about : [profile
                     ) : (
                       <span
                         class={`about__reading-cover book-card__blank book-card__blank--t${spineTone(book.data.title)}`}
+                        aria-hidden="true"
                       >
                         <span class="about__reading-spine">{spineTitle(book.data.title)}</span>
                       </span>
