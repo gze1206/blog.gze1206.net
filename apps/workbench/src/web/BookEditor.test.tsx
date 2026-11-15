@@ -93,3 +93,20 @@ it('NOR-206 AC-5: 문서 편집기는 편집·나란히·미리보기 전환을 
   );
   for (const label of ['편집', '나란히', '미리보기']) expect(html).toContain(`>${label}</button>`);
 });
+
+it('NOR-206 AC-9: 문서 편집기에는 서식 도구 막대가 있다', async () => {
+  const { Editor } = await import('./Editor.js');
+  const html = renderToStaticMarkup(
+    <Editor
+      dirty={false}
+      onChange={() => undefined}
+      onSave={() => undefined}
+      saving={false}
+      source="# 제목"
+      title="글"
+    />,
+  );
+  expect(html).toContain('aria-label="서식"');
+  for (const label of ['굵게', '기울임', '제목', '목록', '인용', '코드', '링크'])
+    expect(html).toContain(`aria-label="${label}"`);
+});
