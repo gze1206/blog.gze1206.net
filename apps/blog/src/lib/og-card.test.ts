@@ -124,3 +124,27 @@ describe('buildOgCard', () => {
     }
   });
 });
+
+describe('태그 아이콘 (NOR-223)', () => {
+  const images = (node: OgChild): OgNode[] => {
+    if (typeof node === 'string') return [];
+    const children = node.props.children;
+    const list =
+      children === undefined ? [] : Array.isArray(children) ? children : [children as OgChild];
+    return [...(node.type === 'img' ? [node] : []), ...list.flatMap((child) => images(child))];
+  };
+
+  it('NOR-223 AC-4: icon 이 tag 이면 제목 앞에 SVG 태그 아이콘을 그린다', () => {
+    const card = buildOgCard(base({ kind: 'list', title: 'C#', icon: 'tag' }));
+    const icons = images(card);
+    expect(icons).toHaveLength(1);
+    expect(String((icons[0]?.props as { src?: string }).src)).toMatch(
+      /^data:image\/svg\+xml;base64,/u,
+    );
+    expect(collectText(card)).toContain('C#');
+  });
+
+  it('NOR-223 AC-4: icon 이 없으면 아이콘을 그리지 않는다', () => {
+    expect(images(buildOgCard(base({ kind: 'list', title: 'C#' })))).toHaveLength(0);
+  });
+});

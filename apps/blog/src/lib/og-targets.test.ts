@@ -39,11 +39,13 @@ describe('buildOgTargets', () => {
     }
   });
 
-  it('파라미터는 디코딩된 값이다 (Astro 가 다시 인코딩한다)', () => {
+  it('NOR-223 AC-4: 파라미터는 디코딩된 값이고, 태그 카드는 # 없이 아이콘을 쓴다', () => {
     const targets = buildOgTargets(
       input({ tags: [{ slug: '웹-성능', label: '웹 성능', count: 1 }] }),
     );
-    const tag = targets.find((target) => target.card.title === '#웹 성능');
+    const tag = targets.find((target) => target.card.title === '웹 성능');
+    expect(tag).toBeDefined();
+    expect(tag?.card).toHaveProperty('icon', 'tag');
     expect(tag?.param).toBe('tags/웹-성능');
     expect(tag?.path).toBe(`/og/tags/${encodeURIComponent('웹-성능')}.png`);
   });
