@@ -77,6 +77,9 @@ const publisher: PublicBlogPublisher = {
   async listAssets() {
     return [];
   },
+  async savePublicAsset(_documentId: string, bytes: Uint8Array) {
+    return { id: 'i'.repeat(43), reference: 'a-00000000.png', size: bytes.length };
+  },
   async review() {
     return {
       reviewId: 'a'.repeat(43),
@@ -117,3 +120,24 @@ function json(body: unknown): RequestInit {
     body: JSON.stringify(body),
   };
 }
+
+it('NOR-219 AC-6: 공개 초안에만 본문 이미지를 올린다', async () => {
+  const fixture = await createFixture();
+  const id = encodeDocumentId('drafts/api-review.md');
+  const response = await fixture.app.request(`/api/publish/assets/${id}?name=a.png`, {
+    method: 'POST',
+    headers: { 'content-type': 'image/png' },
+    body: new Uint8Array([1, 2, 3]),
+  });
+  expect(response.status).toBe(201);
+  expect(await response.json()).toEqual({
+    id: 'i'.repeat(43),
+    reference: 'a-00000000.png',
+    size: 3,
+  });
+  const missing = await fixture.app.request(
+    `/api/publish/assets/${encodeDocumentId('drafts/none.md')}?name=a.png`,
+    { method: 'POST', headers: { 'content-type': 'image/png' }, body: new Uint8Array([1]) },
+  );
+  expect(missing.status).toBe(404);
+});

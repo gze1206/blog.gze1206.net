@@ -128,3 +128,33 @@ it('NOR-219 AC-3: 어디에도 없는 이미지 경로는 거절한다', { timeo
     await f.close();
   }
 });
+
+it(
+  'NOR-219 AC-6: 공개 초안 본문 이미지를 자산 자리에 두고 자산 목록에 보인다',
+  { timeout: 30000 },
+  async () => {
+    const f = await fixture();
+    try {
+      expect(f.adapter).toHaveProperty('savePublicAsset');
+      const documentId = 'a'.repeat(43);
+      const saved = (await f.adapter['savePublicAsset']?.(documentId, PNG, '스크린 Shot.png')) as {
+        reference: string;
+        id: string;
+      };
+      expect(saved.reference).toMatch(/^shot-[0-9a-f]{8}\.png$/u);
+      const assets = (await f.adapter['listAssets']?.(documentId)) as {
+        id: string;
+        reference: string;
+      }[];
+      expect(assets).toEqual([
+        expect.objectContaining({ id: saved.id, reference: saved.reference }),
+      ]);
+      await expect(
+        f.adapter['savePublicAsset']?.(documentId, Buffer.from('nope'), 'a.png'),
+      ).rejects.toThrow();
+      await expect(f.adapter['savePublicAsset']?.('../x', PNG, 'a.png')).rejects.toThrow();
+    } finally {
+      await f.close();
+    }
+  },
+);

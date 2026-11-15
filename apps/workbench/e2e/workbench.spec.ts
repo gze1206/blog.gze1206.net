@@ -429,3 +429,27 @@ test('NOR-219 AC-1·5: 여러 줄 칸의 빈 줄·공백을 지키고 포트폴�
   await expect(site.getByLabel('이미지 1 높이')).toHaveValue('3');
   await expect(site.getByRole('img', { name: '이미지 1 미리보기' })).toBeVisible();
 });
+
+test('NOR-219 AC-6: 공개 초안 편집기에서 이미지를 올리면 본문에 넣고 자산으로 고른다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('새 문서 제목').fill('이미지 글');
+  await page.getByRole('button', { name: /공개 글 초안/u }).click();
+  const editor = page.getByLabel('Markdown 문서');
+  await expect(editor).toContainText('title: 이미지 글');
+  await page.getByLabel('Markdown 문서').click();
+  await page.keyboard.press('ControlOrMeta+End');
+  await page.getByLabel('본문 이미지 파일').setInputFiles({
+    name: 'shot.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      '89504e470d0a1a0a0000000d494844520000000200000003080600000000000000',
+      'hex',
+    ),
+  });
+  await expect(editor.locator('.cm-line').filter({ hasText: 'shot-' })).toContainText(
+    /!\[설명\]\(shot-[0-9a-f]{8}\.png\)/u,
+  );
+  await expect(page.getByRole('checkbox', { name: /shot-[0-9a-f]{8}\.png/u })).toBeChecked();
+});
