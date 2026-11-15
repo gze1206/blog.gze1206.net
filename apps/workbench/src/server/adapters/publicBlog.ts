@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { chmod, lstat, mkdir, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { BLOG_LAYOUT, isBookId } from '@gze1206/content-contract';
+import { BLOG_LAYOUT, SITE_COLLECTIONS, isBookId } from '@gze1206/content-contract';
 
 import { parseDocument, type BookDocument } from '../../core/document/document.js';
 import { parseFrontmatter } from '../../core/document/frontmatter.js';
@@ -22,6 +22,16 @@ import type { RemotePolicy } from './remotePolicy.js';
 import { PublishSessionRegistry } from './sessionRegistry.js';
 import { unifiedDiff } from '../../core/publishing/diff.js';
 import { publishRefKey } from '../../core/publishing/refKey.js';
+import {
+  SITE_COLLECTION_NAMES,
+  planSiteChange,
+  sitePath,
+  unknownKeyIssues,
+  validateSiteChange,
+  type SiteChange,
+  type SiteEntry,
+  type SitePlan,
+} from '../../core/site/siteContent.js';
 
 export interface PublishDraftInput {
   readonly documentId: string;
@@ -60,6 +70,32 @@ export interface BookConfirm {
   readonly reviewId: string;
 }
 
+export interface SiteReview {
+  readonly reviewId: string;
+  readonly baseHead: string;
+  readonly branch: string;
+  readonly targetPath: string;
+  readonly diff: string;
+  readonly kind: SitePlan['kind'];
+}
+
+/** 사이트 콘텐츠 검토를 거절하는 이유. 라우트가 400(입력)·409(main 이 바뀜)으로 돌려준다. */
+export class SiteReviewError extends Error {
+  public constructor(
+    message: string,
+    public readonly status: 400 | 409,
+    public readonly issues: readonly { readonly path: string; readonly message: string }[] = [],
+  ) {
+    super(message);
+  }
+}
+
+export interface SiteListing {
+  readonly commit: string;
+  readonly entries: readonly (SiteEntry & { readonly hash: string })[];
+  readonly problems: readonly { readonly path: string; readonly message: string }[];
+}
+
 export interface PublicAssetCandidate {
   readonly id: string;
   readonly reference: string;
@@ -82,6 +118,9 @@ export interface PublicBlogPublisher {
   publish(input: ConfirmPublishInput): Promise<PublishResult>;
   reviewBook?(id: string): Promise<BookReview>;
   publishBook?(id: string, confirm: BookConfirm): Promise<PublishResult>;
+  listSite?(): Promise<SiteListing>;
+  reviewSite?(change: SiteChange): Promise<SiteReview>;
+  publishSite?(change: SiteChange, confirm: BookConfirm): Promise<PublishResult>;
 }
 
 export interface PublicBlogAdapterOptions {
@@ -134,6 +173,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
   private readonly cloneManager: EphemeralCloneManager;
   private readonly outbox: PublishOutbox;
   private readonly sessions: PublishSessionRegistry;
+  private readonly sitePublishing = new Set<string>();
 
   public constructor(private readonly options: PublicBlogAdapterOptions) {
     this.cloneManager = new EphemeralCloneManager({
@@ -398,6 +438,192 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       await this.sessions.discard(confirm.reviewId);
       throw error;
     }
+  }
+
+  /**
+   * 사이트 콘텐츠(프로필·경력·포트폴리오·시리즈)를 새로 받은 main 에서 읽는다 (NOR-208).
+   * 읽기만 하고 clone 은 바로 지운다. 읽지 못한 파일은 빼지 않고 문제로 돌려준다.
+   */
+  public async listSite(): Promise<SiteListing> {
+    const clone = await this.cloneManager.create();
+    try {
+      const commit = await this.cloneManager.git(clone, ['rev-parse', 'HEAD']);
+      const entries: (SiteEntry & { hash: string })[] = [];
+      const problems: { path: string; message: string }[] = [];
+      for (const collection of SITE_COLLECTION_NAMES) {
+        const target = SITE_COLLECTIONS[collection];
+        const ids = target.single
+          ? [collection]
+          : (await readdir(path.join(clone.repositoryRoot, target.path)).catch(() => []))
+              .filter((name) => name.endsWith('.json'))
+              .map((name) => name.slice(0, -5))
+              .sort();
+        for (const id of ids) {
+          let relativePath = `${target.path}/${id}.json`;
+          try {
+            relativePath = sitePath(collection, id);
+            const source = await this.readOutput(clone.repositoryRoot, relativePath);
+            if (source === null) continue;
+            entries.push({
+              collection,
+              id,
+              data: JSON.parse(source) as unknown,
+              hash: sha256(source),
+            });
+          } catch (error) {
+            problems.push({ path: relativePath, message: (error as Error).message });
+          }
+        }
+      }
+      return { commit, entries, problems };
+    } finally {
+      await this.cloneManager.remove(clone.sessionDir);
+    }
+  }
+
+  public async reviewSite(change: SiteChange): Promise<SiteReview> {
+    const clone = await this.cloneManager.create();
+    try {
+      const state = await this.createSiteReview(change, clone);
+      const session = this.sessions.register({
+        cloneDir: clone.sessionDir,
+        baseSha: state.review.baseHead,
+        fingerprint: state.fingerprint,
+      });
+      return { ...state.review, reviewId: session.reviewId };
+    } catch (error) {
+      await this.cloneManager.remove(clone.sessionDir);
+      throw error;
+    }
+  }
+
+  public async publishSite(change: SiteChange, confirm: BookConfirm): Promise<PublishResult> {
+    if (confirm.confirmPublish !== true)
+      throw new Error('publishing requires confirmPublish: true');
+    // 같은 검토를 동시에 두 번 확정하면, 실패한 쪽이 세션을 지우며 진행 중인 clone 까지 지운다.
+    if (this.sitePublishing.has(confirm.reviewId))
+      throw new SiteReviewError('site publish is already in progress', 409);
+    this.sitePublishing.add(confirm.reviewId);
+    try {
+      return await this.publishSiteOnce(change, confirm);
+    } finally {
+      this.sitePublishing.delete(confirm.reviewId);
+    }
+  }
+
+  private async publishSiteOnce(change: SiteChange, confirm: BookConfirm): Promise<PublishResult> {
+    const session = await this.sessions.lookup(confirm.reviewId);
+    const clone = {
+      sessionDir: session.cloneDir,
+      repositoryRoot: path.join(session.cloneDir, 'repository'),
+    };
+    try {
+      const {
+        review,
+        plan,
+        fingerprint: contentFingerprint,
+      } = await this.createSiteReview(change, clone);
+      // 검토한 입력·base 와 다르면 여기서 멈춘다.
+      await this.sessions.get(confirm.reviewId, contentFingerprint, review.baseHead);
+      if (plan.kind === 'noop') throw new Error('site content has no changes');
+      await this.beginPublish(clone, review.branch);
+      if (plan.kind === 'delete') {
+        await assertNoSymlinkAncestors(clone.repositoryRoot, plan.path);
+        await rm(path.join(clone.repositoryRoot, plan.path));
+      } else {
+        await this.writeOutput(clone.repositoryRoot, plan.path, plan.content);
+        await chmod(path.join(clone.repositoryRoot, plan.path), 0o644);
+      }
+      await this.cloneManager.git(clone, ['add', '-A', '--', plan.path]);
+      const message =
+        plan.kind === 'delete'
+          ? `📝 docs(content): ${change.collection} ${change.id} 를 지운다`
+          : `📝 docs(content): ${change.collection} ${change.id} 를 고친다`;
+      await this.cloneManager.git(clone, [
+        '-c',
+        'user.useConfigOnly=true',
+        '-c',
+        `user.name=${this.options.author.name}`,
+        '-c',
+        `user.email=${this.options.author.email}`,
+        'commit',
+        '-m',
+        message,
+      ]);
+      const commit = await this.cloneManager.git(clone, ['rev-parse', 'HEAD']);
+      const exportResult = await this.outbox.write({
+        cloneDir: clone.repositoryRoot,
+        baseSha: review.baseHead,
+        branch: review.branch,
+        commit,
+        commitMessage: message,
+        targetPath: review.targetPath,
+        source: plan.kind === 'write' ? plan.content : '',
+        diff: review.diff,
+        author: `${this.options.author.name} <${this.options.author.email}>`,
+        assets: [],
+        exporter: {
+          bundle: (baseSha, branch) => this.cloneManager.createBundle(clone, baseSha, branch),
+          formatPatch: (baseSha, branch) =>
+            this.cloneManager.gitBytes(clone, [
+              'format-patch',
+              '--binary',
+              '--stdout',
+              `${baseSha}..${branch}`,
+            ]),
+        },
+        ...(this.options.forceExportFormat === undefined
+          ? {}
+          : { forceFormat: this.options.forceExportFormat }),
+      });
+      await this.sessions.consume(confirm.reviewId, contentFingerprint, review.baseHead);
+      return {
+        ...exportResult,
+        baseSha: review.baseHead,
+        branch: review.branch,
+        commit,
+        targetPath: review.targetPath,
+      };
+    } catch (error) {
+      await this.sessions.discard(confirm.reviewId);
+      throw error;
+    }
+  }
+
+  private async createSiteReview(change: SiteChange, clone: EphemeralClone) {
+    const issues = validateSiteChange(change);
+    if (issues.length > 0) throw new SiteReviewError('invalid site content', 400, issues);
+    const targetPath = sitePath(change.collection, change.id);
+    const [current, baseHead] = await Promise.all([
+      this.readOutput(clone.repositoryRoot, targetPath),
+      this.cloneManager.git(clone, ['rev-parse', 'HEAD']),
+    ]);
+    // 편집을 시작한 뒤 main 이 바뀌었으면 그 변경을 되돌리는 diff 가 되므로 거절한다(새 항목은 파일이 없어야 한다).
+    if (
+      change.baseHash !== undefined &&
+      (current === null ? null : sha256(current)) !== change.baseHash
+    )
+      throw new SiteReviewError('site content changed on main; reload and edit again', 409);
+    if (!('delete' in change)) {
+      const unknown = unknownKeyIssues(change.collection, change.data, current);
+      if (unknown.length > 0) throw new SiteReviewError('invalid site content', 400, unknown);
+    }
+    const plan = planSiteChange(change, current);
+    const diff =
+      plan.kind === 'noop'
+        ? ''
+        : unifiedDiff(targetPath, current, plan.kind === 'write' ? plan.content : null);
+    const review = {
+      baseHead,
+      branch: `content/site-${change.collection}-${publishRefKey(change.id)}`,
+      targetPath,
+      diff,
+      kind: plan.kind,
+    };
+    const fingerprint = createHash('sha256')
+      .update(JSON.stringify({ change, plan, review }))
+      .digest('hex');
+    return { review, plan, fingerprint };
   }
 
   private async createBookReview(id: string, clone: EphemeralClone) {
@@ -775,6 +1001,10 @@ function fingerprint(prepared: PreparedPublish, state: ReviewState): string {
     .update('\0')
     .update(JSON.stringify(state.destinationStates))
     .digest('hex');
+}
+
+function sha256(text: string): string {
+  return createHash('sha256').update(text).digest('hex');
 }
 
 function assetId(documentId: string, reference: string): string {

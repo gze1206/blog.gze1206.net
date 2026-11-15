@@ -34,6 +34,7 @@ import { readSkippedReviewPeriods } from './reviewPreferences.js';
 import { TemplateGallery } from './TemplateGallery.js';
 import { ThemeToggle } from './ThemeToggle.js';
 import { TrashList } from './TrashList.js';
+import { SiteContent } from './site/SiteContent.js';
 import { DayPage } from './day/[date].js';
 
 export function App() {
@@ -44,6 +45,8 @@ export function App() {
   const [trash, setTrash] = useState<readonly TrashItem[]>([]);
   const [importing, setImporting] = useState(false);
   const [addingBook, setAddingBook] = useState(false);
+  /** 사이트 콘텐츠 화면(NOR-208). 문서를 고르면 문서가 앞선다. */
+  const [siteOpen, setSiteOpen] = useState(false);
   /** 책은 폼으로 다루는 것이 기본이고, 원본 마크다운은 필요할 때 연다. */
   const [editingSource, setEditingSource] = useState(false);
   const [selected, setSelected] = useState<DocumentEntry | null>(null);
@@ -253,7 +256,10 @@ export function App() {
           </div>
           <button
             className="mt-4 w-full rounded-md border border-border bg-surface px-3 py-2 text-left text-sm"
-            onClick={() => setSelected(null)}
+            onClick={() => {
+              setSelected(null);
+              setSiteOpen(false);
+            }}
             type="button"
           >
             오늘의 로그
@@ -272,11 +278,24 @@ export function App() {
           >
             책 등록
           </button>
+          <button
+            className="mt-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-left text-sm"
+            onClick={() => {
+              setSelected(null);
+              setSiteOpen(true);
+            }}
+            type="button"
+          >
+            사이트 콘텐츠
+          </button>
         </header>
         <TemplateGallery busy={busy} onCreate={create} templates={templates} />
         <DocumentList
           documents={documents}
-          onSelect={(id) => void selectDocument(id)}
+          onSelect={(id) => {
+            setSiteOpen(false);
+            void selectDocument(id);
+          }}
           problems={documentProblems}
           selectedId={selected?.id ?? null}
         />
@@ -350,6 +369,8 @@ export function App() {
               title={selected.title}
             />
           </>
+        ) : siteOpen ? (
+          <SiteContent />
         ) : day ? (
           <DayPage
             date={day}

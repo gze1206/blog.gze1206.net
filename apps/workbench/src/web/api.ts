@@ -253,9 +253,14 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, options);
   if (!response.ok) {
     const payload = (await response.json().catch(() => null)) as {
-      error?: { message?: string };
+      error?: { message?: string; issues?: readonly { path: string; message: string }[] };
     } | null;
-    throw new Error(payload?.error?.message ?? `Request failed (${response.status})`);
+    const message = payload?.error?.message ?? `Request failed (${response.status})`;
+    // 필드별 오류(NOR-208)는 어느 칸이 문제인지 함께 보인다.
+    const issues = payload?.error?.issues
+      ?.map((issue) => (issue.path ? `${issue.path}: ${issue.message}` : issue.message))
+      .join(', ');
+    throw new Error(issues ? `${message} (${issues})` : message);
   }
   return response.json() as Promise<T>;
 }
@@ -485,4 +490,42 @@ export async function previewDocument(
   source: string,
 ): Promise<{ readonly html: string; readonly warnings: readonly string[] }> {
   return request('/api/preview', { method: 'POST', body: JSON.stringify({ source }) });
+}
+
+/** 사이트 콘텐츠(NOR-208). 원본은 공개 저장소 main 의 JSON 이다. */
+export type SiteCollection = 'profile' | 'experience' | 'portfolio' | 'series';
+export interface SiteEntryData {
+  readonly collection: SiteCollection;
+  readonly id: string;
+  readonly data: Readonly<Record<string, unknown>>;
+  /** main 원본의 해시. 검토할 때 그대로 돌려보내 그 사이 바뀌었는지 가린다. */
+  readonly hash?: string;
+}
+export type SiteChangeInput = (
+  | { readonly collection: SiteCollection; readonly id: string; readonly data: object }
+  | { readonly collection: SiteCollection; readonly id: string; readonly delete: true }
+) & { readonly baseHash: string | null };
+export interface SiteReviewData {
+  readonly reviewId: string;
+  readonly kind: 'write' | 'delete' | 'noop';
+  readonly targetPath: string;
+  readonly diff: string;
+}
+export async function listSite(): Promise<{
+  readonly entries: readonly SiteEntryData[];
+  readonly problems: readonly { readonly path: string; readonly message: string }[];
+}> {
+  return request('/api/site');
+}
+export async function reviewSite(change: SiteChangeInput): Promise<SiteReviewData> {
+  return request('/api/site/review', { method: 'POST', body: JSON.stringify(change) });
+}
+export async function confirmSite(
+  change: SiteChangeInput,
+  reviewId: string,
+): Promise<PublishResult> {
+  return request('/api/site/confirm', {
+    method: 'POST',
+    body: JSON.stringify({ ...change, confirmPublish: true, reviewId }),
+  });
 }

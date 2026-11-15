@@ -1,0 +1,135 @@
+import { z } from 'zod';
+
+import { seriesSchema } from './series.ts';
+
+// 블로그 사이트 콘텐츠(프로필·경력·포트폴리오)의 계약. 워크벤치가 같은 스키마로 검사해 발행한다(NOR-208).
+/**
+ * 주소는 정해진 scheme 만 받는다(NOR-208 AC-8). 콘텐츠가 자동 병합되므로 `javascript:`·`data:` 를 막는다.
+ * 브라우저는 앞뒤 공백·제어 문자를 지우고 해석하므로, 그런 문자가 섞인 주소는 통째로 받지 않는다.
+ */
+function safeUrl(protocols: readonly string[]) {
+  return z.string().refine(
+    (value) => {
+      if ([...value].some((char) => char.charCodeAt(0) <= 0x20 || char.charCodeAt(0) === 0x7f))
+        return false;
+      try {
+        return protocols.includes(new URL(value).protocol);
+      } catch {
+        return false;
+      }
+    },
+    { message: `${protocols.join(', ')} 주소만 쓸 수 있습니다` },
+  );
+}
+
+const httpUrl = safeUrl(['http:', 'https:']);
+
+/** 사이트 안의 경로(`/img/...`). 다른 출처(`//host`)나 상위 경로(`..`)는 받지 않는다. */
+const sitePathSchema = z
+  .string()
+  .regex(/^\/(?!\/)[A-Za-z0-9._~\-/]+$/u, {
+    message: '/ 로 시작하는 사이트 안 경로만 쓸 수 있습니다',
+  })
+  .refine((value) => !value.split('/').includes('..'), { message: '.. 은 쓸 수 없습니다' });
+
+const portfolioLinkSchema = z
+  .object({
+    repo: httpUrl.optional(),
+    demo: httpUrl.optional(),
+    video: httpUrl.optional(),
+    article: httpUrl.optional(),
+  })
+  .refine((link) => Object.values(link).some((v) => v !== undefined), {
+    message: 'links 항목에 최소 1개의 URL이 필요합니다',
+  });
+
+/**
+ * 포트폴리오 이미지 (NOR-157).
+ *
+ * 크기를 함께 보관한다. 렌더 시점에 알 수 없으면 이미지가 도착할 때 레이아웃이 밀린다.
+ * `alt` 는 필수다 — 작업을 설명하는 이미지가 스크린리더에게 침묵하면 그 항목은 반쪽이 된다.
+ */
+const portfolioMediaSchema = z.object({
+  src: sitePathSchema,
+  alt: z.string().min(1),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  caption: z.string().min(1).optional(),
+});
+
+export const portfolioSchema = z.object({
+  title: z.string(),
+  summary: z.string(),
+  /** 그 작업에서 맡은 일. 회사 프로젝트는 이것이 링크보다 중요한 정보다. */
+  role: z.string().min(1).optional(),
+  period: z.string().min(1).optional(),
+  stack: z.array(z.string()).min(1),
+  /**
+   * 공개 링크가 없는 작업도 포트폴리오에 실린다. 회사 프로젝트가 대표적이다 —
+   * 링크를 필수로 두면 실제로 한 일 중 큰 덩어리가 빠진다(NOR-157).
+   */
+  links: z.array(portfolioLinkSchema).default([]),
+  media: z.array(portfolioMediaSchema).default([]),
+  highlights: z.array(z.string().min(1)).default([]),
+  thumbnail: sitePathSchema.optional(),
+});
+
+export const profileSchema = z.object({
+  name: z.string().min(1),
+  headline: z.string().min(1),
+  /**
+   * 홈의 큰 한 줄 (NOR-151). 직함이 아니라 태도를 말하는 자리다.
+   * 없으면 `introduction` 을 그대로 쓴다 — 빈 화면을 만드는 것보다 낫다.
+   */
+  tagline: z.string().min(1).optional(),
+  introduction: z.string().min(1),
+  skills: z.array(z.string().min(1)).min(1),
+  /**
+   * About 페이지의 본문 문단들 (NOR-156). 홈의 한 줄 소개보다 길게, 어떤 일을 어떻게
+   * 하는 사람인지 설명한다. 비어 있으면 About 은 `introduction` 만 보여 준다.
+   */
+  about: z.array(z.string().min(1)).default([]),
+  /**
+   * 연락·프로필 링크 (NOR-156). 외부 배지 이미지를 렌더 시점에 불러오지 않는다 —
+   * 남의 서버가 느리면 내 페이지가 느려지고, 죽으면 내 페이지가 깨진다.
+   */
+  links: z
+    .array(
+      z.object({
+        label: z.string().min(1),
+        url: safeUrl(['http:', 'https:', 'mailto:']),
+        /** 화면에 노출할 계정명 등. 없으면 라벨만 보여 준다. */
+        handle: z.string().min(1).optional(),
+      }),
+    )
+    .default([]),
+});
+
+export const experienceSchema = z.object({
+  organization: z.string().min(1),
+  role: z.string().min(1),
+  period: z.string().min(1),
+  endDate: z.coerce
+    .date()
+    .nullable()
+    .optional()
+    .transform((value) => value ?? null),
+  highlights: z.array(z.string().min(1)).min(1),
+  visible: z.boolean(),
+});
+
+export type Profile = z.input<typeof profileSchema>;
+export type Experience = z.input<typeof experienceSchema>;
+export type Portfolio = z.input<typeof portfolioSchema>;
+
+/**
+ * 사이트 콘텐츠의 자리(저장소 루트 기준). `single` 은 파일 하나, 아니면 디렉터리 아래 `<slug>.json` 이다.
+ */
+export const SITE_COLLECTIONS = {
+  profile: { path: 'apps/blog/src/content/profile.json', single: true, schema: profileSchema },
+  experience: { path: 'apps/blog/src/content/experience', single: false, schema: experienceSchema },
+  portfolio: { path: 'apps/blog/src/content/portfolio', single: false, schema: portfolioSchema },
+  series: { path: 'apps/blog/src/content/series', single: false, schema: seriesSchema },
+} as const;
+
+export type SiteCollection = keyof typeof SITE_COLLECTIONS;
