@@ -16,7 +16,7 @@
 
 - **AC-1** 발행 산출물의 `publishedAt`·`updatedAt` 은 문서에 적힌 값(ISO 시각 포함)을 그대로 쓴다.
 - **AC-2** 블로그에 이미 있는 글을 다시 발행하면 값이 같은 frontmatter 필드는 원래 표기(따옴표·목록 형식·순서)를 유지하고, 바뀐 필드만 고치며, 없어진 필드는 지운다. 본문 앞 빈 줄 유무도 원래 파일을 따른다. 내용이 같으면 diff 가 비어 있다.
-- **AC-3** `GET /api/publish/status` 는 공개 초안마다 `published`·`differs`·`unpublished`·`invalid`(발행 검사 실패) 중 하나를, 그리고 블로그에만 있는 글(slug·제목·경로)을 돌려준다.
+- **AC-3** `GET /api/publish/status` 는 공개 초안마다 `published`·`differs`·`unpublished`·`invalid`(발행 검사 실패) 중 하나를, 그리고 블로그에만 있는 공개 글(slug·제목·경로, `draft: true` 인 글은 뺀다)을 돌려준다.
 - **AC-4** 문서 목록은 공개 초안에 발행 상태(발행됨·블로그와 다름·미발행·검사 실패)를 표시하고, 블로그에만 있는 글이 있으면 그 수를 알리며 가져오기를 열 수 있다.
 
 ### 검수 반영 (PR #55)
