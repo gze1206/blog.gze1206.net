@@ -35,8 +35,9 @@
 - **공유 edge 네트워크.** edge 네트워크의 다른 컨테이너는 `comentario:8080` 에 직접 닿는다. Cloudflare 와
   Caddy 의 제한을 거치지 않는다. 관리 API 는 로그인이 필요하고 로그인 실패 10회에 잠긴다
   (`auth.login.local.maxAttempts`). 사이트별 내부 네트워크는 edge 쪽 구성이 바뀌어야 가능하다.
-- **레이트 리밋.** Caddy 에는 없다. Cloudflare 의 Rate limiting rule 로 `PUT /api/embed/comments` 와
-  `POST /api/auth/login` 을 제한한다(대시보드 작업). 익명 댓글은 승인 전에 공개되지 않는다.
+- **레이트 리밋.** Caddy 에는 없다. Cloudflare Rate limiting rule 이 `PUT /api/embed/comments` 와
+  `POST /api/auth/login` 을 IP 당 10초 5회로 제한하고 10초 막는다(NOR-201). 카운트는 엣지에서 근사로 세므로
+  순차 요청 몇 번으로는 걸리지 않을 수 있다. 댓글 목록 조회(POST)는 제한하지 않는다.
 - **관리 화면 공개.** 관리 화면은 공개 주소에 있다. 긴 무작위 비밀번호를 쓰고, 필요하면 Cloudflare Access 로
   관리 경로를 막는다.
 - **백업 위치.** 백업은 같은 호스트에만 있다.
