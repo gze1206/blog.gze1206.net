@@ -13,6 +13,18 @@ export interface PublicDraftValidationInput {
   readonly privateRoot: string;
   readonly lookupBook?: BookLookup;
   readonly assets: readonly PublicAssetInput[];
+  /**
+   * 발행 대상 블로그의 `public/` 에 이미 있는 사이트 경로(`/img/a.png`) (NOR-218).
+   * 블로그에서 가져온 글이 쓰던 이미지를 그대로 참조할 수 있게 한다.
+   */
+  readonly existingPublicAssets?: ReadonlySet<string>;
+}
+
+/** `/` 로 시작하고 `//`·`..`·`.`·제어 문자가 없는 사이트 안 경로. */
+export function isSafeSitePath(reference: string): boolean {
+  if (!/^\/[A-Za-z0-9._~%/-]+$/u.test(reference)) return false;
+  const segments = reference.slice(1).split('/');
+  return segments.every((segment) => segment !== '' && segment !== '.' && segment !== '..');
 }
 
 export interface ValidatedPublicDraft {
@@ -53,7 +65,7 @@ export function validatePublicDraft(
       ...(document.toc === undefined ? {} : { toc: document.toc }),
     });
     const assets = validateAssets(input.assets, input.privateRoot, metadata.slug);
-    assertAllAssetReferencesResolved(expanded.body, assets);
+    assertAllAssetReferencesResolved(expanded.body, assets, input.existingPublicAssets);
     return { metadata, content: expanded.body, assets, quotes: expanded.quotes };
   } catch (error) {
     if (error instanceof PublicDraftValidationError) throw error;
@@ -121,12 +133,13 @@ function validateAssets(
 function assertAllAssetReferencesResolved(
   content: string,
   assets: readonly PublicAssetInput[],
+  existing: ReadonlySet<string> = new Set(),
 ): void {
   const approved = new Set(assets.map(({ draftReference }) => draftReference));
   for (const { reference } of parseAssetReferences(content)) {
-    if (!approved.has(reference)) {
-      throw new PublicDraftValidationError(`unresolved asset reference: ${reference}`);
-    }
+    if (approved.has(reference)) continue;
+    if (isSafeSitePath(reference) && existing.has(reference)) continue;
+    throw new PublicDraftValidationError(`unresolved asset reference: ${reference}`);
   }
 }
 
