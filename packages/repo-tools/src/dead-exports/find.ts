@@ -27,8 +27,12 @@ function analyze(input: Input): { dead: DeadExport[]; modules: string[] } {
   };
   for (const [file, text] of input.files) {
     if (!sourceFile.test(file)) continue;
+    // Astro 는 frontmatter 와 <script> 본문에서 import 한다. 둘 다 읽는다(NOR-231).
     const source = file.endsWith('.astro')
-      ? (text.match(/^---\s*\n([\s\S]*?)\n---/)?.[1] ?? '')
+      ? [
+          text.match(/^---\s*\n([\s\S]*?)\n---/)?.[1] ?? '',
+          ...[...text.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map((match) => match[1]),
+        ].join('\n')
       : text;
     const tree = ts.createSourceFile(
       file,
