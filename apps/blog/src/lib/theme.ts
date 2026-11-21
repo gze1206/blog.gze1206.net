@@ -13,6 +13,11 @@ export function resolveTheme(preference: ThemePreference, prefersDark: boolean):
   return preference;
 }
 
+/** 전환 버튼이 고를 다음 테마. 지금 보이는 테마의 반대다(NOR-231). */
+export function nextThemePreference(resolved: ResolvedTheme): ResolvedTheme {
+  return resolved === 'dark' ? 'light' : 'dark';
+}
+
 /** 보이는 전환 아이콘과 접근성 이름을 한 계약으로 관리한다. */
 export function getThemeTogglePresentation(resolved: ResolvedTheme): {
   readonly icon: string;

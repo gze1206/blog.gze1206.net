@@ -1,0 +1,56 @@
+---
+/**
+ * 머리글의 검색 링크 (NOR-31, NOR-231).
+ *
+ * JS 가 없으면 `/blog` 로 가는 링크로 남는다. 팔레트(React·cmdk)는 처음 열 때 불러온다 — 모든
+ * 페이지가 첫 화면에서 React 를 받지 않게 하려는 것이다. 포인터를 올리거나 포커스하면 미리 받는다.
+ */
+---
+
+<a href="/blog" class="text-muted hover:text-foreground rounded text-sm" data-search-trigger>
+  검색 <kbd class="search-shortcut"></kbd>
+</a>
+
+<script>
+  import { lazyOnce } from '../lib/lazy-once';
+  import { isSearchShortcut, searchShortcutLabel } from '../lib/search';
+
+  const trigger = document.querySelector<HTMLAnchorElement>('[data-search-trigger]');
+  if (trigger) {
+    // 단축키 표기는 브라우저에서만 알 수 있다. 서버 렌더에는 자리만 둔다(NOR-164).
+    const platform =
+      (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData
+        ?.platform ?? navigator.platform;
+    const kbd = trigger.querySelector('kbd');
+    if (kbd) kbd.textContent = searchShortcutLabel(platform);
+
+    // 모듈 받기와 팔레트 그리기를 나눈다. 미리 받기가 팔레트를 그리면 잠깐 열렸다 닫힌다.
+    const load = lazyOnce(() => import('../islands/SearchPalette'));
+    const palette = lazyOnce(async () => (await load()).mountSearchPalette(trigger));
+    let mounted = false;
+    const show = (next: boolean | ((open: boolean) => boolean)) =>
+      palette()
+        .then((setOpen) => {
+          // 처음 그릴 때는 이미 열린 채다. 여기서 다시 바꾸면 바로 닫힌다.
+          if (mounted) setOpen(next);
+          mounted = true;
+        })
+        .catch(() => {
+          // 불러오지 못하면 링크 본래의 동작으로 돌아간다. 다음 시도에는 다시 받는다.
+          window.location.assign(trigger.href);
+        });
+    const prefetch = () => void load().catch(() => undefined);
+
+    trigger.addEventListener('pointerenter', prefetch, { once: true });
+    trigger.addEventListener('focus', prefetch, { once: true });
+    trigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      void show(true);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (!isSearchShortcut(event)) return;
+      event.preventDefault();
+      void show((open) => !open);
+    });
+  }
+</script>
