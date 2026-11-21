@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+    <!-- 워크벤치 아이콘 (NOR-232). 블로그 마크(NOR-149)를 먹색 타일에 얹어 블로그 탭과 구별한다. -->
+    <rect width="100" height="100" rx="24" fill="#292623" />
+    <g transform="translate(50 51) scale(0.74) translate(-50 -50)">
+        <g stroke="#FCF9F4" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M50 43 30 25l-12-2M30 25l4-16M50 43 70 25l12-2M70 25l-4-16" />
+            <path d="M34 9 38 5M66 9 62 5" />
+        </g>
+        <path d="M50 43v35" stroke="#FCF9F4" stroke-width="11" stroke-linecap="round" />
+        <circle cx="34" cy="61" r="5.5" fill="#FCF9F4" />
+        <circle cx="66" cy="61" r="5.5" fill="#FCF9F4" />
+        <ellipse cx="50" cy="81" rx="7.5" ry="5.5" fill="#FCF9F4" />
+    </g>
+</svg>
