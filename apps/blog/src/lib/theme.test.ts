@@ -36,3 +36,13 @@ describe('getThemeTogglePresentation', () => {
     expect(theme.getThemeTogglePresentation(resolved)).toEqual(expected);
   });
 });
+
+describe('nextThemePreference (NOR-231 AC-2)', () => {
+  it('지금 보이는 테마의 반대를 고른다', () => {
+    const next = (theme as Record<string, unknown>).nextThemePreference as
+      ((resolved: string) => string) | undefined;
+    expect(next).toBeDefined();
+    expect(next?.('dark')).toBe('light');
+    expect(next?.('light')).toBe('dark');
+  });
+});
