@@ -3,6 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 홈 화면·Dock 에 앱처럼 설치한다(NOR-232). service worker 는 두지 않는다. 작성 도구가
+         오래된 화면을 보여 주면 글을 덮어쓸 수 있기 때문이다. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fcf9f4" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#211f1d" />
+    <meta name="apple-mobile-web-app-title" content="Workbench" />
     <script>
       // 첫 그리기 전에 테마를 적용해 깜박임을 막는다(NOR-203). 규칙은 src/web/theme.ts 와 같다.
       (() => {

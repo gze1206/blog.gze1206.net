@@ -113,6 +113,38 @@ sudo systemctl daemon-reload && sudo systemctl enable --now publish-relay.timer
 compose 를 올린다(`create_host_path: false` 라 없으면 컨테이너가 뜨지 않는다).
 콘텐츠 경로를 넓힐 때는 `content-paths.regex` 를 고치고 호스트에도 다시 설치한다(워크플로는 main 의 것을 읽는다).
 
+## 짧은 주소: Tailscale Services (NOR-232)
+
+노드 주소의 443 에는 Serve 를 붙일 수 없다. Docker 가 `PREROUTING -m addrtype --dst-type LOCAL` 규칙으로
+이 호스트에 오는 443 을 모두 edge Caddy 컨테이너로 돌리기 때문이다. Tailscale Services 는 서비스마다 전용
+가상 IP(TailVIP)를 주고 tailscaled 가 그 주소를 직접 받으므로 이 규칙과 겹치지 않는다. 결과 주소는
+`https://workbench.<tailnet>.ts.net` 이다(포트 없음). 공개 인터넷 경로는 여전히 없다.
+
+**소유자 작업 (관리 콘솔)**
+
+1. Services 페이지에서 서비스를 정의한다. 이름 `workbench`, 엔드포인트 `tcp:443`.
+2. 접근 정책에 소유자 계정이 `svc:workbench` 의 443 에 닿는 grant 를 더한다. 호스트는 이미 태그 노드다.
+3. 아래 호스트 작업 뒤 같은 페이지의 Service hosts 에서 이 호스트를 승인한다(또는 `autoApprovers.services` 에
+   `"svc:workbench": ["<호스트 태그>"]` 를 둔다).
+
+**호스트 작업**
+
+```sh
+sudo tailscale serve --service=svc:workbench --https=443 http://127.0.0.1:3000
+tailscale serve status            # svc:workbench 와 기존 :8443 이 함께 보여야 한다
+```
+
+- 새 주소에서 문서 목록·저장·발행 검토가 되는 것을 확인할 때까지 8443 을 남긴다. 확인한 뒤
+  `sudo tailscale serve --https=8443 off` 로 내린다.
+- 되돌리기: `sudo tailscale serve --service=svc:workbench --https=443 off` 후 관리 콘솔에서 서비스를 지운다.
+- 설치한 앱(PWA)은 주소(origin)에 묶인다. 주소를 옮긴 뒤 새 주소에서 다시 설치한다.
+
+## 앱처럼 쓰기 (NOR-232)
+
+- 맥 Chrome: 주소창의 설치 아이콘 → 설치. Safari: 파일 → Dock 에 추가.
+- iPhone·iPad Safari: 공유 → 홈 화면에 추가. Android Chrome: 메뉴 → 앱 설치.
+- Tailscale 이 꺼져 있으면 열리지 않는다. 오프라인 캐시(service worker)는 일부러 두지 않았다.
+
 ## 이미지 갱신
 
 CI 가 `main` push(워크벤치·계약 패키지 변경 시)나 `workbench-v*` 태그에서 arm64 이미지를 게시하고 실행
