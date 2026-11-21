@@ -5,8 +5,8 @@
  * 랜드마크(`header` > `nav`)를 제공하고, 현재 섹션에 `aria-current="page"` 를 준다.
  * 시각 디자인 확정은 NOR-24(베이스 테마) 몫이라 여기서는 최소한만 둔다.
  */
-import ThemeToggle from '../islands/ThemeToggle';
-import SearchPalette from '../islands/SearchPalette';
+import ThemeToggle from './ThemeToggle.astro';
+import SearchTrigger from './SearchTrigger.astro';
 import { aboutPath, portfolioPath, topicsPath } from '../lib/routes';
 import BrandMark from './BrandMark.astro';
 
@@ -49,7 +49,7 @@ function currentState(href: string): 'page' | 'true' | undefined {
         }
       </ul>
     </nav>
-    <SearchPalette client:load />
-    <ThemeToggle client:load />
+    <SearchTrigger />
+    <ThemeToggle />
   </div>
 </header>

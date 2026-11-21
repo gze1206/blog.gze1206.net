@@ -1,0 +1,81 @@
+---
+/**
+ * 테마 전환 버튼 (NOR-231).
+ *
+ * 모든 페이지 머리글에 있으므로 React 없이 그린다. 이 버튼 하나 때문에 첫 화면에서 React 를
+ * 받으면 페이지마다 수십 KB 를 더 내려받는다. 처음 그릴 때는 라이트 기준 표기를 두고,
+ * 스크립트가 실제 테마에 맞춰 곧바로 고친다(문서 클래스는 BaseLayout 의 인라인 스크립트가 이미 정했다).
+ */
+import { getThemeTogglePresentation } from '../lib/theme';
+
+const initial = getThemeTogglePresentation('light');
+---
+
+<button
+  type="button"
+  class="theme-toggle"
+  aria-label={initial.label}
+  title={initial.label}
+  data-theme-toggle
+>
+  <span aria-hidden="true">{initial.icon}</span>
+</button>
+
+<script>
+  import {
+    getThemeTogglePresentation,
+    nextThemePreference,
+    normalizeThemePreference,
+    resolveTheme,
+    THEME_STORAGE_KEY,
+    type ResolvedTheme,
+    type ThemePreference,
+  } from '../lib/theme';
+
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+  function storedPreference(): ThemePreference {
+    try {
+      return normalizeThemePreference(window.localStorage.getItem(THEME_STORAGE_KEY));
+    } catch {
+      return 'system';
+    }
+  }
+
+  function current(): ResolvedTheme {
+    return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  }
+
+  function render(button: HTMLButtonElement): void {
+    const { icon, label } = getThemeTogglePresentation(current());
+    button.setAttribute('aria-label', label);
+    button.title = label;
+    const glyph = button.querySelector('span');
+    if (glyph) glyph.textContent = icon;
+  }
+
+  function apply(preference: ThemePreference): void {
+    const resolved = resolveTheme(preference, media.matches);
+    const root = document.documentElement;
+    root.classList.toggle('dark', resolved === 'dark');
+    root.style.colorScheme = resolved;
+    window.dispatchEvent(new CustomEvent('themechange', { detail: { preference, resolved } }));
+  }
+
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]')];
+  apply(storedPreference());
+  for (const button of buttons) {
+    render(button);
+    button.addEventListener('click', () => {
+      const next = nextThemePreference(current());
+      try {
+        window.localStorage.setItem(THEME_STORAGE_KEY, next);
+      } catch {
+        // 사생활 보호 모드처럼 저장소가 막혀도 이번 문서에서는 전환을 제공한다.
+      }
+      apply(next);
+    });
+  }
+  // 시스템 테마가 바뀌면 BaseLayout 스크립트가 themechange 를 보낸다.
+  window.addEventListener('themechange', () => buttons.forEach(render));
+</script>
