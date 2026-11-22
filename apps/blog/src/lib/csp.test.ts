@@ -32,6 +32,7 @@ describe('csp', () => {
       "'wasm-unsafe-eval'",
       'https://comments.gze1206.net',
       'https://static.cloudflareinsights.com',
+      'https://www.googletagmanager.com',
       "'sha256-a'",
       "'sha256-b'",
     ]);
@@ -46,6 +47,33 @@ describe('csp', () => {
     expect(directives['img-src']).toContain('https://i.ytimg.com');
     expect(policy).not.toContain("'unsafe-eval'");
     expect(directives['script-src']).not.toContain("'unsafe-inline'");
+  });
+
+  it('NOR-234 AC-1: GA4 는 광고 기능 없는 Google 출처만 연다', async () => {
+    const mod = await import('./csp.ts');
+    const policy: string = mod.buildCsp([]);
+    const directives = Object.fromEntries(
+      policy.split(';').map((part) => {
+        const [name, ...values] = part.trim().split(/\s+/u);
+        return [name, values];
+      }),
+    );
+    expect(directives['script-src']).toContain('https://www.googletagmanager.com');
+    expect(directives['img-src']).toEqual(
+      expect.arrayContaining([
+        'https://www.googletagmanager.com',
+        'https://*.google-analytics.com',
+      ]),
+    );
+    expect(directives['connect-src']).toEqual(
+      expect.arrayContaining([
+        'https://www.googletagmanager.com',
+        'https://*.google-analytics.com',
+        'https://*.google.com',
+      ]),
+    );
+    expect(policy).not.toMatch(/doubleclick|googlesyndication/u);
+    expect(directives['frame-src']).toEqual(['https://www.youtube-nocookie.com']);
   });
 
   it('NOR-201 AC-3: Cloudflare Pages _headers 형식으로 쓴다', async () => {
