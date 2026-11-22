@@ -18,15 +18,18 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
   return (
     <section
       aria-labelledby="publish-review-title"
-      className="min-h-0 flex-1 overflow-y-auto px-8 py-7"
+      className="min-h-0 flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-7"
     >
       <div className="mx-auto max-w-5xl">
-        <header className="flex items-start justify-between gap-8">
+        <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="font-mono text-[11px] tracking-[0.18em] text-accent uppercase">
               Dry run · no Git changes
             </p>
-            <h2 id="publish-review-title" className="mt-1 font-bold tracking-[-0.02em] text-3xl">
+            <h2
+              id="publish-review-title"
+              className="mt-1 font-bold tracking-[-0.02em] text-2xl md:text-3xl"
+            >
               공개 발행 검토
             </h2>
           </div>
@@ -35,7 +38,7 @@ export function PublishReview({ review, publishing, result, onClose, onConfirm }
           </button>
         </header>
 
-        <dl className="mt-7 grid grid-cols-[9rem_1fr] gap-x-4 gap-y-2 rounded-lg border border-border bg-surface p-5 text-sm">
+        <dl className="mt-7 grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 [overflow-wrap:anywhere] md:grid-cols-[9rem_minmax(0,1fr)] gap-y-2 rounded-lg border border-border bg-surface p-5 text-sm">
           <dt className="text-muted">제목</dt>
           <dd>{review.metadata.title}</dd>
           <dt className="text-muted">slug</dt>

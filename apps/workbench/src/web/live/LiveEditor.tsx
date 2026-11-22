@@ -95,7 +95,7 @@ export function LiveEditor({ source, onChange, className = '', onUploadImage, on
     <div className={`flex min-h-0 min-w-0 flex-col ${className}`}>
       <div
         aria-label="서식"
-        className="border-border flex gap-1 border-b px-4 py-1.5"
+        className="border-border relative flex gap-1 overflow-x-auto border-b px-4 py-1.5"
         role="toolbar"
       >
         {TOOLS.map((tool) => (

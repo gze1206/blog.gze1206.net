@@ -568,8 +568,8 @@ export function SiteContent() {
   }
 
   return (
-    <section aria-label="사이트 콘텐츠" className="flex min-h-0 flex-1">
-      <div className="w-64 shrink-0 overflow-y-auto border-r border-border p-5">
+    <section aria-label="사이트 콘텐츠" className="flex min-h-0 flex-1 flex-col md:flex-row">
+      <div className="max-h-[40%] shrink-0 overflow-y-auto border-b border-border p-4 md:max-h-none md:w-64 md:border-r md:border-b-0 md:p-5">
         {loading ? <p className="text-sm text-muted">main 을 읽는 중입니다.</p> : null}
         <button
           className="mb-4 rounded border border-border px-2.5 py-1 text-xs text-muted hover:text-foreground disabled:opacity-50"
@@ -623,7 +623,7 @@ export function SiteContent() {
           </ul>
         ) : null}
       </div>
-      <div className="min-w-0 flex-1 overflow-y-auto p-6">
+      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 md:p-6">
         {error ? (
           <p className="mb-4 rounded-md bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
             {error}

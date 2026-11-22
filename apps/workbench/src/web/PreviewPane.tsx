@@ -47,7 +47,7 @@ export function PreviewPane({ source, className = '' }: Props) {
   return (
     <section
       aria-label="미리보기"
-      className={`min-h-0 overflow-y-auto bg-surface px-8 py-6 ${className}`}
+      className={`min-h-0 overflow-y-auto bg-surface px-4 py-6 md:px-8 ${className}`}
     >
       {error ? (
         <p className="text-danger text-sm" role="alert">

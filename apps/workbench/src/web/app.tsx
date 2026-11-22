@@ -79,6 +79,21 @@ export function App() {
   const [publishAssets, setPublishAssets] = useState<PublicAssetCandidate[]>([]);
   const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
   const [reviewSuggestion, setReviewSuggestion] = useState<ReviewSuggestion | null>(null);
+  /** 좁은 화면에서 사이드바 서랍이 열렸는지(NOR-233). 넓은 화면에서는 쓰지 않는다. */
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const closeMenu = () => setMenuOpen(false);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setMenuOpen(false);
+      menuButtonRef.current?.focus();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [menuOpen]);
 
   const refresh = useCallback(async () => {
     const [nextTemplates, nextDocuments, nextTrash] = await Promise.all([
@@ -264,14 +279,50 @@ export function App() {
   )?.status;
 
   return (
-    <div className="flex h-screen min-h-[38rem] bg-background text-foreground">
+    <div className="flex h-dvh flex-col bg-background text-foreground md:min-h-[38rem] md:flex-row">
+      {/* 좁은 화면에서만 보이는 위쪽 막대. 사이드바는 서랍으로 접는다(NOR-233). */}
+      <div className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-surface-sunken px-2 md:hidden">
+        <button
+          aria-controls="sidebar"
+          aria-expanded={menuOpen}
+          aria-label="메뉴 열기"
+          className="flex size-10 items-center justify-center rounded-md text-muted-strong hover:text-foreground"
+          onClick={() => setMenuOpen((open) => !open)}
+          ref={menuButtonRef}
+          type="button"
+        >
+          <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 20 20">
+            <path
+              d="M3 5h14M3 10h14M3 15h14"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeWidth="1.6"
+            />
+          </svg>
+        </button>
+        <span className="font-bold tracking-[-0.02em]">Workbench</span>
+      </div>
+      {menuOpen ? (
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 z-30 bg-scrim md:hidden"
+          data-testid="sidebar-scrim"
+          onClick={closeMenu}
+        />
+      ) : null}
       {importing ? (
         <ImportDialog onClose={() => setImporting(false)} onImported={() => void refresh()} />
       ) : null}
       {addingBook ? (
         <BookDialog onClose={() => setAddingBook(false)} onCreated={() => void refresh()} />
       ) : null}
-      <aside className="w-80 shrink-0 overflow-y-auto border-r border-border bg-surface-sunken p-5">
+      <aside
+        aria-label="사이드바"
+        className={`${
+          menuOpen ? 'fixed inset-y-0 left-0 z-40 block w-[min(20rem,85vw)] shadow-xl' : 'hidden'
+        } shrink-0 overflow-y-auto border-r border-border bg-surface-sunken p-5 md:static md:z-auto md:block md:w-80 md:shadow-none`}
+        id="sidebar"
+      >
         <header className="mb-8">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -289,6 +340,7 @@ export function App() {
             onClick={() => {
               setSelected(null);
               setSiteOpen(false);
+              closeMenu();
             }}
             type="button"
           >
@@ -296,14 +348,20 @@ export function App() {
           </button>
           <button
             className="mt-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-left text-sm"
-            onClick={() => setImporting(true)}
+            onClick={() => {
+              setImporting(true);
+              closeMenu();
+            }}
             type="button"
           >
             블로그에서 가져오기
           </button>
           <button
             className="mt-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-left text-sm"
-            onClick={() => setAddingBook(true)}
+            onClick={() => {
+              setAddingBook(true);
+              closeMenu();
+            }}
             type="button"
           >
             책 등록
@@ -313,16 +371,27 @@ export function App() {
             onClick={() => {
               setSelected(null);
               setSiteOpen(true);
+              closeMenu();
             }}
             type="button"
           >
             사이트 콘텐츠
           </button>
         </header>
-        <TemplateGallery busy={busy} onCreate={create} templates={templates} />
+        <TemplateGallery
+          busy={busy}
+          onCreate={(templateId, title, period) => {
+            closeMenu();
+            return create(templateId, title, period);
+          }}
+          templates={templates}
+        />
         <DocumentList
           blogOnly={publishStatus?.blogOnly.length ?? 0}
-          onImport={() => setImporting(true)}
+          onImport={() => {
+            setImporting(true);
+            closeMenu();
+          }}
           statusesLoading={publishStatusLoading && publishStatus === null}
           statuses={Object.fromEntries(
             (publishStatus?.documents ?? []).map((item) => [item.documentId, item.status]),
@@ -330,6 +399,7 @@ export function App() {
           documents={documents}
           onSelect={(id) => {
             setSiteOpen(false);
+            closeMenu();
             void selectDocument(id);
           }}
           problems={documentProblems}
@@ -339,7 +409,7 @@ export function App() {
           <TrashList items={trash} onChanged={() => void refresh()} onError={setError} />
         ) : null}
       </aside>
-      <main className="flex min-w-0 flex-1 flex-col bg-background">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
         {error ? (
           <div
             className="border-b border-danger/30 bg-danger/10 px-6 py-3 text-sm text-danger"

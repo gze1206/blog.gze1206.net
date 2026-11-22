@@ -145,10 +145,10 @@ export function DayPage({
   };
 
   return (
-    <div className="mx-auto w-full max-w-5xl overflow-y-auto px-8 py-10">
+    <div className="mx-auto w-full max-w-5xl overflow-y-auto px-4 py-6 md:px-8 md:py-10">
       <header className="mb-7">
         <p className="font-mono text-xs tracking-widest text-accent uppercase">Today</p>
-        <h1 className="mt-1 font-bold tracking-[-0.02em] text-3xl">{date} 일일 로그</h1>
+        <h1 className="mt-1 font-bold tracking-[-0.02em] text-2xl md:text-3xl">{date} 일일 로그</h1>
       </header>
       {loadedDate === date && reviewSuggestion ? (
         <ReviewPrompt
