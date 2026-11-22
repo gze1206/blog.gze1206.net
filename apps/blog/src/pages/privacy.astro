@@ -1,0 +1,59 @@
+---
+/**
+ * 개인정보 처리방침 (NOR-234).
+ *
+ * GA4 이용 약관은 Google Analytics 를 쓴다는 사실을 알리도록 요구한다. 이 사이트가 무엇을 어디에 모으는지와
+ * 거부하는 방법을 한곳에 둔다. 무엇을 더하거나 빼면 이 페이지와 시행일을 함께 고친다.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="개인정보 처리방침"
+  description="gze1206.net 이 방문 통계와 댓글을 위해 어떤 정보를 모으는지, 거부하는 방법은 무엇인지 알립니다."
+>
+  <main id="main-content" class="site-shell max-w-3xl py-16">
+    <h1 class="text-3xl font-bold tracking-tight">개인정보 처리방침</h1>
+    <p class="text-muted mt-3 text-sm">시행일 2026년 11월 22일</p>
+
+    <div class="post-body mt-10">
+      <p>
+        이 블로그는 회원 가입이 없고, 방문자를 식별할 목적으로 정보를 모으지 않습니다. 다만 아래
+        도구가 방문 통계와 댓글을 위해 일부 정보를 처리합니다.
+      </p>
+
+      <h2>Google Analytics</h2>
+      <p>
+        어떤 글이 얼마나 읽히는지 알기 위해 Google Analytics 4 를 씁니다. 방문한 페이지, 유입 경로,
+        머문 시간, 글을 끝까지 읽었는지, 대략적인 지역, 브라우저와 기기 종류가 Google 로 전송되며,
+        이를 위해 브라우저에 쿠키가 저장됩니다. 광고 기능(Google Signals, 광고 개인화)은 쓰지
+        않습니다. Google 이 이 정보를 처리하는 방식은 <a
+          href="https://policies.google.com/technologies/partner-sites?hl=ko">Google 의 안내</a
+        >에 있습니다.
+      </p>
+      <p>
+        수집을 원하지 않으면 브라우저의 쿠키 차단·추적 방지 기능을 쓰거나 Google 이 제공하는
+        <a href="https://tools.google.com/dlpage/gaoptout">Google Analytics 차단 부가기능</a>을
+        설치하세요. 그래도 글을 읽는 데는 아무 차이가 없습니다.
+      </p>
+
+      <h2>Cloudflare Web Analytics</h2>
+      <p>
+        사이트를 호스팅하는 Cloudflare 의 Web Analytics 가 페이지 조회 수와 로딩 속도를 집계합니다.
+        쿠키를 쓰지 않고 개별 방문자를 추적하지 않습니다.
+      </p>
+
+      <h2>댓글</h2>
+      <p>
+        댓글은 직접 운영하는 댓글 서버(comments.gze1206.net)에 저장됩니다. 댓글을 남기면 입력한
+        이름과 내용, 로그인한 경우 그 계정 정보가 저장되며, 로그인 상태를 유지하기 위해 쿠키를
+        씁니다. 댓글을 지우고 싶으면 직접 삭제하거나 운영자에게 요청할 수 있습니다.
+      </p>
+
+      <h2>문의</h2>
+      <p>
+        이 방침에 대한 문의나 삭제 요청은 <a href="/about">소개 페이지</a>의 연락처로 보내 주세요.
+      </p>
+    </div>
+  </main>
+</BaseLayout>

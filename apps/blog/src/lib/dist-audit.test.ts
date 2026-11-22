@@ -204,3 +204,21 @@ it('NOR-210 AC-10: 글 페이지에서 본문 경계를 찾지 못하면 실패�
   });
   expect(findings.map((finding) => finding.rule)).toEqual(['content-script']);
 });
+
+it('NOR-234 AC-6: 글이 아닌 페이지는 post-body 뒤의 사이트 스크립트를 본문으로 보지 않는다', () => {
+  // 개인정보 처리방침처럼 글 모양을 빌린 페이지에는 article__after 가 없다. 그때 문서 끝까지를 본문으로
+  // 잡으면 푸터 뒤의 분석 스크립트까지 본문 스크립트로 오인한다.
+  const findings = auditDist({
+    files: [
+      {
+        path: 'privacy/index.html',
+        html: '<main><div class="post-body mt-10"><p>안내</p></div></main><footer></footer><script type="module">analytics()</script>',
+      },
+    ],
+    assets: [],
+    draftSlugs: [],
+    draftTitles: [],
+    smoke: false,
+  });
+  expect(findings).toEqual([]);
+});
