@@ -20,7 +20,7 @@ async function git(root: string, ...args: string[]) {
   return (await exec('git', ['-C', root, ...args])).stdout.trim();
 }
 
-async function fixture() {
+async function fixture(extra: Readonly<Record<string, string>> = {}) {
   const root = await mkdtemp(path.join(tmpdir(), 'site-content-'));
   const source = path.join(root, 'source');
   const outbox = path.join(root, 'outbox');
@@ -32,6 +32,10 @@ async function fixture() {
   await writeFile(path.join(source, CONTENT, 'profile.json'), PROFILE);
   await writeFile(path.join(source, CONTENT, 'series/a.json'), SERIES);
   await writeFile(path.join(source, CONTENT, 'experience/broken.json'), '{ not json');
+  for (const [relativePath, content] of Object.entries(extra)) {
+    await mkdir(path.dirname(path.join(source, CONTENT, relativePath)), { recursive: true });
+    await writeFile(path.join(source, CONTENT, relativePath), content);
+  }
   await git(source, 'init', '-b', 'main');
   await git(source, 'config', 'user.name', 'Fixture');
   await git(source, 'config', 'user.email', 'fixture@example.test');
@@ -200,6 +204,33 @@ it(
       ]);
       expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
       expect((await readdir(f.outbox)).filter((name) => name.endsWith('.json'))).toHaveLength(1);
+    } finally {
+      await f.close();
+    }
+  },
+);
+
+it(
+  'NOR-235 AC-1, NOR-235 AC-2: 글이 가리키는 시리즈는 지우지 못하고, 아무도 쓰지 않는 시리즈는 지운다',
+  { timeout: 30000 },
+  async () => {
+    const f = await fixture({
+      'posts/uses-a.mdoc': "---\ntitle: 'x'\nseries: 'a'\nseriesOrder: 1\ndraft: true\n---\n본문\n",
+      'series/b.json': SERIES.replace('"a"', '"b"'),
+    });
+    try {
+      const rejected = f.adapter['reviewSite']?.({ collection: 'series', id: 'a', delete: true });
+      await expect(rejected).rejects.toMatchObject({
+        status: 400,
+        issues: [expect.objectContaining({ path: `${CONTENT}/posts/uses-a.mdoc` })],
+      });
+      expect(await readdir(f.outbox)).toEqual([]);
+      const review = (await f.adapter['reviewSite']?.({
+        collection: 'series',
+        id: 'b',
+        delete: true,
+      })) as { kind: string };
+      expect(review.kind).toBe('delete');
     } finally {
       await f.close();
     }

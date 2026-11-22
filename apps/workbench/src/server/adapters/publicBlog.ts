@@ -862,6 +862,28 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     return { assets, issues, warnings };
   }
 
+  /** main 사본에서 시리즈 `seriesId` 를 가리키는 글의 저장소 상대 경로. 읽지 못한 글은 건너뛴다. */
+  private async postsInSeries(repositoryRoot: string, seriesId: string): Promise<string[]> {
+    let names: string[];
+    try {
+      names = await readdir(path.join(repositoryRoot, BLOG_LAYOUT.postsDir));
+    } catch {
+      return [];
+    }
+    const found: string[] = [];
+    for (const name of names.filter((entry) => /\.(?:md|mdoc)$/u.test(entry)).sort()) {
+      const relativePath = `${BLOG_LAYOUT.postsDir}/${name}`;
+      const source = await this.readOutput(repositoryRoot, relativePath);
+      if (source === null) continue;
+      try {
+        if (parseFrontmatter(source).data['series'] === seriesId) found.push(relativePath);
+      } catch {
+        // frontmatter 가 깨진 글은 블로그 빌드가 따로 잡는다.
+      }
+    }
+    return found;
+  }
+
   private async createSiteReview(requested: SiteChange, clone: EphemeralClone) {
     const issues = validateSiteChange(requested);
     if (issues.length > 0) throw new SiteReviewError('invalid site content', 400, issues);
@@ -896,6 +918,18 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     if (!('delete' in change)) {
       const unknown = unknownKeyIssues(change.collection, change.data, current);
       if (unknown.length > 0) throw new SiteReviewError('invalid site content', 400, unknown);
+    } else if (change.collection === 'series' && current !== null) {
+      // 블로그 빌드는 없는 시리즈를 가리키는 글(draft 포함)이 있으면 멈춘다(NOR-235).
+      const users = await this.postsInSeries(clone.repositoryRoot, change.id);
+      if (users.length > 0)
+        throw new SiteReviewError(
+          'series is still used by posts',
+          400,
+          users.map((postPath) => ({
+            path: postPath,
+            message: `이 글이 아직 시리즈 '${change.id}' 를 가리킵니다. 글에서 시리즈를 먼저 빼 주세요.`,
+          })),
+        );
     }
     const images = await this.siteImages(change, clone.repositoryRoot);
     if (images.issues.length > 0)
