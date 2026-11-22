@@ -1,0 +1,55 @@
+---
+/**
+ * 끝까지 읽음 측정 (NOR-234).
+ *
+ * 본문 끝의 표지(`data-read-sentinel`, PostLayout 이 둔다)가 화면에 들어왔고, 탭이 보이는 동안 충분히
+ * 머물렀으면 `read_complete` 를 한 번 보낸다. 기준은 `isReadComplete` 가 정한다.
+ * 스크립트는 글 본문 밖에 둔다. 본문 안의 스크립트는 산출물 감사(content-script)가 막는다.
+ */
+---
+
+<script>
+  import { gtag, isReadComplete } from '../lib/analytics';
+
+  const sentinel = document.querySelector<HTMLElement>('[data-read-sentinel]');
+  if (sentinel) {
+    const minutes = Number(sentinel.dataset.readingMinutes) || 1;
+    let visibleMs = 0;
+    let since: number | null = document.visibilityState === 'visible' ? performance.now() : null;
+    let reachedEnd = false;
+    let sent = false;
+    let timer: ReturnType<typeof setInterval> | undefined;
+
+    const elapsed = () => visibleMs + (since === null ? 0 : performance.now() - since);
+    const check = () => {
+      if (sent) return;
+      const engaged = elapsed();
+      if (!isReadComplete({ reachedEnd, visibleMs: engaged, minutes })) return;
+      sent = true;
+      clearInterval(timer);
+      observer.disconnect();
+      gtag('event', 'read_complete', {
+        reading_minutes: minutes,
+        engaged_seconds: Math.round(engaged / 1000),
+      });
+    };
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') since ??= performance.now();
+      else if (since !== null) {
+        visibleMs += performance.now() - since;
+        since = null;
+      }
+      check();
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      if (reachedEnd || !entries.some((entry) => entry.isIntersecting)) return;
+      reachedEnd = true;
+      // 끝에 닿은 뒤에만 시간을 다시 본다. 기준 시간을 채우는 순간 보내기 위해서다.
+      timer = setInterval(check, 1000);
+      check();
+    });
+    observer.observe(sentinel);
+  }
+</script>

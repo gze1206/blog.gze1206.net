@@ -19,6 +19,7 @@
  * 레이아웃은 그 안에 무엇이 오는지 알지 못한다 — 시리즈 내비게이션을 렌더할지 말지는
  * `buildSeriesNav`(ADR 0011)가 판단하고, 레이아웃은 자리만 내준다.
  */
+import ReadTracker from '../components/ReadTracker.astro';
 import BaseLayout from './BaseLayout.astro';
 import katexCss from 'katex/dist/katex.min.css?url';
 import TableOfContents from '../components/TableOfContents.astro';
@@ -130,11 +131,14 @@ const jsonLd = [
       <div class="post-body article__body">
         <slot />
       </div>
+      {/* 끝까지 읽음의 기준점(NOR-234). 스크립트는 본문 밖의 ReadTracker 에 있다. */}
+      <div aria-hidden="true" data-read-sentinel data-reading-minutes={readingTime.minutes}></div>
 
       <div class="article__after">
         <slot name="after-content" />
       </div>
     </article>
+    <ReadTracker />
 
     {
       tocPlacement.floating && (

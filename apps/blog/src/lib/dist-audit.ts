@@ -162,5 +162,8 @@ function postBody(html: string): string | null {
   const start = html.search(/<div class="post-body\b/u);
   if (start === -1) return null;
   const end = html.indexOf('<div class="article__after"', start);
-  return html.slice(start, end === -1 ? undefined : end);
+  // 글 본문은 article__after 에서 끝난다. 그것이 없으면 글 모양을 빌린 다른 페이지다(NOR-234). 문서 끝까지
+  // 본문으로 잡으면 푸터 뒤의 사이트 스크립트를 본문 스크립트로 오인한다.
+  if (end === -1) return null;
+  return html.slice(start, end);
 }

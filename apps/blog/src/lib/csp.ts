@@ -14,6 +14,9 @@ export type CspMode = 'report-only' | 'enforce';
 const COMMENTS = 'https://comments.gze1206.net';
 // Cloudflare Pages 가 모든 페이지에 넣는 Web Analytics 비컨.
 const CF_BEACON = 'https://static.cloudflareinsights.com';
+// GA4(NOR-234). Google 태그 CSP 안내의 "광고 기능 없는 Google Analytics" 목록만 연다.
+const GTM = 'https://www.googletagmanager.com';
+const GA = 'https://*.google-analytics.com';
 const SCRIPT = /<script\b([^>]*)>([\s\S]*?)<\/script>/giu;
 const SRC = /\ssrc\s*=/iu;
 const TYPE = /\stype\s*=\s*["']?([^"'\s>]+)/iu;
@@ -35,10 +38,10 @@ export function buildCsp(hashes: readonly string[]): string {
   const directives: [string, ...string[]][] = [
     ['default-src', "'self'"],
     // Pagefind 검색이 WebAssembly 를 쓴다. 문자열 eval 은 허용하지 않는다.
-    ['script-src', "'self'", "'wasm-unsafe-eval'", COMMENTS, CF_BEACON, ...inline],
+    ['script-src', "'self'", "'wasm-unsafe-eval'", COMMENTS, CF_BEACON, GTM, ...inline],
     // 스타일 속성이 많고 Mermaid·KaTeX·Comentario 가 스타일을 주입한다.
     ['style-src', "'self'", "'unsafe-inline'", COMMENTS],
-    ['img-src', "'self'", 'data:', COMMENTS, 'https://i.ytimg.com'],
+    ['img-src', "'self'", 'data:', COMMENTS, 'https://i.ytimg.com', GTM, GA],
     // Comentario CSS 가 자기 서버의 폰트를 부른다(no-fonts 를 줘도).
     ['font-src', "'self'", 'data:', COMMENTS],
     [
@@ -47,6 +50,9 @@ export function buildCsp(hashes: readonly string[]): string {
       COMMENTS,
       'wss://comments.gze1206.net',
       'https://cloudflareinsights.com',
+      GTM,
+      GA,
+      'https://*.google.com',
     ],
     ['frame-src', 'https://www.youtube-nocookie.com'],
     ['object-src', "'none'"],

@@ -118,6 +118,7 @@ describe('buildOgTargets', () => {
       '/og/about.png',
       '/og/books.png',
       '/og/portfolio.png',
+      '/og/privacy.png',
     ]);
   });
 });

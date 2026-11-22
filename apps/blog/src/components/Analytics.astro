@@ -1,0 +1,27 @@
+---
+/**
+ * GA4 를 싣는다(NOR-234). 운영 도메인에서만, `load` 뒤 브라우저가 한가할 때 싣는다.
+ * 첫 화면 그리기와 상호작용을 막지 않기 위해서다.
+ */
+---
+
+<script>
+  import { GA_CONFIG, GA_MEASUREMENT_ID, gtag, shouldLoadAnalytics } from '../lib/analytics';
+
+  if (shouldLoadAnalytics(location.hostname)) {
+    const start = () => {
+      gtag('js', new Date());
+      gtag('config', GA_MEASUREMENT_ID, GA_CONFIG);
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+      document.head.append(script);
+    };
+    const whenIdle = () => {
+      if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 4000 });
+      else setTimeout(start, 0);
+    };
+    if (document.readyState === 'complete') whenIdle();
+    else addEventListener('load', whenIdle, { once: true });
+  }
+</script>

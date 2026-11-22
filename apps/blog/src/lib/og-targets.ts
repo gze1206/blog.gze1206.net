@@ -125,6 +125,12 @@ export function buildOgTargets(input: OgTargetsInput): OgTarget[] {
       description: '만든 것들을 소개합니다.',
       brand,
     }),
+    target('/privacy', {
+      kind: 'list',
+      title: '개인정보 처리방침',
+      description: '방문 통계와 댓글을 위해 모으는 정보를 알립니다.',
+      brand,
+    }),
   ];
 
   for (const book of input.books ?? []) {

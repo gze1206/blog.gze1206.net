@@ -37,14 +37,15 @@ test('NOR-234 AC-5: 끝까지 내리고 충분히 머물면 read_complete 를 �
   await page.clock.runFor(minutes * 60_000);
   expect(await page.evaluate(readEvents)).toEqual([]);
 
+  // IntersectionObserver 는 다음 그리기 때 알린다. 가짜 시계와 무관하게 실제로 조금 기다린다.
   await page.locator('.article__after').scrollIntoViewIfNeeded();
-  await page.clock.runFor(1_000);
+  await expect.poll(() => page.evaluate(readEvents)).toHaveLength(1);
   const events = await page.evaluate(readEvents);
-  expect(events).toHaveLength(1);
   expect(events[0]).toMatchObject({ reading_minutes: minutes });
 
   await page.mouse.wheel(0, -2000);
   await page.locator('.article__after').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
   await page.clock.runFor(60_000);
   expect(await page.evaluate(readEvents)).toHaveLength(1);
 });
@@ -53,11 +54,14 @@ test('NOR-234 AC-5: 탭이 숨은 동안의 시간은 세지 않는다', async (
   await page.clock.install();
   await page.goto(POST);
   await page.locator('.article__after').scrollIntoViewIfNeeded();
+  // 끝에 닿았다는 알림을 받은 뒤에 탭을 숨긴다.
+  await page.waitForTimeout(300);
   await page.evaluate(() => {
     Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
     document.dispatchEvent(new Event('visibilitychange'));
   });
   await page.clock.runFor(3_600_000);
+  await page.waitForTimeout(300);
   expect(await page.evaluate(readEvents)).toEqual([]);
 });
 
