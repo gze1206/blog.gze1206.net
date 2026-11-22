@@ -19,6 +19,9 @@ export type SiteField =
       readonly label: string;
       readonly type: 'text' | 'textarea';
       readonly optional?: boolean;
+      /** 입력을 표준 형식으로 고친다(NOR-236). */
+      readonly normalize?: (value: string) => string;
+      readonly placeholder?: string;
     }
   | { readonly key: string; readonly label: string; readonly type: 'lines' | 'paragraphs' }
   | { readonly key: string; readonly label: string; readonly type: 'boolean' }
@@ -43,6 +46,20 @@ export type Row = Record<string, string>;
 export type FormValue = string | boolean | Row[];
 type Data = Readonly<Record<string, unknown>>;
 
+const LOOSE_PERIOD = /^(\d{4})\.(\d{1,2})\s*[-–—~]\s*(?:(\d{4})\.(\d{1,2})|(현재))$/u;
+
+/**
+ * 구분자·공백·한 자리 월만 다른 경력 기간을 `YYYY.MM – YYYY.MM` 으로 고친다(NOR-236).
+ * 그 밖의 입력은 그대로 돌려줘 계약 검사가 오류를 보이게 한다.
+ */
+export function normalizeExperiencePeriod(value: string): string {
+  const match = LOOSE_PERIOD.exec(value.trim());
+  if (match === null) return value;
+  const month = (text: string | undefined) => (text ?? '').padStart(2, '0');
+  const end = match[5] ?? `${match[3]}.${month(match[4])}`;
+  return `${match[1]}.${month(match[2])} – ${end}`;
+}
+
 export const SITE_FIELDS: Record<SiteCollection, readonly SiteField[]> = {
   profile: [
     { key: 'name', label: '이름', type: 'text' },
@@ -65,7 +82,13 @@ export const SITE_FIELDS: Record<SiteCollection, readonly SiteField[]> = {
   experience: [
     { key: 'organization', label: '회사', type: 'text' },
     { key: 'role', label: '역할', type: 'text' },
-    { key: 'period', label: '기간', type: 'text' },
+    {
+      key: 'period',
+      label: '기간',
+      type: 'text',
+      normalize: normalizeExperiencePeriod,
+      placeholder: '2025.05 – 2025.09 또는 2025.05 – 현재',
+    },
     { key: 'endDate', label: '끝난 날짜', type: 'date' },
     { key: 'highlights', label: '한 일(한 줄에 하나)', type: 'lines' },
     { key: 'visible', label: '공개', type: 'boolean' },
