@@ -28,7 +28,7 @@ export function MigrateDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-20 grid place-items-center bg-scrim p-6">
+    <div className="fixed inset-0 z-20 grid place-items-center bg-scrim p-3 sm:p-6">
       <section
         aria-label={intentional ? '의식적 이월' : '간편 이월'}
         aria-modal="true"

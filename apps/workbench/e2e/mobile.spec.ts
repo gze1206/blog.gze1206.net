@@ -45,6 +45,8 @@ test('NOR-233 AC-1: 휴대폰 화면에서 각 화면이 가로로 넘치지 않
   await expect(page.getByRole('region', { name: '미리보기' })).toBeVisible();
   expect(await overflowing(page), '나란히 보기').toEqual([]);
 
+  // 본문이 이미지를 가리키므로 자산을 골라야 검토가 열린다.
+  await page.getByLabel('images/flow.png (14 B)').check();
   await page.getByRole('button', { name: '발행 검토' }).click();
   await expect(page.getByRole('heading', { name: '공개 발행 검토' })).toBeVisible();
   expect(await overflowing(page), '발행 검토').toEqual([]);

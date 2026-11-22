@@ -25,8 +25,7 @@
 
   body {
     margin: 0;
-    min-width: 52rem;
-    min-height: 100vh;
+    min-height: 100dvh;
     background: var(--theme-background);
     color: var(--theme-foreground);
     font-family: var(--font-sans);
@@ -43,6 +42,18 @@
   :focus-visible {
     outline: 2px solid var(--theme-focus);
     outline-offset: 2px;
+  }
+}
+
+/*
+  좁은 화면(NOR-233). iOS Safari 는 16px 보다 작은 입력 칸을 누르면 화면을 확대한다.
+  @layer 밖에 두어 text-sm 같은 유틸리티보다 앞선다.
+*/
+@media (width < 48rem) {
+  input:not([type='checkbox'], [type='radio'], [type='file'], [type='range']),
+  textarea,
+  select {
+    font-size: 1rem;
   }
 }
 

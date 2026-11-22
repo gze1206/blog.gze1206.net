@@ -158,12 +158,12 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
 
   return (
     <section aria-label="책 편집기" className="flex min-h-0 flex-1 flex-col">
-      <header className="flex h-16 items-center justify-between border-b border-border px-6">
-        <div>
-          <h2 className="text-sm font-medium text-foreground">{form.title}</h2>
+      <header className="flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-border px-4 py-2 md:px-6">
+        <div className="min-w-0">
+          <h2 className="text-sm font-medium break-words text-foreground">{form.title}</h2>
           <p className="text-xs text-muted">읽은 책</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {onDelete ? (
             <button
               className="text-muted hover:text-danger rounded-md px-3 py-2 text-sm disabled:opacity-40"
@@ -200,7 +200,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-6">
         {review ? (
           <BookPublishReview
             review={review}
@@ -211,7 +211,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
             onConfirm={() => void confirm()}
           />
         ) : null}
-        <div className="flex gap-5">
+        <div className="flex flex-col gap-5 sm:flex-row">
           <div className="flex w-24 flex-none flex-col gap-1.5">
             <span className="flex h-36 w-24 items-center justify-center overflow-hidden rounded border border-border bg-surface-sunken text-[11px] text-muted">
               {cover === null ? (
@@ -272,7 +272,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
                 values={form.translators ?? []}
               />
             </Field>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <Field label="출판사">
                 <input
                   className="w-full rounded border border-border-strong px-2 py-1 text-sm"
@@ -308,7 +308,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
                 />
               </Field>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <Choice
                 label="상태"
                 onChange={(value) => set('status', value)}
@@ -328,7 +328,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
                 value={form.source}
               />
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <Field label="시작한 날">
                 <input
                   className="w-full rounded border border-border-strong px-2 py-1 text-sm"
@@ -382,7 +382,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
               value={form.oneLiner ?? ''}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="태그 (쉼표로 구분)">
               <ListInput
                 onChange={(tags) =>
@@ -422,7 +422,7 @@ export function BookEditor({ document, onChanged, onEditSource, onError, onDelet
           excerpts={document.excerpts ?? []}
           title={form.title}
         />
-        <div className="mt-5 grid grid-cols-2 gap-6 border-t border-border pt-5">
+        <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-2 border-t border-border pt-5">
           <BookNotes
             documentId={document.id}
             bookId={bookId}

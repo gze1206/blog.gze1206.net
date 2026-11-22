@@ -129,7 +129,7 @@ export function BookDialog({ onClose, onCreated }: Props) {
   const coverPreview = cover?.preview ?? found?.coverUrl;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-scrim p-6 pt-[8vh]">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-scrim p-3 pt-[8vh] sm:p-6 sm:pt-[8vh]">
       <div className="flex max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
         <header className="border-b border-border px-5 py-4">
           <h2 className="font-bold tracking-[-0.02em] text-xl">책 등록</h2>
@@ -185,7 +185,7 @@ export function BookDialog({ onClose, onCreated }: Props) {
             />
           </label>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <Choice label="상태" onChange={setStatus} options={STATUSES} value={status} />
             <Choice label="형태" onChange={setFormat} options={FORMATS} value={format} />
             <Choice label="경로" onChange={setSource} options={SOURCES} value={source} />

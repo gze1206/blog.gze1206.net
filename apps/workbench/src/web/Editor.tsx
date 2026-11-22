@@ -51,9 +51,9 @@ export function Editor({
   const [mode, setMode] = useState<EditorMode>('edit');
   return (
     <section className="flex min-h-0 flex-1 flex-col" aria-label="문서 편집기">
-      <header className="flex h-16 items-center justify-between border-b border-border px-6">
-        <div>
-          <h2 className="text-sm font-medium text-foreground">{title}</h2>
+      <header className="flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-border px-4 py-2 md:px-6">
+        <div className="min-w-0">
+          <h2 className="text-sm font-medium break-words text-foreground">{title}</h2>
           <p className="text-xs text-muted">
             {published
               ? `블로그에 발행된 글 · ${publishState === 'published' ? '블로그와 같음' : '블로그와 다름'}`
@@ -62,7 +62,7 @@ export function Editor({
                 : 'Markdown + YAML frontmatter'}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <div
             aria-label="보기"
             className="border-border flex rounded-md border p-0.5"
@@ -111,7 +111,7 @@ export function Editor({
         </div>
       </header>
       {onReviewPublish ? (
-        <fieldset className="border-b border-border px-6 py-3">
+        <fieldset className="border-b border-border px-4 py-3 md:px-6">
           <legend className="text-xs font-semibold tracking-wide text-muted uppercase">
             발행 자산
           </legend>
@@ -133,7 +133,7 @@ export function Editor({
           )}
         </fieldset>
       ) : null}
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         {mode !== 'preview' ? (
           <LiveEditor
             className="flex-1"
@@ -145,7 +145,11 @@ export function Editor({
         ) : null}
         {mode !== 'edit' ? (
           <PreviewPane
-            className={mode === 'split' ? 'border-border w-1/2 border-l' : 'flex-1'}
+            className={
+              mode === 'split'
+                ? 'border-border flex-1 border-t md:w-1/2 md:flex-none md:border-t-0 md:border-l'
+                : 'flex-1'
+            }
             source={source}
           />
         ) : null}
