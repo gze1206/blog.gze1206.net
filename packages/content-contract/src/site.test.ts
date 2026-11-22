@@ -24,7 +24,7 @@ describe('사이트 콘텐츠 계약', () => {
     const parsed = experience?.parse({
       organization: '회사',
       role: '개발',
-      period: '2020 – 현재',
+      period: '2020.01 – 현재',
       highlights: ['일'],
       visible: true,
     });
