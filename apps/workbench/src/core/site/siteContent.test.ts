@@ -138,3 +138,36 @@ describe('이름 바꾸기', () => {
     ]);
   });
 });
+
+it('NOR-236 AC-4: 스키마 밖 키는 원래 순서대로 앞에, 스키마 키는 스키마 순서로 뒤에 둔다', async () => {
+  const { planSiteChange } = await site();
+  const plan = planSiteChange(
+    {
+      collection: 'experience',
+      id: 'a',
+      data: {
+        visible: true,
+        note: '손으로 넣은 값',
+        organization: '회사',
+        endDate: '2025-09-01',
+        extra: 1,
+        role: '개발',
+        period: '2025.05 – 2025.09',
+        highlights: ['일'],
+      },
+    },
+    null,
+  );
+  expect(plan.kind).toBe('write');
+  const content = plan.kind === 'write' ? plan.content : '';
+  expect(Object.keys(JSON.parse(content) as object)).toEqual([
+    'note',
+    'extra',
+    'organization',
+    'role',
+    'period',
+    'endDate',
+    'highlights',
+    'visible',
+  ]);
+});

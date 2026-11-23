@@ -46,7 +46,7 @@ const validProfile = {
 const validExperience = {
   organization: '공개 조직',
   role: '개발자',
-  period: '2024.01 — 현재',
+  period: '2024.01 – 현재',
   endDate: null,
   highlights: ['공개 성과'],
   visible: true,

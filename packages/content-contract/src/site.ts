@@ -105,18 +105,69 @@ export const profileSchema = z.object({
     .default([]),
 });
 
-export const experienceSchema = z.object({
-  organization: z.string().min(1),
-  role: z.string().min(1),
-  period: z.string().min(1),
-  endDate: z.coerce
-    .date()
-    .nullable()
-    .optional()
-    .transform((value) => value ?? null),
-  highlights: z.array(z.string().min(1)).min(1),
-  visible: z.boolean(),
-});
+/** 경력 기간의 표준 형식(NOR-236). 구분자는 앞뒤에 공백 하나를 둔 엔 대시다. */
+export const EXPERIENCE_PERIOD_PATTERN =
+  /^(\d{4})\.(0[1-9]|1[0-2]) – (?:(\d{4})\.(0[1-9]|1[0-2])|현재)$/u;
+
+export const experienceSchema = z
+  .object({
+    organization: z.string().min(1),
+    role: z.string().min(1),
+    period: z.string().min(1),
+    endDate: z.coerce
+      .date()
+      .nullable()
+      .optional()
+      .transform((value) => value ?? null),
+    highlights: z.array(z.string().min(1)).min(1),
+    visible: z.boolean(),
+  })
+  .superRefine((value, context) => {
+    const match = EXPERIENCE_PERIOD_PATTERN.exec(value.period);
+    if (match === null) {
+      context.addIssue({
+        code: 'custom',
+        path: ['period'],
+        message: '기간은 "2025.05 – 2025.09" 또는 "2025.05 – 현재" 형식으로 씁니다',
+      });
+      return;
+    }
+    const start = Number(match[1]) * 12 + Number(match[2]);
+    const ongoing = match[3] === undefined;
+    const end = ongoing ? null : Number(match[3]) * 12 + Number(match[4]);
+    if (end !== null && start > end) {
+      context.addIssue({
+        code: 'custom',
+        path: ['period'],
+        message: '시작 달이 끝 달보다 늦습니다',
+      });
+      return;
+    }
+    if (ongoing) {
+      if (value.endDate !== null)
+        context.addIssue({
+          code: 'custom',
+          path: ['endDate'],
+          message: '기간이 "현재" 면 끝난 날짜를 비웁니다',
+        });
+      return;
+    }
+    if (value.endDate === null) {
+      context.addIssue({
+        code: 'custom',
+        path: ['endDate'],
+        message: '끝난 경력은 끝난 날짜가 필요합니다',
+      });
+      return;
+    }
+    const endMonth = value.endDate.getUTCFullYear() * 12 + value.endDate.getUTCMonth() + 1;
+    if (endMonth !== end)
+      context.addIssue({
+        code: 'custom',
+        path: ['endDate'],
+        message: `끝난 날짜가 기간의 끝(${match[3]}.${match[4]})과 다릅니다`,
+      });
+  });
 
 export type Profile = z.input<typeof profileSchema>;
 export type Experience = z.input<typeof experienceSchema>;

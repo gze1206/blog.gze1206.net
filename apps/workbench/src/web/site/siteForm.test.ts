@@ -73,3 +73,20 @@ it('NOR-208 AC-9: 행 목록을 고쳐도 행에 있던 화면 밖 필드는 남
     links: [{ label: '깃허브', url: 'https://github.com/x', icon: 'gh' }],
   });
 });
+
+it('NOR-236 AC-3: 경력 기간은 모양만 다른 입력을 표준 형식으로 고친다', async () => {
+  const { SITE_FIELDS } = await form();
+  const field = SITE_FIELDS.experience.find((entry) => entry.key === 'period');
+  // 고치기는 칸을 떠날 때 한다. 입력하는 도중(2025.1 → 2025.10)에 고치면 글자가 바뀐다.
+  const normalize = field !== undefined && 'normalize' in field ? field.normalize : undefined;
+  expect(normalize).toBeTypeOf('function');
+  if (normalize === undefined) return;
+  expect(normalize('2025.05 - 2025.09')).toBe('2025.05 – 2025.09');
+  expect(normalize('2025.5-2025.9')).toBe('2025.05 – 2025.09');
+  expect(normalize(' 2025.05 ~ 현재 ')).toBe('2025.05 – 현재');
+  expect(normalize('2025.05—2025.09')).toBe('2025.05 – 2025.09');
+  expect(normalize('2025.05 – 2025.09')).toBe('2025.05 – 2025.09');
+  // 고칠 수 없는 입력은 그대로 둔다. 계약 검사가 오류를 보여 준다.
+  expect(normalize('2025.05 -')).toBe('2025.05 -');
+  expect(normalize('언젠가')).toBe('언젠가');
+});

@@ -394,8 +394,19 @@ function FieldInput({
       ) : (
         <input
           className={inputClass}
+          onBlur={() => {
+            // 칸을 떠날 때만 표준 형식으로 고친다(NOR-236). 입력 도중에 고치면 글자가 바뀐다.
+            const normalize = field.type === 'text' ? field.normalize : undefined;
+            if (normalize !== undefined && normalize(text) !== text) onChange(normalize(text));
+          }}
           onChange={(event) => onChange(event.target.value)}
-          placeholder={field.type === 'date' ? 'YYYY-MM-DD(비우면 현재)' : undefined}
+          placeholder={
+            field.type === 'date'
+              ? 'YYYY-MM-DD(비우면 현재)'
+              : field.type === 'text'
+                ? field.placeholder
+                : undefined
+          }
           value={text}
         />
       )}

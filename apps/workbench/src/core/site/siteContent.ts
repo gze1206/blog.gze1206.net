@@ -129,11 +129,27 @@ export function formatSiteJson(data: unknown): string {
   return formatPrettierJson(data, { inlineArrayObjects: true });
 }
 
+/**
+ * 스키마 밖 키(포트폴리오의 `id` 등)는 원래 순서대로 앞에, 스키마 키는 스키마 순서로 뒤에 놓는다
+ * (NOR-236 AC-4). 폼이 새로 채운 키가 맨 뒤로 밀려 파일마다 순서가 달라지는 일을 막는다.
+ */
+function orderSiteKeys(
+  collection: SiteCollection,
+  data: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+  const known = Object.keys(SITE_COLLECTIONS[collection].schema.shape);
+  const keys = [
+    ...Object.keys(data).filter((key) => !known.includes(key)),
+    ...known.filter((key) => Object.hasOwn(data, key)),
+  ];
+  return Object.fromEntries(keys.map((key) => [key, data[key]]));
+}
+
 /** 지금 파일 내용(`current`, 없으면 null)에서 바뀔 것을 계산한다. 검사는 먼저 끝났다고 본다. */
 export function planSiteChange(change: SiteChange, current: string | null): SitePlan {
   const path = sitePath(change.collection, change.id);
   if ('delete' in change)
     return current === null ? { kind: 'noop', path } : { kind: 'delete', path };
-  const content = formatSiteJson(change.data);
+  const content = formatSiteJson(orderSiteKeys(change.collection, change.data));
   return content === current ? { kind: 'noop', path } : { kind: 'write', path, content };
 }
