@@ -90,3 +90,11 @@ it('NOR-236 AC-3: 경력 기간은 모양만 다른 입력을 표준 형식으�
   expect(normalize('2025.05 -')).toBe('2025.05 -');
   expect(normalize('언젠가')).toBe('언젠가');
 });
+
+it('NOR-237 AC-1: 포트폴리오 기간도 표준 형식으로 고친다', async () => {
+  const { SITE_FIELDS } = await form();
+  const field = SITE_FIELDS.portfolio.find((entry) => entry.key === 'period');
+  const normalize = field !== undefined && 'normalize' in field ? field.normalize : undefined;
+  expect(normalize).toBeTypeOf('function');
+  expect(normalize?.('2026.04 ~ 2026.12')).toBe('2026.04 – 2026.12');
+});
