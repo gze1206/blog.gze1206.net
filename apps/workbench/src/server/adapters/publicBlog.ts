@@ -25,7 +25,7 @@ import { unifiedDiff } from '../../core/publishing/diff.js';
 import { publishRefKey } from '../../core/publishing/refKey.js';
 import { preservePublishedFormat } from '../../core/publishing/preserve.js';
 import { parseAssetReferences } from '../../core/publishing/references.js';
-import { isSafeSitePath } from '../../core/publishing/validate.js';
+import { PublicDraftValidationError, isSafeSitePath } from '../../core/publishing/validate.js';
 import {
   SITE_COLLECTION_NAMES,
   planSiteChange,
@@ -862,26 +862,85 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     return { assets, issues, warnings };
   }
 
-  /** main 사본에서 시리즈 `seriesId` 를 가리키는 글의 저장소 상대 경로. 읽지 못한 글은 건너뛴다. */
-  private async postsInSeries(repositoryRoot: string, seriesId: string): Promise<string[]> {
+  /** main 사본의 글 frontmatter. 읽지 못한 글은 건너뛴다. 그런 글은 블로그 빌드가 따로 잡는다. */
+  private async mainPosts(
+    repositoryRoot: string,
+  ): Promise<{ readonly path: string; readonly data: Record<string, unknown> }[]> {
     let names: string[];
     try {
       names = await readdir(path.join(repositoryRoot, BLOG_LAYOUT.postsDir));
     } catch {
       return [];
     }
-    const found: string[] = [];
+    const posts: { path: string; data: Record<string, unknown> }[] = [];
     for (const name of names.filter((entry) => /\.(?:md|mdoc)$/u.test(entry)).sort()) {
       const relativePath = `${BLOG_LAYOUT.postsDir}/${name}`;
       const source = await this.readOutput(repositoryRoot, relativePath);
       if (source === null) continue;
       try {
-        if (parseFrontmatter(source).data['series'] === seriesId) found.push(relativePath);
+        posts.push({ path: relativePath, data: parseFrontmatter(source).data });
       } catch {
-        // frontmatter 가 깨진 글은 블로그 빌드가 따로 잡는다.
+        // frontmatter 가 깨진 글은 건너뛴다.
       }
     }
-    return found;
+    return posts;
+  }
+
+  /** main 사본에서 시리즈 `seriesId` 를 가리키는 글의 저장소 상대 경로(NOR-235). */
+  private async postsInSeries(repositoryRoot: string, seriesId: string): Promise<string[]> {
+    return (await this.mainPosts(repositoryRoot))
+      .filter((post) => post.data['series'] === seriesId)
+      .map((post) => post.path);
+  }
+
+  /**
+   * 글의 참조와 분류를 main 과 견준다(NOR-237). 없는 시리즈는 빌드를 멈추므로 거절하고,
+   * 새 카테고리·태그는 오타일 수 있으므로 경고한다. main 에 공개 글이 없으면 견주지 않는다.
+   */
+  private async checkPostAgainstMain(
+    repositoryRoot: string,
+    metadata: PublicPost,
+  ): Promise<string[]> {
+    if (
+      metadata.series !== undefined &&
+      (await this.readOutput(repositoryRoot, sitePath('series', metadata.series))) === null
+    )
+      throw new PublicDraftValidationError(
+        `post series '${metadata.series}' does not exist on main`,
+      );
+    const published = (await this.mainPosts(repositoryRoot)).filter(
+      (post) => post.data['draft'] !== true && post.data['slug'] !== metadata.slug,
+    );
+    if (published.length === 0) return [];
+    const categories = new Set(published.map((post) => post.data['category']));
+    const tags = new Set(
+      published.flatMap((post) => {
+        const value = post.data['tags'];
+        return Array.isArray(value) ? value.filter((tag) => typeof tag === 'string') : [];
+      }),
+    );
+    const warnings: string[] = [];
+    if (!categories.has(metadata.category))
+      warnings.push(`새 카테고리 '${metadata.category}' 를 만듭니다. 오타가 아닌지 확인하세요.`);
+    for (const tag of metadata.tags) {
+      if (tags.has(tag)) continue;
+      const similar = [...tags].find((known) => known.toLowerCase() === tag.toLowerCase());
+      warnings.push(
+        similar === undefined
+          ? `새 태그 '${tag}' 를 만듭니다. 오타가 아닌지 확인하세요.`
+          : `태그 '${tag}' 는 기존 태그 '${similar}' 와 대소문자만 다릅니다.`,
+      );
+    }
+    return warnings;
+  }
+
+  /** 책의 관련 글은 main 의 공개 글이어야 한다(NOR-237). 아니면 공개 페이지에 깨진 링크가 생긴다. */
+  private async assertRelatedPost(repositoryRoot: string, slug: string): Promise<void> {
+    const post = (await this.mainPosts(repositoryRoot)).find(
+      (entry) => entry.data['slug'] === slug,
+    );
+    if (post === undefined) throw new Error(`relatedPost '${slug}' does not exist on main`);
+    if (post.data['draft'] === true) throw new Error(`relatedPost '${slug}' is a draft on main`);
   }
 
   private async createSiteReview(requested: SiteChange, clone: EphemeralClone) {
@@ -974,6 +1033,8 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     const record = parseDocument(await readFile(documentFile, 'utf8'));
     // 책 id 는 파일 이름이다(NOR-212). 등록 뒤 ISBN·제목을 고쳐도 바뀌지 않는다.
     if (record.kind !== 'book') throw new Error('not a book document');
+    if (record.visible !== false && record.relatedPost !== undefined)
+      await this.assertRelatedPost(clone.repositoryRoot, record.relatedPost);
     const targetPath = `${BLOG_LAYOUT.booksDir}/${id}.json`;
     const [current, baseHead, coverStates] = await Promise.all([
       this.readOutput(clone.repositoryRoot, targetPath),
@@ -1185,6 +1246,10 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         ),
       ),
     ]);
+    const classificationWarnings = await this.checkPostAgainstMain(
+      clone.repositoryRoot,
+      prepared.transformed.metadata,
+    );
     const source = preservePublishedFormat(existing, prepared.transformed.source);
     const diff = existing === source ? '' : unifiedDiff(targetPath, existing, source);
     return {
@@ -1199,7 +1264,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         ),
         diff,
         quotes: prepared.transformed.quotes,
-        warnings: quoteWarnings(prepared.transformed.quotes),
+        warnings: [...quoteWarnings(prepared.transformed.quotes), ...classificationWarnings],
       },
       destinationStates,
     };

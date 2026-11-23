@@ -57,22 +57,58 @@ const portfolioMediaSchema = z.object({
   caption: z.string().min(1).optional(),
 });
 
-export const portfolioSchema = z.object({
-  title: z.string(),
-  summary: z.string(),
-  /** 그 작업에서 맡은 일. 회사 프로젝트는 이것이 링크보다 중요한 정보다. */
-  role: z.string().min(1).optional(),
-  period: z.string().min(1).optional(),
-  stack: z.array(z.string()).min(1),
-  /**
-   * 공개 링크가 없는 작업도 포트폴리오에 실린다. 회사 프로젝트가 대표적이다 —
-   * 링크를 필수로 두면 실제로 한 일 중 큰 덩어리가 빠진다(NOR-157).
-   */
-  links: z.array(portfolioLinkSchema).default([]),
-  media: z.array(portfolioMediaSchema).default([]),
-  highlights: z.array(z.string().min(1)).default([]),
-  thumbnail: sitePathSchema.optional(),
-});
+/** 경력·포트폴리오 기간의 표준 형식(NOR-236·237). 구분자는 앞뒤에 공백 하나를 둔 엔 대시다. */
+export const PERIOD_PATTERN = /^(\d{4})\.(0[1-9]|1[0-2]) – (?:(\d{4})\.(0[1-9]|1[0-2])|현재)$/u;
+
+interface Period {
+  /** 연×12+월. 비교용이다. */
+  readonly start: number;
+  /** "현재" 면 null. */
+  readonly end: number | null;
+  readonly endLabel: string | null;
+}
+
+/** 기간을 읽는다. 형식이 틀렸거나 시작이 끝보다 늦으면 이슈를 남기고 null 을 돌려준다. */
+function checkPeriod(value: string, context: z.RefinementCtx): Period | null {
+  const match = PERIOD_PATTERN.exec(value);
+  if (match === null) {
+    context.addIssue({
+      code: 'custom',
+      path: ['period'],
+      message: '기간은 "2025.05 – 2025.09" 또는 "2025.05 – 현재" 형식으로 씁니다',
+    });
+    return null;
+  }
+  const start = Number(match[1]) * 12 + Number(match[2]);
+  const end = match[3] === undefined ? null : Number(match[3]) * 12 + Number(match[4]);
+  if (end !== null && start > end) {
+    context.addIssue({ code: 'custom', path: ['period'], message: '시작 달이 끝 달보다 늦습니다' });
+    return null;
+  }
+  return { start, end, endLabel: match[3] === undefined ? null : `${match[3]}.${match[4]}` };
+}
+
+export const portfolioSchema = z
+  .object({
+    title: z.string(),
+    summary: z.string(),
+    /** 그 작업에서 맡은 일. 회사 프로젝트는 이것이 링크보다 중요한 정보다. */
+    role: z.string().min(1).optional(),
+    period: z.string().min(1).optional(),
+    stack: z.array(z.string()).min(1),
+    /**
+     * 공개 링크가 없는 작업도 포트폴리오에 실린다. 회사 프로젝트가 대표적이다 —
+     * 링크를 필수로 두면 실제로 한 일 중 큰 덩어리가 빠진다(NOR-157).
+     */
+    links: z.array(portfolioLinkSchema).default([]),
+    media: z.array(portfolioMediaSchema).default([]),
+    highlights: z.array(z.string().min(1)).default([]),
+    thumbnail: sitePathSchema.optional(),
+  })
+  // 예정된 작업이 있으므로 포트폴리오는 미래의 끝 달도 받는다(NOR-237).
+  .superRefine((value, context) => {
+    if (value.period !== undefined) checkPeriod(value.period, context);
+  });
 
 export const profileSchema = z.object({
   name: z.string().min(1),
@@ -105,10 +141,6 @@ export const profileSchema = z.object({
     .default([]),
 });
 
-/** 경력 기간의 표준 형식(NOR-236). 구분자는 앞뒤에 공백 하나를 둔 엔 대시다. */
-export const EXPERIENCE_PERIOD_PATTERN =
-  /^(\d{4})\.(0[1-9]|1[0-2]) – (?:(\d{4})\.(0[1-9]|1[0-2])|현재)$/u;
-
 export const experienceSchema = z
   .object({
     organization: z.string().min(1),
@@ -123,27 +155,9 @@ export const experienceSchema = z
     visible: z.boolean(),
   })
   .superRefine((value, context) => {
-    const match = EXPERIENCE_PERIOD_PATTERN.exec(value.period);
-    if (match === null) {
-      context.addIssue({
-        code: 'custom',
-        path: ['period'],
-        message: '기간은 "2025.05 – 2025.09" 또는 "2025.05 – 현재" 형식으로 씁니다',
-      });
-      return;
-    }
-    const start = Number(match[1]) * 12 + Number(match[2]);
-    const ongoing = match[3] === undefined;
-    const end = ongoing ? null : Number(match[3]) * 12 + Number(match[4]);
-    if (end !== null && start > end) {
-      context.addIssue({
-        code: 'custom',
-        path: ['period'],
-        message: '시작 달이 끝 달보다 늦습니다',
-      });
-      return;
-    }
-    if (ongoing) {
+    const period = checkPeriod(value.period, context);
+    if (period === null) return;
+    if (period.end === null) {
       if (value.endDate !== null)
         context.addIssue({
           code: 'custom',
@@ -161,11 +175,11 @@ export const experienceSchema = z
       return;
     }
     const endMonth = value.endDate.getUTCFullYear() * 12 + value.endDate.getUTCMonth() + 1;
-    if (endMonth !== end)
+    if (endMonth !== period.end)
       context.addIssue({
         code: 'custom',
         path: ['endDate'],
-        message: `끝난 날짜가 기간의 끝(${match[3]}.${match[4]})과 다릅니다`,
+        message: `끝난 날짜가 기간의 끝(${period.endLabel ?? ''})과 다릅니다`,
       });
   });
 

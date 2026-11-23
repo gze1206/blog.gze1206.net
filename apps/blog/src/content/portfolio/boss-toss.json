@@ -14,7 +14,7 @@
   ],
   "links": [{ "demo": "https://store.steampowered.com/app/5151850/Boss_Toss/" }],
   "role": "PM / 인프라&아키텍처 담당 / 서버 개발 보조 / 클라 개발 보조",
-  "period": "2026.04 ~ 2026.12",
+  "period": "2026.04 – 2026.12",
   "highlights": [
     "전체 기술스택 선정",
     "내부 개발 인프라 구축 (CI/CD, tailscale, 개발용 OCI 및 미니PC)",
