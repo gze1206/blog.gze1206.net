@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SLUG_PATTERN } from './slug.ts';
 export const BOOK_STATUSES = ['reading', 'finished', 'abandoned', 'want'] as const;
 export const BOOK_FORMATS = ['ebook', 'paper', 'audio'] as const;
 export const BOOK_SOURCES = ['library', 'purchase', 'subscription', 'borrowed'] as const;
@@ -44,7 +45,7 @@ export const bookObject = z.object({
   /** 공개하는 한 줄 감상. 없으면 목록에 제목·저자만 남는다. */
   oneLiner: z.string().min(1).optional(),
   /** 감상을 글로 썼다면 그 글의 slug. */
-  relatedPost: z.string().min(1).optional(),
+  relatedPost: z.string().regex(SLUG_PATTERN, 'relatedPost 는 글의 slug 다').optional(),
   /** 공개 구절. 블로그 /books 에 보이고, 글의 bookquote 인용과 같은 원본이다. */
   quotes: z
     .array(bookQuoteSchema)
@@ -56,8 +57,18 @@ export const bookObject = z.object({
     ),
 });
 
-export const bookSchema = bookObject;
-export const strictBookSchema = bookObject.strict();
+/** 다 읽은 날은 읽기 시작한 날보다 이를 수 없다(NOR-237). 같은 날은 받는다. */
+const readingOrdered = (book: { startedAt?: Date | undefined; finishedAt?: Date | undefined }) =>
+  book.startedAt === undefined ||
+  book.finishedAt === undefined ||
+  book.finishedAt.getTime() >= book.startedAt.getTime();
+const READING_ORDERED = {
+  message: 'finishedAt 은 startedAt 보다 이를 수 없습니다',
+  path: ['finishedAt'],
+};
+
+export const bookSchema = bookObject.refine(readingOrdered, READING_ORDERED);
+export const strictBookSchema = bookObject.strict().refine(readingOrdered, READING_ORDERED);
 export const PUBLIC_BOOK_FIELDS: readonly (keyof typeof bookObject.shape)[] = Object.keys(
   bookObject.shape,
 ) as (keyof typeof bookObject.shape)[];

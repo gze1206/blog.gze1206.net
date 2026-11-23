@@ -49,7 +49,7 @@ type Data = Readonly<Record<string, unknown>>;
 const LOOSE_PERIOD = /^(\d{4})\.(\d{1,2})\s*[-–—~]\s*(?:(\d{4})\.(\d{1,2})|(현재))$/u;
 
 /**
- * 구분자·공백·한 자리 월만 다른 경력 기간을 `YYYY.MM – YYYY.MM` 으로 고친다(NOR-236).
+ * 구분자·공백·한 자리 월만 다른 경력·포트폴리오 기간을 `YYYY.MM – YYYY.MM` 으로 고친다(NOR-236).
  * 그 밖의 입력은 그대로 돌려줘 계약 검사가 오류를 보이게 한다.
  */
 export function normalizeExperiencePeriod(value: string): string {
@@ -97,7 +97,14 @@ export const SITE_FIELDS: Record<SiteCollection, readonly SiteField[]> = {
     { key: 'title', label: '제목', type: 'text' },
     { key: 'summary', label: '요약', type: 'textarea' },
     { key: 'role', label: '역할', type: 'text', optional: true },
-    { key: 'period', label: '기간', type: 'text', optional: true },
+    {
+      key: 'period',
+      label: '기간',
+      type: 'text',
+      optional: true,
+      normalize: normalizeExperiencePeriod,
+      placeholder: '2026.04 – 2026.12 또는 2026.04 – 현재(선택)',
+    },
     { key: 'stack', label: '기술(한 줄에 하나)', type: 'lines' },
     { key: 'highlights', label: '한 일(한 줄에 하나)', type: 'lines' },
     {

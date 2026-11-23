@@ -409,3 +409,94 @@ it('NOR-196 AC-12: 발행 검토 응답에 인용 길이와 경고가 있다', {
     await fixture.close();
   }
 });
+
+const seedPost = (slug: string, front: string) =>
+  `---\ntitle: '${slug}'\ndescription: 'd'\nslug: '${slug}'\n${front}\npublishedAt: 2026-01-01\nupdatedAt: 2026-01-01\n---\n본문\n`;
+const plainDraft = (front: string) =>
+  draft
+    .replace("category: engineering\ntags: ['git']\n", `${front}\n`)
+    .replace('![diagram](images/flow.png)\n', '본문\n');
+
+describe('NOR-237 발행 검토의 참조와 분류', { timeout: 30_000 }, () => {
+  it('NOR-237 AC-4: main 에 없는 시리즈를 가리키는 글은 거절한다', async () => {
+    const fixture = await createFixture({
+      [`${BLOG_LAYOUT.postsDir}/old.mdoc`]: seedPost(
+        'old',
+        "category: 'engineering'\ntags: ['git']",
+      ),
+    });
+    try {
+      const source = plainDraft(
+        "category: engineering\ntags: ['git']\nseries: missing-series\nseriesOrder: 1",
+      );
+      await expect(fixture.adapter().review({ documentId, source, assetIds: [] })).rejects.toThrow(
+        'missing-series',
+      );
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  it('NOR-237 AC-5: 새 카테고리·태그와 대소문자만 다른 태그를 경고한다', async () => {
+    const fixture = await createFixture({
+      [`${BLOG_LAYOUT.postsDir}/old.mdoc`]: seedPost(
+        'old',
+        "category: 'engineering'\ntags: ['Git']",
+      ),
+      [`${BLOG_LAYOUT.postsDir}/hidden.mdoc`]: seedPost(
+        'hidden',
+        "category: 'secret'\ntags: ['hidden-tag']\ndraft: true",
+      ),
+    });
+    try {
+      const same = await fixture.adapter().review({
+        documentId,
+        source: plainDraft("category: engineering\ntags: ['Git']"),
+        assetIds: [],
+      });
+      expect(same.warnings).toEqual([]);
+      const review = await fixture.adapter().review({
+        documentId,
+        source: plainDraft("category: secret\ntags: ['git', 'hidden-tag']"),
+        assetIds: [],
+      });
+      expect(review.warnings).toEqual([
+        expect.stringContaining("새 카테고리 'secret'"),
+        expect.stringContaining("'git'"),
+        expect.stringContaining("새 태그 'hidden-tag'"),
+      ]);
+      expect(review.warnings?.[1]).toContain("'Git'");
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  it('NOR-237 AC-6: 책의 relatedPost 는 main 의 공개 글이어야 한다', async () => {
+    const fixture = await createFixture({
+      [`${BLOG_LAYOUT.postsDir}/old.mdoc`]: seedPost('old', "category: 'c'\ntags: ['t']"),
+      [`${BLOG_LAYOUT.postsDir}/hidden.mdoc`]: seedPost(
+        'hidden',
+        "category: 'c'\ntags: ['t']\ndraft: true",
+      ),
+    });
+    try {
+      await mkdir(path.join(fixture.privateRoot, 'books'), { recursive: true });
+      const book = (related: string) =>
+        writeFile(
+          path.join(fixture.privateRoot, 'books/책.md'),
+          `---\ntitle: 책\nkind: book\ncreatedAt: 2026-01-01\nupdatedAt: 2026-01-01\nauthors: [저자]\nstatus: finished\nformat: paper\nsource: purchase\nrelatedPost: ${related}\n---\n`,
+        );
+      const adapter = fixture.adapter();
+      const reviewBook = (id: string) =>
+        Reflect.apply(Reflect.get(adapter, 'reviewBook'), adapter, [id]) as Promise<unknown>;
+      await book('old');
+      await expect(reviewBook('책')).resolves.toMatchObject({ kind: 'write' });
+      await book('hidden');
+      await expect(reviewBook('책')).rejects.toThrow('hidden');
+      await book('missing');
+      await expect(reviewBook('책')).rejects.toThrow('missing');
+    } finally {
+      await fixture.close();
+    }
+  });
+});
