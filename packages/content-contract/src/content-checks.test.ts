@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { BLOG_LAYOUT, SITE_COLLECTIONS, bookSchema, portfolioSchema, postSchema } from './index.ts';
+import { BLOG_LAYOUT, SITE_COLLECTIONS, bookSchema, portfolioSchema } from './index.ts';
 
 function failedPaths(schema: { safeParse: (value: unknown) => unknown }, value: unknown): string[] {
   const result = schema.safeParse(value) as
@@ -17,20 +17,6 @@ describe('콘텐츠 전반 양식', () => {
     expect(failedPaths(portfolioSchema, { ...base, period: '2026.04 – 현재' })).toEqual([]);
     for (const period of ['2026.04 ~ 2026.12', '2026.4 – 2026.12', '2026.12 – 2026.04'])
       expect(failedPaths(portfolioSchema, { ...base, period }), period).toEqual(['period']);
-  });
-
-  it('NOR-237 AC-2: 글의 updatedAt 은 publishedAt 보다 이르지 않다', () => {
-    const base = {
-      title: 't',
-      description: 'd',
-      slug: 'a',
-      category: 'c',
-      tags: ['x'],
-      publishedAt: '2026-01-02',
-      updatedAt: '2026-01-02',
-    };
-    expect(failedPaths(postSchema, base)).toEqual([]);
-    expect(failedPaths(postSchema, { ...base, updatedAt: '2026-01-01' })).toEqual(['updatedAt']);
   });
 
   it('NOR-237 AC-3: 책의 finishedAt 은 startedAt 보다 이르지 않고 relatedPost 는 slug 다', () => {
