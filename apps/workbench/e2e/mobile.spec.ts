@@ -198,3 +198,31 @@ test('NOR-238 AC-4: 좁은 화면에서 불렛 버튼은 40px 이상이고 단�
   }
   await expect(page.getByText(/Alt\+Enter/u)).toBeHidden();
 });
+
+test('NOR-239 AC-3: 체크박스를 눌러 원본을 바꾸고, 도구 막대로 체크리스트를 넣는다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await openMenu(page);
+  await page.getByLabel('새 문서 제목').fill('체크리스트 시험');
+  await page.getByRole('button', { name: /capture$/u }).tap();
+  const editor = page.getByLabel('Markdown 문서');
+  await expect(editor).toBeVisible();
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+End');
+  // 템플릿의 마지막 줄에 붙지 않게 빈 줄에서 시작한다.
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: '체크리스트' }).tap();
+  await page.keyboard.type('우유 사기');
+  await expect(page.locator('.cm-line').filter({ hasText: '- [ ] 우유 사기' })).toBeVisible();
+  // 다른 줄로 커서를 옮기면 체크박스가 보인다.
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('다음 줄');
+  const box = page.getByRole('checkbox', { name: '우유 사기' });
+  await expect(box).not.toBeChecked();
+  await box.tap();
+  await expect(box).toBeChecked();
+  // 누른 줄로 커서가 옮겨 가지 않았으므로 원본 표시가 드러나지 않는다.
+  await expect(page.locator('.cm-line').filter({ hasText: '[x]' })).toHaveCount(0);
+  await expect(page.locator('.cm-line.cm-lp-task-done')).toContainText('우유 사기');
+});

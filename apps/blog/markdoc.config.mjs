@@ -1,4 +1,4 @@
-import { bookquoteTag } from '@gze1206/content-contract';
+import { bookquoteTag, taskItemNode } from '@gze1206/content-contract';
 import { defineMarkdocConfig, component, nodes } from '@astrojs/markdoc/config';
 import { createHighlighter } from 'shiki';
 import Markdoc from '@markdoc/markdoc';
@@ -63,6 +63,8 @@ function headingIdFactoryOf(config) {
 
 export default defineMarkdocConfig({
   nodes: {
+    /** GFM 작업 목록(`- [ ] 할 일`). Markdoc 은 모르므로 계약의 노드로 체크박스를 그린다(NOR-239). */
+    item: taskItemNode,
     /**
      * 헤딩 id + 앵커 링크 (NOR-17, ADR 0010).
      *

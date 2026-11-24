@@ -68,3 +68,10 @@ describe('renderPreview', () => {
     expect(html).toContain('gze1206/blog.gze1206.net');
   });
 });
+
+it('NOR-239 AC-5: 미리보기는 작업 목록을 계약의 item 노드로 렌더한다', async () => {
+  const mod = await import('./render.js');
+  const { html } = mod.renderPreview(doc('- [ ] 할 일\n- [x] 끝낸 일\n'));
+  expect(html.match(/class="task-list-item"/gu)).toHaveLength(2);
+  expect(html).not.toContain('[ ]');
+});

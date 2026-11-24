@@ -27,6 +27,7 @@ const TOOLS: readonly { label: string; text: string; run: Command }[] = [
   { label: '기울임', text: 'I', run: (state) => toggleWrap(state, '*') },
   { label: '제목', text: 'H', run: (state) => toggleLinePrefix(state, '## ') },
   { label: '목록', text: '•', run: (state) => toggleLinePrefix(state, '- ') },
+  { label: '체크리스트', text: '☐', run: (state) => toggleLinePrefix(state, '- [ ] ') },
   { label: '인용', text: '❝', run: (state) => toggleLinePrefix(state, '> ') },
   { label: '코드', text: '</>', run: (state) => toggleWrap(state, '`') },
   { label: '링크', text: '🔗', run: insertLink },

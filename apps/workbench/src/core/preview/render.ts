@@ -5,7 +5,7 @@
  * 정확한 모양은 발행 뒤 블로그에서 본다. `bookquote` 는 작업 공간의 책 문서로 실제 구절을 펼친다.
  */
 import Markdoc, { type Config, type Node, type RenderableTreeNode } from '@markdoc/markdoc';
-import { bookquoteTag } from '@gze1206/content-contract';
+import { bookquoteTag, taskItemNode } from '@gze1206/content-contract';
 
 import { expandBookquotes, type BookLookup } from '../publishing/bookquote.js';
 
@@ -38,6 +38,8 @@ function str(value: unknown): string | undefined {
 
 const config: Config = {
   nodes: {
+    // 작업 목록은 블로그와 같은 노드로 그린다(NOR-239).
+    item: taskItemNode,
     link: {
       render: 'a',
       attributes: { href: { type: String }, title: { type: String } },

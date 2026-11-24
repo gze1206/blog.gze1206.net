@@ -102,3 +102,65 @@ describe('원본 보존과 장식 범위', () => {
       expect(state.doc.lineAt(item.from).number).toBe(state.doc.lineAt(item.to).number);
   });
 });
+
+describe('NOR-239 체크리스트', () => {
+  const TASKS = '- [ ] 할 일\n- [x] 끝낸 일\n\n끝';
+  async function tasks(cursor: number) {
+    const mod = await import('./livePreview.js');
+    const state = EditorState.create({
+      doc: TASKS,
+      selection: EditorSelection.cursor(cursor),
+      extensions: [mod.markdownLanguage()],
+    });
+    return { mod, state, items: mod.previewDecorations(state) as Item[] };
+  }
+
+  it('NOR-239 AC-1: 커서가 없는 줄의 작업 표시는 체크박스로, 끝낸 줄은 완료 클래스를 붙인다', async () => {
+    const { items } = await tasks(TASKS.length);
+    const boxes = items.filter((item) => item.kind === 'task');
+    expect(boxes.map((item) => TASKS.slice(item.from, item.to))).toEqual(['[ ]', '[x]']);
+    expect(boxes.map((item) => (item as Item & { checked?: boolean }).checked)).toEqual([
+      false,
+      true,
+    ]);
+    const done = items.filter(
+      (item) => item.kind === 'line' && item.className === 'cm-lp-task-done',
+    );
+    expect(done.map((item) => item.from)).toEqual([TASKS.indexOf('- [x]')]);
+    // 커서가 있는 줄은 원본을 보인다.
+    const active = await tasks(3);
+    expect(
+      active.items
+        .filter((item) => item.kind === 'task')
+        .map((item) => TASKS.slice(item.from, item.to)),
+    ).toEqual(['[x]']);
+  });
+
+  it('NOR-239 AC-2: toggleTask 는 작업 표시를 바꾸고 작업이 아니면 그대로 둔다', async () => {
+    const { mod, state } = await tasks(TASKS.length);
+    expect(mod).toHaveProperty('toggleTask');
+    const apply = (doc: string, pos: number) => {
+      const current = EditorState.create({ doc, extensions: [mod.markdownLanguage()] });
+      return current.update(mod.toggleTask(current, pos)).state.doc.toString();
+    };
+    expect(apply(TASKS, 2)).toBe(TASKS.replace('- [ ] 할 일', '- [x] 할 일'));
+    expect(apply(TASKS, TASKS.indexOf('[x]'))).toBe(TASKS.replace('[x]', '[ ]'));
+    expect(apply('- [X] 대문자', 2)).toBe('- [ ] 대문자');
+    expect(apply(TASKS, TASKS.lastIndexOf('끝'))).toBe(TASKS);
+    expect(state.doc.toString()).toBe(TASKS);
+  });
+});
+
+it('NOR-239 AC-1: 커서가 없는 작업 줄은 목록 기호를 숨긴다', async () => {
+  const mod = await import('./livePreview.js');
+  const doc = '- [ ] 할 일\n- 그냥\n\n끝';
+  const state = EditorState.create({
+    doc,
+    selection: EditorSelection.cursor(doc.length),
+    extensions: [mod.markdownLanguage()],
+  });
+  const hiddenText = (mod.previewDecorations(state) as Item[])
+    .filter((item) => item.kind === 'hide')
+    .map((item) => doc.slice(item.from, item.to));
+  expect(hiddenText).toEqual(['- ']);
+});
