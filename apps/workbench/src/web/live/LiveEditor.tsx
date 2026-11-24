@@ -1,4 +1,11 @@
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
+import {
+  defaultKeymap,
+  history,
+  historyKeymap,
+  indentLess,
+  indentMore,
+  indentWithTab,
+} from '@codemirror/commands';
 import { EditorSelection, type EditorState, type TransactionSpec } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { useEffect, useRef, useState } from 'react';
@@ -23,6 +30,12 @@ const TOOLS: readonly { label: string; text: string; run: Command }[] = [
   { label: '인용', text: '❝', run: (state) => toggleLinePrefix(state, '> ') },
   { label: '코드', text: '</>', run: (state) => toggleWrap(state, '`') },
   { label: '링크', text: '🔗', run: insertLink },
+];
+
+/** 화상 키보드에는 Tab 이 없다. 중첩 목록을 만들 수 있게 버튼으로도 둔다(NOR-238 AC-3). */
+const VIEW_TOOLS: readonly { label: string; text: string; run: (view: EditorView) => boolean }[] = [
+  { label: '내어쓰기', text: '⇤', run: indentLess },
+  { label: '들여쓰기', text: '⇥', run: indentMore },
 ];
 
 function runner(command: Command) {
@@ -98,24 +111,26 @@ export function LiveEditor({ source, onChange, className = '', onUploadImage, on
         className="border-border relative flex gap-1 overflow-x-auto border-b px-4 py-1.5"
         role="toolbar"
       >
-        {TOOLS.map((tool) => (
-          <button
-            aria-label={tool.label}
-            className="text-muted hover:bg-surface-sunken hover:text-foreground min-w-8 rounded px-2 py-1 text-xs"
-            key={tool.label}
-            onClick={() => {
-              const editor = view.current;
-              if (!editor) return;
-              runner(tool.run)(editor);
-              editor.focus();
-            }}
-            onMouseDown={(event) => event.preventDefault()}
-            title={tool.label}
-            type="button"
-          >
-            {tool.text}
-          </button>
-        ))}
+        {[...TOOLS.map((tool) => ({ ...tool, run: runner(tool.run) })), ...VIEW_TOOLS].map(
+          (tool) => (
+            <button
+              aria-label={tool.label}
+              className="text-muted hover:bg-surface-sunken hover:text-foreground min-h-10 min-w-10 shrink-0 rounded px-2 py-1 text-xs md:min-h-0 md:min-w-8"
+              key={tool.label}
+              onClick={() => {
+                const editor = view.current;
+                if (!editor) return;
+                tool.run(editor);
+                editor.focus();
+              }}
+              onMouseDown={(event) => event.preventDefault()}
+              title={tool.label}
+              type="button"
+            >
+              {tool.text}
+            </button>
+          ),
+        )}
         <select
           aria-label="블록 넣기"
           className="text-muted hover:bg-surface-sunken hover:text-foreground rounded bg-transparent px-2 py-1 text-xs"

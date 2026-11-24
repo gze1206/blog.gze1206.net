@@ -119,9 +119,12 @@ test('NOR-233 AC-3: 좁은 화면에서 입력 칸 글자는 16px 이상이다',
 test('NOR-238 AC-1: 오늘의 할 일을 손가락으로 완료·취소하고 유형을 바꾼다', async ({ page }) => {
   await page.goto('/');
   const capture = page.getByLabel('빠른 불렛 입력');
-  await page.getByRole('button', { name: /할 일/u }).tap();
+  await page
+    .getByRole('group', { name: '불렛 유형' })
+    .getByRole('button', { name: /할 일/u })
+    .tap();
   await capture.fill('손가락 할 일');
-  await page.getByRole('button', { name: '추가' }).tap();
+  await page.getByRole('button', { name: '추가', exact: true }).tap();
   const task = page
     .getByTestId('day-bullets')
     .getByRole('listitem')
@@ -175,9 +178,12 @@ test('NOR-238 AC-4: 좁은 화면에서 불렛 버튼은 40px 이상이고 단�
 }) => {
   await page.goto('/');
   // 다른 시험에 기대지 않도록 자기 할 일을 하나 만든다.
-  await page.getByRole('button', { name: /할 일/u }).tap();
+  await page
+    .getByRole('group', { name: '불렛 유형' })
+    .getByRole('button', { name: /할 일/u })
+    .tap();
   await page.getByLabel('빠른 불렛 입력').fill('크기 재는 할 일');
-  await page.getByRole('button', { name: '추가' }).tap();
+  await page.getByRole('button', { name: '추가', exact: true }).tap();
   const buttons = page
     .getByTestId('day-bullets')
     .getByRole('listitem')

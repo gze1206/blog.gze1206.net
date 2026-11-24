@@ -25,6 +25,10 @@ const glyph = (bullet: Bullet) =>
       ? '⨯'
       : ({ memo: '•', note: '–', event: '○', task: '□' } as const)[bullet.type];
 
+/** 좁은 화면에서도 손가락으로 누를 수 있는 크기(NOR-238 AC-4). 넓은 화면에서는 줄 높이에 맞춘다. */
+const touchButton =
+  'inline-flex min-h-10 min-w-10 items-center justify-center rounded-md hover:bg-surface-sunken md:min-h-7 md:min-w-7';
+
 export function DayPage({
   date,
   onError,
@@ -83,8 +87,20 @@ export function DayPage({
       setBusy(false);
     }
   };
+  type Change = 'complete' | 'cancel' | 'reopen' | 'cycle-type';
+  /** 불렛 하나를 바꾼다. 지난 할 일은 그 할 일이 적힌 날짜의 기록을 고친다(NOR-238). */
+  const change = async (bulletDate: string, id: string, requested: Change) => {
+    try {
+      await changeBullet(bulletDate, id, requested);
+      await refresh();
+    } catch (error) {
+      onError(toMessage(error));
+    }
+  };
   const action = async (bullet: Bullet, event: KeyboardEvent<HTMLLIElement>) => {
-    const requested =
+    // 손가락으로 누르는 버튼(NOR-238)과 같은 일을 하는 단축키다. 버튼 안에서 누른 키는 버튼이 받는다.
+    if (event.target !== event.currentTarget) return;
+    const requested: Change | null =
       event.altKey && event.key === 'Enter'
         ? bullet.status === 'open'
           ? 'complete'
@@ -96,12 +112,7 @@ export function DayPage({
             : null;
     if (!requested) return;
     event.preventDefault();
-    try {
-      await changeBullet(date, bullet.id, requested);
-      await refresh();
-    } catch (error) {
-      onError(toMessage(error));
-    }
+    await change(date, bullet.id, requested);
   };
   const confirmMigration = async (confirmation?: string) => {
     if (!migration) return;
@@ -172,20 +183,64 @@ export function DayPage({
                 onKeyDown={(event) => void action(bullet, event)}
                 tabIndex={0}
               >
-                <div className="flex items-center justify-between gap-3">
-                  <span>
-                    <span className="mr-2">{glyph(bullet)}</span>
-                    {bullet.text}
+                <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between md:gap-3">
+                  <span className="flex min-w-0 items-center">
+                    {bullet.type === 'task' ? (
+                      <button
+                        aria-label={`${bullet.text} ${bullet.status === 'open' ? '완료' : '다시 열기'}`}
+                        className={touchButton}
+                        onClick={() =>
+                          void change(
+                            date,
+                            bullet.id,
+                            bullet.status === 'open' ? 'complete' : 'reopen',
+                          )
+                        }
+                        type="button"
+                      >
+                        {glyph(bullet)}
+                      </button>
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="inline-flex min-w-10 justify-center md:min-w-7"
+                      >
+                        {glyph(bullet)}
+                      </span>
+                    )}
+                    <span className="min-w-0 [overflow-wrap:anywhere]">{bullet.text}</span>
                   </span>
-                  <label className="flex items-center gap-1.5 text-xs text-muted">
-                    <input
-                      aria-label={`${bullet.text} 회고 링크`}
-                      checked={selectedReviewIds.has(`${date}:${bullet.id}`)}
-                      onChange={() => toggleReviewLink({ date, id: bullet.id })}
-                      type="checkbox"
-                    />
-                    회고 링크
-                  </label>
+                  <span className="flex items-center gap-1 pl-10 md:pl-0">
+                    {bullet.type === 'task' && bullet.status === 'open' ? (
+                      <button
+                        aria-label={`${bullet.text} 취소`}
+                        className={`${touchButton} text-xs text-muted`}
+                        onClick={() => void change(date, bullet.id, 'cancel')}
+                        title="취소 (Alt+Backspace)"
+                        type="button"
+                      >
+                        취소
+                      </button>
+                    ) : null}
+                    <button
+                      aria-label={`${bullet.text} 유형 바꾸기`}
+                      className={`${touchButton} text-xs text-muted`}
+                      onClick={() => void change(date, bullet.id, 'cycle-type')}
+                      title="유형 바꾸기 (Alt+→)"
+                      type="button"
+                    >
+                      유형
+                    </button>
+                    <label className="ml-1 flex min-h-10 items-center gap-1.5 text-xs text-muted md:min-h-0">
+                      <input
+                        aria-label={`${bullet.text} 회고 링크`}
+                        checked={selectedReviewIds.has(`${date}:${bullet.id}`)}
+                        onChange={() => toggleReviewLink({ date, id: bullet.id })}
+                        type="checkbox"
+                      />
+                      회고 링크
+                    </label>
+                  </span>
                 </div>
               </li>
             ))}
@@ -193,12 +248,13 @@ export function DayPage({
           {!bullets.length ? (
             <p className="mt-3 text-sm text-muted">오늘 기록은 아직 비어 있습니다.</p>
           ) : null}
-          <p className="mt-5 font-mono text-[11px] text-muted">
+          <p className="mt-5 hidden font-mono text-[11px] text-muted md:block">
             Alt+Enter 완료 토글 · Alt+Backspace 취소 · Alt+→ 유형 순환
           </p>
         </section>
         <ReviewPanel
           bullets={review}
+          onChange={(bullet, requested) => void change(bullet.date, bullet.id, requested)}
           onMigrate={(bullet, mode) => setMigration({ bullet, mode })}
           onToggleReviewLink={toggleReviewLink}
           selectedReviewIds={selectedReviewIds}

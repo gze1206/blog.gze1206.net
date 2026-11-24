@@ -1,12 +1,19 @@
 import type { ReviewBullet } from './api.js';
 
+/** 좁은 화면에서는 한 변이 40px 이상이다(NOR-238 AC-4). */
+const reviewButton =
+  'min-h-10 rounded border border-border px-3 text-xs md:min-h-0 md:px-2 md:py-1';
+
 export function ReviewPanel({
   bullets,
+  onChange,
   onMigrate,
   selectedReviewIds,
   onToggleReviewLink,
 }: {
   readonly bullets: readonly ReviewBullet[];
+  /** 지난 할 일을 그 자리에서 닫는다(NOR-238 AC-2). */
+  readonly onChange: (bullet: ReviewBullet, action: 'complete' | 'cancel') => void;
   readonly onMigrate: (bullet: ReviewBullet, mode: 'quick' | 'intentional') => void;
   readonly selectedReviewIds: ReadonlySet<string>;
   readonly onToggleReviewLink: (bullet: ReviewBullet) => void;
@@ -29,7 +36,7 @@ export function ReviewPanel({
             >
               <p className="text-sm">□ {bullet.text}</p>
               <p className="mt-1 font-mono text-[11px] text-muted">{bullet.date}</p>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <label className="flex items-center gap-1.5 text-xs text-muted-strong">
                   <input
                     aria-label={`${bullet.text} 회고 링크`}
@@ -40,8 +47,24 @@ export function ReviewPanel({
                   회고 링크
                 </label>
                 <button
+                  aria-label={`${bullet.text} 완료`}
+                  className={reviewButton}
+                  onClick={() => onChange(bullet, 'complete')}
+                  type="button"
+                >
+                  완료
+                </button>
+                <button
+                  aria-label={`${bullet.text} 취소`}
+                  className={reviewButton}
+                  onClick={() => onChange(bullet, 'cancel')}
+                  type="button"
+                >
+                  취소
+                </button>
+                <button
                   aria-label={`${bullet.text} 간편 이월`}
-                  className="rounded border border-border px-2 py-1 text-xs"
+                  className={reviewButton}
                   onClick={() => onMigrate(bullet, 'quick')}
                   type="button"
                 >
@@ -49,7 +72,7 @@ export function ReviewPanel({
                 </button>
                 <button
                   aria-label={`${bullet.text} 의식적 이월`}
-                  className="rounded border border-border px-2 py-1 text-xs"
+                  className={reviewButton}
                   onClick={() => onMigrate(bullet, 'intentional')}
                   type="button"
                 >
