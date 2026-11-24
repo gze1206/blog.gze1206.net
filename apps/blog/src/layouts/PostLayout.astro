@@ -25,9 +25,10 @@ import katexCss from 'katex/dist/katex.min.css?url';
 import TableOfContents from '../components/TableOfContents.astro';
 import TocFab from '../components/TocFab.astro';
 import { formatKoreanDate } from '../lib/date';
-import { categoryPath, seriesPath, tagPath } from '../lib/routes';
+import { categoryPath, tagPath } from '../lib/routes';
 import { toSlug } from '../lib/slug';
-import type { Post, Series } from '../lib/content';
+import SeriesLabel from '../components/SeriesLabel.astro';
+import { getSeriesLabels, type Post } from '../lib/content';
 import type { PostDetail } from '../lib/post-detail';
 import { buildArticleJsonLd, buildBreadcrumbJsonLd } from '../lib/json-ld';
 import { resolveTocPlacement } from '../lib/toc';
@@ -36,14 +37,11 @@ interface Props {
   post: Post;
   /** 목차·읽기 시간·ISO 날짜. `derivePostDetail(...)` 의 결과를 그대로 넘긴다. */
   detail: PostDetail;
-  /**
-   * 글이 시리즈에 속할 때 그 시리즈 정의. **헤더의 소속 표시(이름 + 링크) 전용**이다.
-   * 이전/다음·목록·진행도는 `after-content` 슬롯의 `SeriesNav` 가 그린다(NOR-18).
-   */
-  series?: Series | undefined;
 }
 
-const { post, detail, series } = Astro.props;
+const { post, detail } = Astro.props;
+// 헤더의 소속 표시(NOR-241): 제목 위 라벨. 이전/다음·목록·진행도는 `SeriesNav` 가 그린다(NOR-18).
+const seriesLabel = (await getSeriesLabels()).get(post.data.slug);
 // Markdown 의 rehype-katex 결과는 Markdoc 컴포넌트를 거치지 않는다.
 const renderedContent = await Astro.slots.render('default');
 const hasMath = /class=["'][^"']*\bkatex\b[^"']*["']/.test(renderedContent);
@@ -85,6 +83,7 @@ const jsonLd = [
           <a href={categoryPath(toSlug(category))} class="category-badge">{category}</a>
         </div>
 
+        {seriesLabel !== undefined && <SeriesLabel label={seriesLabel} pagefindMeta />}
         <h1 class="article__title">{title}</h1>
         <p class="article__summary">{description}</p>
 
@@ -98,16 +97,6 @@ const jsonLd = [
             )
           }
           <span>읽는 시간 <time datetime={readingTime.iso}>{readingTime.label}</time></span>
-          {
-            series && (
-              <span>
-                시리즈{' '}
-                <a href={seriesPath(series.data.slug)} class="rounded font-medium hover:underline">
-                  {series.data.name}
-                </a>
-              </span>
-            )
-          }
         </div>
 
         <div class="article-taxonomy">

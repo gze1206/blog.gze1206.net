@@ -4,9 +4,10 @@
  *
  * a11y: 카드 전체를 링크로 감싸지 않고 **제목만 링크**로 둔다. 그래야 스크린리더의
  * 링크 목록에서 글 제목이 그대로 읽힌다("더 보기" 같은 맥락 없는 링크 텍스트를 만들지 않는다).
- * 카테고리·태그는 별도 링크라 카드 안에 링크가 여러 개지만, 각각 텍스트가 곧 목적지다.
+ * 시리즈 라벨(NOR-241)도 제목 위의 별도 링크다. 카테고리·태그는 별도 링크라 카드 안에 링크가 여러 개지만, 각각 텍스트가 곧 목적지다.
  */
-import type { Post } from '../lib/content';
+import SeriesLabel from './SeriesLabel.astro';
+import { getSeriesLabels, type Post } from '../lib/content';
 import { formatKoreanDate, toISODate } from '../lib/date';
 import { categoryPath, postPath, tagPath } from '../lib/routes';
 import { toSlug } from '../lib/slug';
@@ -19,6 +20,7 @@ interface Props {
 
 const { post, headingLevel = 2 } = Astro.props;
 const { title, description, category, tags, publishedAt, draft } = post.data;
+const seriesLabel = (await getSeriesLabels()).get(post.data.slug);
 const Heading = `h${headingLevel}` as const;
 ---
 
@@ -38,7 +40,9 @@ const Heading = `h${headingLevel}` as const;
     }
   </div>
 
-  <Heading class="mt-2 text-xl font-bold sm:text-2xl">
+  {seriesLabel !== undefined && <SeriesLabel label={seriesLabel} />}
+
+  <Heading class={`${seriesLabel === undefined ? 'mt-2' : 'mt-1'} text-xl font-bold sm:text-2xl`}>
     <a href={postPath(post.data.slug)} class="rounded hover:underline">{title}</a>
   </Heading>
 

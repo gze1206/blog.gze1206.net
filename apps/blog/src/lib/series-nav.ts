@@ -92,3 +92,43 @@ export function buildSeriesNav<T extends PostLike>(
     next: seriesPosts[index + 1],
   };
 }
+
+/** 글 목록의 시리즈 라벨(NOR-241). 제목 위 eyebrow 에 "이름 · N편" 으로 쓰인다. */
+export interface SeriesLabel {
+  readonly name: string;
+  /** `/series/<slug>` 의 slug. */
+  readonly slug: string;
+  /** 노출 대상 목록에서 몇 번째인가(1부터). 노출 대상이 1편뿐이면 없다. */
+  readonly position?: number;
+}
+
+/**
+ * 노출 대상 글마다 시리즈 라벨을 만든다. 시리즈에 속하지 않은 글은 결과에 없다.
+ *
+ * 편 번호는 `buildSeriesNav` 와 같은 규칙, 곧 `selectSeriesPosts` 가 걸러 정렬한 목록의
+ * 인덱스다(ADR 0011). 상세 페이지의 진행도와 목록 카드의 "N편" 이 어긋나지 않는다.
+ * 노출 대상이 1편뿐이면 `buildSeriesNav` 가 블록을 만들지 않는 것과 같은 이유로 번호를 붙이지 않는다.
+ *
+ * @param visiblePosts `getVisiblePosts()` 의 결과.
+ * @param seriesById 시리즈 id → 시리즈 정의.
+ */
+export function buildSeriesLabels<T extends PostLike>(
+  visiblePosts: readonly T[],
+  seriesById: ReadonlyMap<
+    string,
+    { readonly data: { readonly name: string; readonly slug: string } }
+  >,
+): Map<string, SeriesLabel> {
+  const labels = new Map<string, SeriesLabel>();
+  for (const [seriesId, series] of seriesById) {
+    const seriesPosts = selectSeriesPosts(visiblePosts, seriesId);
+    seriesPosts.forEach((post, index) => {
+      const { name, slug } = series.data;
+      labels.set(
+        post.data.slug,
+        seriesPosts.length < 2 ? { name, slug } : { name, slug, position: index + 1 },
+      );
+    });
+  }
+  return labels;
+}

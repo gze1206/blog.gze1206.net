@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { selectVisible, sortByPublishedDesc, type PostLike } from './posts';
-import { buildSeriesNav, SERIES_LIST_EXPANDED_UNTIL, shouldExpandSeriesList } from './series-nav';
+import {
+  buildSeriesLabels,
+  buildSeriesNav,
+  SERIES_LIST_EXPANDED_UNTIL,
+  shouldExpandSeriesList,
+} from './series-nav';
 
 interface TestPost extends PostLike {
   readonly data: PostLike['data'] & { readonly title: string };
@@ -194,5 +199,49 @@ describe('shouldExpandSeriesList — 목록 분량 정책 (ADR 0011)', () => {
   it('경계값을 넘으면 접은 채로 시작한다 — 본문 뒤에 벽을 만들지 않는다', () => {
     expect(shouldExpandSeriesList(SERIES_LIST_EXPANDED_UNTIL + 1)).toBe(false);
     expect(shouldExpandSeriesList(20)).toBe(false);
+  });
+});
+
+describe('buildSeriesLabels — 글 목록의 시리즈 라벨 (NOR-241)', () => {
+  const guide = { id: 'guide', data: { slug: 'guide-slug', name: '가이드 시리즈' } };
+  const seriesById = new Map([['guide', guide]]);
+
+  it('NOR-241 AC-1: 시리즈 글의 라벨은 이름·slug·편 번호를 담는다', () => {
+    const labels = buildSeriesLabels(production(FOUR_PARTS), seriesById);
+
+    expect(labels.get('post-2')).toEqual({
+      name: '가이드 시리즈',
+      slug: 'guide-slug',
+      position: 2,
+    });
+  });
+
+  it('NOR-241 AC-2: 시리즈에 속하지 않은 글에는 라벨이 없다', () => {
+    const labels = buildSeriesLabels(
+      production([...FOUR_PARTS, post(5, { series: null })]),
+      seriesById,
+    );
+
+    expect(labels.has('post-5')).toBe(false);
+    expect(labels.size).toBe(4);
+  });
+
+  it('NOR-241 AC-3: draft 편은 프로덕션에서 빠지고 편 번호는 건너뛴 순서이며 SeriesNav 와 같다', () => {
+    const posts = [post(1), post(2, { draft: true }), post(3)];
+    const visible = production(posts);
+    const labels = buildSeriesLabels(visible, seriesById);
+
+    expect(labels.has('post-2')).toBe(false);
+    expect(labels.get('post-1')?.position).toBe(1);
+    expect(labels.get('post-3')?.position).toBe(2);
+    expect(labels.get('post-3')?.position).toBe(buildSeriesNav(visible, 'post-3')?.position);
+    // dev 서버는 draft 도 보이므로 번호가 달라지지만, 입력이 다를 뿐 규칙은 같다.
+    expect(buildSeriesLabels(development(posts), seriesById).get('post-3')?.position).toBe(3);
+  });
+
+  it('NOR-241 AC-4: 노출 대상이 1편뿐이면 이름만 있고 편 번호가 없다', () => {
+    const labels = buildSeriesLabels(production([post(1), post(2, { draft: true })]), seriesById);
+
+    expect(labels.get('post-1')).toEqual({ name: '가이드 시리즈', slug: 'guide-slug' });
   });
 });

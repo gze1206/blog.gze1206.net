@@ -24,6 +24,7 @@ import {
   sortByPublishedDesc,
   type TaxonomyGroup,
 } from './posts';
+import { buildSeriesLabels, type SeriesLabel } from './series-nav';
 
 export type Post = CollectionEntry<'posts'>;
 export type Series = CollectionEntry<'series'>;
@@ -52,6 +53,7 @@ const RAW_POST_SOURCES = import.meta.glob<string>('../content/posts/**/*.{md,mdx
 });
 
 let visiblePostsCache: Post[] | null = null;
+let seriesLabelsCache: Promise<Map<string, SeriesLabel>> | null = null;
 
 async function loadVisiblePosts(): Promise<Post[]> {
   const [allPosts, allSeries] = await Promise.all([
@@ -90,6 +92,14 @@ export async function getProfile(): Promise<Profile> {
 export async function getSeriesById(): Promise<Map<string, Series>> {
   const allSeries = await getCollection('series');
   return new Map(allSeries.map((entry) => [entry.id, entry]));
+}
+
+/** 글 slug → 시리즈 라벨. 목록 카드·상세 헤더가 같은 값을 쓴다(NOR-241). 빌드 1회당 한 번만 계산한다. */
+export async function getSeriesLabels(): Promise<Map<string, SeriesLabel>> {
+  seriesLabelsCache ??= Promise.all([getVisiblePosts(), getSeriesById()]).then(
+    ([posts, seriesById]) => buildSeriesLabels(posts, seriesById),
+  );
+  return seriesLabelsCache;
 }
 
 /** 노출 대상 글 기준 카테고리 묶음 (라벨 가나다순). */

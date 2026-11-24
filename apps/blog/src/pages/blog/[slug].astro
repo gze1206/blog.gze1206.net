@@ -10,19 +10,17 @@ import { render } from 'astro:content';
 import PostLayout from '../../layouts/PostLayout.astro';
 import SeriesNav from '../../components/SeriesNav.astro';
 import PostComments from '../../components/PostComments.astro';
-import { getSeriesById, getVisiblePosts, type Post, type Series } from '../../lib/content';
+import { getVisiblePosts, type Post } from '../../lib/content';
 import { derivePostDetail } from '../../lib/post-detail';
 import { buildSeriesNav, type SeriesNavigation } from '../../lib/series-nav';
 
 export const getStaticPaths = (async () => {
-  const [posts, seriesById] = await Promise.all([getVisiblePosts(), getSeriesById()]);
+  const posts = await getVisiblePosts();
 
   return posts.map((post) => ({
     params: { slug: post.data.slug },
     props: {
       post,
-      // 참조 무결성은 `assertSeriesIntegrity` 가 보장하므로 여기서 미존재는 일어나지 않는다.
-      series: post.data.series === undefined ? undefined : seriesById.get(post.data.series),
       /**
        * 이전/다음·진행도는 **경로 목록을 만든 바로 그 배열**에서 파생한다(NOR-18, ADR 0011).
        * 그래서 링크가 가리키는 곳은 항상 이 빌드가 실제로 만든 페이지다 — draft 가 시리즈
@@ -35,11 +33,10 @@ export const getStaticPaths = (async () => {
 
 interface Props {
   post: Post;
-  series: Series | undefined;
   seriesNav: SeriesNavigation<Post> | null;
 }
 
-const { post, series, seriesNav } = Astro.props;
+const { post, seriesNav } = Astro.props;
 
 /**
  * `headings` 는 **렌더러가 실제로 붙인 헤딩 id** 다(`.md` 는 rehype, `.mdoc` 은 Markdoc
@@ -55,7 +52,7 @@ const detail = derivePostDetail({
 });
 ---
 
-<PostLayout post={post} detail={detail} series={series}>
+<PostLayout post={post} detail={detail}>
   <Content />
   <SeriesNav slot="after-content" nav={seriesNav} />
   <PostComments slot="after-content" slug={post.data.slug} />
