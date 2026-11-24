@@ -74,6 +74,8 @@ export function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [day, setDay] = useState<string | null>(() => dayFromLocation());
+  /** 앱이 알려 준 오늘. 지난 날을 보다가 "오늘의 로그" 로 돌아올 때 쓴다(NOR-240). */
+  const [today, setToday] = useState<string | null>(null);
   const [publishReview, setPublishReview] = useState<PublishReviewData | null>(null);
   const [publishResult, setPublishResult] = useState<PublishResult | null>(null);
   const [publishAssets, setPublishAssets] = useState<PublicAssetCandidate[]>([]);
@@ -149,6 +151,7 @@ export function App() {
         setDocuments(nextDocuments.documents);
         setDocumentProblems(nextDocuments.problems);
         setReviewSuggestion(reviewContext.suggestion);
+        setToday(reviewContext.today);
         setDay((current) => current ?? reviewContext.today);
       })
       .catch((caught: unknown) => {
@@ -340,6 +343,7 @@ export function App() {
             onClick={() => {
               setSelected(null);
               setSiteOpen(false);
+              if (today !== null) setDay(today);
               closeMenu();
             }}
             type="button"
@@ -400,6 +404,13 @@ export function App() {
           onSelect={(id) => {
             setSiteOpen(false);
             closeMenu();
+            // 일지는 불렛을 다루는 일일 로그 화면으로 연다. 원본은 그 화면에서 연다(NOR-240).
+            const journalDate = journalDateOf(documents.find((document) => document.id === id));
+            if (journalDate !== null) {
+              setSelected(null);
+              setDay(journalDate);
+              return;
+            }
             void selectDocument(id);
           }}
           problems={documentProblems}
@@ -497,6 +508,15 @@ export function App() {
         ) : day ? (
           <DayPage
             date={day}
+            isToday={day === today}
+            onEditSource={
+              journalIdOf(documents, day) === null
+                ? undefined
+                : () => {
+                    const id = journalIdOf(documents, day);
+                    if (id !== null) void selectDocument(id);
+                  }
+            }
             onCreateReview={createSuggestedReview}
             onDismissReviewSuggestion={() => setReviewSuggestion(null)}
             onError={setError}
@@ -509,6 +529,16 @@ export function App() {
       <PublishToasts onMerged={refreshPublishStatus} />
     </div>
   );
+}
+
+/** 일지 문서의 날짜. 일지가 아니거나 제목이 날짜가 아니면 null. 일지의 제목은 그 날짜다. */
+function journalDateOf(document: DocumentSummary | undefined): string | null {
+  if (document?.kind !== 'journal') return null;
+  return /^\d{4}-\d{2}-\d{2}$/u.test(document.title) ? document.title : null;
+}
+
+function journalIdOf(documents: readonly DocumentSummary[], date: string): string | null {
+  return documents.find((document) => journalDateOf(document) === date)?.id ?? null;
 }
 
 function dayFromLocation(): string | null {

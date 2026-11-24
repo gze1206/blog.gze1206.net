@@ -164,3 +164,21 @@ it('NOR-239 AC-1: 커서가 없는 작업 줄은 목록 기호를 숨긴다', as
     .map((item) => doc.slice(item.from, item.to));
   expect(hiddenText).toEqual(['- ']);
 });
+
+it('NOR-240 AC-3: 커서가 없는 줄의 wb 주석만 숨긴다', async () => {
+  const mod = await import('./livePreview.js');
+  const doc =
+    '- □ 할 일 <!-- wb:id=01M83945Q72TNSZD8E69SVBWME -->\n- 메모 <!-- 내가 쓴 주석 -->\n\n끝';
+  const at = (cursor: number) => {
+    const state = EditorState.create({
+      doc,
+      selection: EditorSelection.cursor(cursor),
+      extensions: [mod.markdownLanguage()],
+    });
+    return (mod.previewDecorations(state) as Item[])
+      .filter((item) => item.kind === 'hide')
+      .map((item) => doc.slice(item.from, item.to));
+  };
+  expect(at(doc.length)).toEqual([' <!-- wb:id=01M83945Q72TNSZD8E69SVBWME -->']);
+  expect(at(2)).toEqual([]);
+});
