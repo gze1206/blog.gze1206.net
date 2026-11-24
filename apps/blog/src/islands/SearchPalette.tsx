@@ -5,7 +5,7 @@ import { canSearch } from '../lib/search';
 
 interface SearchResult {
   readonly url: string;
-  readonly meta: { readonly title: string };
+  readonly meta: { readonly title: string; readonly series?: string };
   readonly excerpt: string;
 }
 
@@ -101,6 +101,12 @@ function SearchPalette({ register, trigger }: PaletteProps) {
                 href={result.url}
                 className="data-[selected=true]:bg-surface-sunken dark:data-[selected=true]:bg-surface-sunken block rounded px-3 py-2"
               >
+                {result.meta.series !== undefined && (
+                  <span className="series-label block">
+                    <span className="sr-only">시리즈 </span>
+                    {result.meta.series}
+                  </span>
+                )}
                 <strong>{result.meta.title}</strong>
                 <span
                   className="text-muted mt-1 block text-sm"

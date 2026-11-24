@@ -951,6 +951,28 @@ summary:focus-visible {
   word-break: keep-all;
 }
 
+.series-label {
+  color: var(--theme-accent);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.4;
+  /* 한글 라벨이다. 영문 eyebrow 용 넓은 자간은 한글을 흩어 놓는다(NOR-202). */
+  letter-spacing: 0.02em;
+  /* 긴 시리즈 이름이 좁은 폭에서 어절 단위로 줄바꿈되고 넘치지 않게 한다. */
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.series-label__link:hover {
+  text-decoration: underline;
+}
+
+/* 상세 헤더에서는 제목 위에서 카테고리 줄과 제목 사이를 잇는다. */
+.article__head .series-label {
+  margin-top: 1rem;
+}
+
 .article__meta {
   display: flex;
   flex-wrap: wrap;
