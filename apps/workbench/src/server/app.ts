@@ -20,6 +20,8 @@ import { createPublishRoutes } from './routes/publish.js';
 import { createPublishProgressRoutes } from './routes/publishProgress.js';
 import { createSiteRoutes } from './routes/site.js';
 import { createReviewRoutes, type ReviewRouteOptions } from './routes/reviews.js';
+import { createScheduleRoutes } from './routes/schedule.js';
+import type { ScheduleStore } from './adapters/scheduleStore.js';
 
 const defaultBulletOptions: BulletRouteOptions = {
   clock: () => new Date(),
@@ -45,6 +47,8 @@ export function createApp(
   },
   /** 확정한 발행의 진행 조회 (NOR-228). 릴레이 ledger 사본과 PR 조회가 있을 때만 연다. */
   progress?: Parameters<typeof createPublishProgressRoutes>[0],
+  /** 날짜·시각·반복 일정 (NOR-242). */
+  schedule?: ScheduleStore,
 ): Hono {
   const journalStore = isJournalStore(journalStoreOrPublisher)
     ? journalStoreOrPublisher
@@ -65,6 +69,8 @@ export function createApp(
   if (isTrash(store)) app.route('/', createTrashRoutes(store));
   app.route('/', createReviewRoutes(store, journalStore, reviewOptions));
   if (journalStore) app.route('/', createBulletRoutes(journalStore, bulletOptions));
+  if (schedule)
+    app.route('/', createScheduleRoutes(schedule, { createId: () => bulletOptions.createId() }));
   if (books) app.route('/', createBookRoutes(store, books.provider, books.assets, books.options));
   if (progress) app.route('/', createPublishProgressRoutes(progress));
   if (publisher) app.route('/', createPublishRoutes(store, publisher));

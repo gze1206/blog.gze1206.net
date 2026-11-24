@@ -12,6 +12,7 @@ import { BLOG_LAYOUT } from '@gze1206/content-contract';
 import { BookAssetStore } from '../src/server/adapters/bookAssets.js';
 import { bookSlug } from '../src/core/books/metadata.js';
 import { ServerFileStore } from '../src/server/adapters/fileStore.js';
+import { ServerScheduleStore } from '../src/server/adapters/scheduleStore.js';
 import { ServerJournalStore } from '../src/server/adapters/journalStore.js';
 import { PublicBlogAdapter } from '../src/server/adapters/publicBlog.js';
 import { createApp } from '../src/server/app.js';
@@ -178,6 +179,7 @@ const app = createApp(
       checks: 'pending',
     }),
   },
+  new ServerScheduleStore(workspaceRoot),
 );
 app.use('*', serveStatic({ root: './dist/web' }));
 app.get('*', serveStatic({ path: './dist/web/index.html' }));

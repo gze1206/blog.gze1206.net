@@ -142,7 +142,7 @@ export class ServerJournalStore implements JournalStore {
   }
 }
 
-async function acquireWorkspaceLock(lockPath: string) {
+export async function acquireWorkspaceLock(lockPath: string) {
   for (let attempt = 0; attempt < 80; attempt += 1) {
     let lock;
     try {
