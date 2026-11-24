@@ -42,7 +42,7 @@ const Heading = `h${headingLevel}` as const;
 
   {seriesLabel !== undefined && <SeriesLabel label={seriesLabel} />}
 
-  <Heading class="mt-2 text-xl font-bold sm:text-2xl">
+  <Heading class={`${seriesLabel === undefined ? 'mt-2' : 'mt-1'} text-xl font-bold sm:text-2xl`}>
     <a href={postPath(post.data.slug)} class="rounded hover:underline">{title}</a>
   </Heading>
 

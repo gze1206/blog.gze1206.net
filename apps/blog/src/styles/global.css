@@ -968,6 +968,11 @@ summary:focus-visible {
   text-decoration: underline;
 }
 
+/* 글 카드에서는 날짜·카테고리 줄과 제목 사이에 놓인다. */
+article > .series-label {
+  margin-top: 0.75rem;
+}
+
 /* 상세 헤더에서는 제목 위에서 카테고리 줄과 제목 사이를 잇는다. */
 .article__head .series-label {
   margin-top: 1rem;
