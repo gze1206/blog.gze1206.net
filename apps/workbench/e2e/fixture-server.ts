@@ -45,6 +45,22 @@ date: 2026-08-11
 - □ 두 번째 남은 일 <!-- wb:id=01J5AR7W6M3Q9N8K2T4V1X0ZBD -->
 `,
 );
+// 손가락으로 지난 할 일을 닫는 시험용(NOR-238). 다른 시험이 쓰는 2026-08-11 과 겹치지 않게 따로 둔다.
+await writeFile(
+  path.join(workspaceRoot, 'journal', '2026', '08', '2026-08-10.md'),
+  `---
+title: 2026-08-10
+kind: journal
+createdAt: 2026-08-10
+updatedAt: 2026-08-10
+date: 2026-08-10
+---
+# 2026-08-10
+
+- □ 손으로 끝낼 일 <!-- wb:id=01J5AR7W6M3Q9N8K2T4V1X0ZBE -->
+- □ 손으로 그만둘 일 <!-- wb:id=01J5AR7W6M3Q9N8K2T4V1X0ZBF -->
+`,
+);
 await mkdir(path.join(workspaceRoot, 'books'));
 await writeFile(
   path.join(workspaceRoot, 'books/9788934972464.md'),
