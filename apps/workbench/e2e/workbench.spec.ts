@@ -554,3 +554,21 @@ test('NOR-229 AC-1·AC-4: 코드 블록을 편집기와 미리보기에서 강�
   await expect(preview.locator('pre[data-language="ts"] .tok-keyword')).toHaveText('const');
   await expect(preview.locator('aside.callout')).toContainText('알림');
 });
+
+test('NOR-240 AC-1, NOR-240 AC-2: 목록의 일지는 일일 로그로 열고 원본 편집으로 넘어간다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.getByText('Today', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: /^2026-08-10/u }).click();
+  await expect(page.getByRole('heading', { name: '2026-08-10 일일 로그' })).toBeVisible();
+  await expect(page.getByText('Daily log', { exact: true })).toBeVisible();
+  await expect(page.getByTestId('day-bullets')).toContainText('손으로');
+
+  await page.getByRole('button', { name: '원본 편집' }).click();
+  await expect(page.getByLabel('Markdown 문서')).toBeVisible();
+  await expect(page.getByLabel('Markdown 문서')).toContainText('2026-08-10');
+
+  await page.getByRole('button', { name: '오늘의 로그' }).click();
+  await expect(page.getByRole('heading', { name: '2026-08-12 일일 로그' })).toBeVisible();
+});
