@@ -85,3 +85,9 @@ it('NOR-216 AC-1: 책장에 있는 책의 출처 링크는 책 상세 페이지�
     ).href,
   ).toBe('/books/%EC%B1%85');
 });
+
+it('NOR-239 AC-5: 블로그 item 노드는 계약의 taskItemNode 다', async () => {
+  const contract = (await import('@gze1206/content-contract')) as Record<string, unknown>;
+  expect(contract['taskItemNode']).toBeDefined();
+  expect(config.nodes?.item).toBe(contract['taskItemNode']);
+});
