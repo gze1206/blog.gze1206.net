@@ -210,6 +210,8 @@ test('NOR-239 AC-3: 체크박스를 눌러 원본을 바꾸고, 도구 막대로
   await expect(editor).toBeVisible();
   await editor.click();
   await page.keyboard.press('ControlOrMeta+End');
+  // 템플릿의 마지막 줄에 붙지 않게 빈 줄에서 시작한다.
+  await page.keyboard.press('Enter');
   await page.getByRole('button', { name: '체크리스트' }).tap();
   await page.keyboard.type('우유 사기');
   await expect(page.locator('.cm-line').filter({ hasText: '- [ ] 우유 사기' })).toBeVisible();

@@ -146,7 +146,21 @@ describe('NOR-239 체크리스트', () => {
     expect(apply(TASKS, 2)).toBe(TASKS.replace('- [ ] 할 일', '- [x] 할 일'));
     expect(apply(TASKS, TASKS.indexOf('[x]'))).toBe(TASKS.replace('[x]', '[ ]'));
     expect(apply('- [X] 대문자', 2)).toBe('- [ ] 대문자');
-    expect(apply(TASKS, TASKS.indexOf('끝'))).toBe(TASKS);
+    expect(apply(TASKS, TASKS.lastIndexOf('끝'))).toBe(TASKS);
     expect(state.doc.toString()).toBe(TASKS);
   });
+});
+
+it('NOR-239 AC-1: 커서가 없는 작업 줄은 목록 기호를 숨긴다', async () => {
+  const mod = await import('./livePreview.js');
+  const doc = '- [ ] 할 일\n- 그냥\n\n끝';
+  const state = EditorState.create({
+    doc,
+    selection: EditorSelection.cursor(doc.length),
+    extensions: [mod.markdownLanguage()],
+  });
+  const hiddenText = (mod.previewDecorations(state) as Item[])
+    .filter((item) => item.kind === 'hide')
+    .map((item) => doc.slice(item.from, item.to));
+  expect(hiddenText).toEqual(['- ']);
 });

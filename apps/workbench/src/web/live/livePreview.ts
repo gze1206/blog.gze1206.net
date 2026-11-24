@@ -19,6 +19,7 @@ import {
   EditorView,
   ViewPlugin,
   type ViewUpdate,
+  WidgetType,
 } from '@codemirror/view';
 import { classHighlighter } from '@lezer/highlight';
 
@@ -27,9 +28,13 @@ import { codeLanguage } from './codeHighlight.js';
 export interface PreviewItem {
   readonly from: number;
   readonly to: number;
-  /** line: 줄 전체 클래스, mark: 구간 클래스, hide: 숨김 */
-  readonly kind: 'line' | 'mark' | 'hide';
+  /** line: 줄 전체 클래스, mark: 구간 클래스, hide: 숨김, task: 작업 표시를 체크박스로(NOR-239) */
+  readonly kind: 'line' | 'mark' | 'hide' | 'task';
   readonly className?: string;
+  /** task 만: 끝낸 작업인지. */
+  readonly checked?: boolean;
+  /** task 만: 체크박스의 접근 가능한 이름(작업 글). */
+  readonly label?: string;
 }
 
 /** 목록 자동 이어쓰기 같은 입력 변경 키맵은 넣지 않는다. 입력한 글자가 그대로 원본이다(AC-8). */
@@ -166,13 +171,41 @@ export function previewDecorations(state: EditorState, ensureMs = 200): PreviewI
         if (!isActive(node.from)) items.push({ from: node.from, to: node.to, kind: 'hide' });
         return;
       }
+      if (name === 'Task') {
+        const marker = node.node.getChild('TaskMarker');
+        if (marker === null) return;
+        const checked = /x/iu.test(text.slice(marker.from, marker.to));
+        if (checked)
+          items.push({
+            from: lineOf(node.from).from,
+            to: lineOf(node.from).from,
+            kind: 'line',
+            className: 'cm-lp-task-done',
+          });
+        if (!isActive(marker.from))
+          items.push({
+            from: marker.from,
+            to: marker.to,
+            kind: 'task',
+            checked,
+            label: text.slice(marker.to, lineOf(node.from).to).trim(),
+          });
+        return;
+      }
       if (name === 'ListMark') {
+        // 작업 항목은 체크박스가 표시를 맡으므로 목록 기호를 숨긴다(NOR-239).
+        if (node.node.parent?.getChild('Task') && !isActive(node.from)) {
+          hideWithSpace(node.from, node.to);
+          return;
+        }
         items.push({ from: node.from, to: node.to, kind: 'mark', className: 'cm-lp-listmark' });
       }
       return;
     },
   });
-  return items.flatMap((item) => (item.kind === 'hide' ? splitByLine(state, item) : [item]));
+  return items
+    .flatMap((item) => (item.kind === 'hide' ? splitByLine(state, item) : [item]))
+    .sort((a, b) => a.from - b.from);
 }
 
 /** 줄을 넘는 숨김은 ViewPlugin 장식으로 둘 수 없다. 줄마다 나눈다. */
@@ -200,6 +233,38 @@ export function sourceOf(state: EditorState): string {
   return state.doc.sliceString(0, state.doc.length, state.lineBreak);
 }
 
+/**
+ * 작업 표시 자리의 체크박스(NOR-239). 누르면 원본의 `[ ]`·`[x]` 를 바꾼다.
+ * 편집기가 누르기를 받으면 커서가 그 줄로 옮겨 가 체크박스가 원본으로 바뀌므로, 이벤트는 위젯이 받는다.
+ */
+class TaskWidget extends WidgetType {
+  constructor(
+    readonly checked: boolean,
+    readonly label: string,
+  ) {
+    super();
+  }
+  override eq(other: TaskWidget): boolean {
+    return other.checked === this.checked && other.label === this.label;
+  }
+  override toDOM(view: EditorView): HTMLElement {
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.checked = this.checked;
+    box.className = 'cm-lp-task';
+    box.setAttribute('aria-label', this.label || '할 일');
+    box.addEventListener('mousedown', (event) => event.preventDefault());
+    box.addEventListener('click', (event) => {
+      event.preventDefault();
+      view.dispatch(toggleTask(view.state, view.posAtDOM(box)));
+    });
+    return box;
+  }
+  override ignoreEvent(): boolean {
+    return true;
+  }
+}
+
 function toDecorations(state: EditorState): DecorationSet {
   const ranges: Range<Decoration>[] = [];
   for (const item of previewDecorations(state, 0)) {
@@ -209,6 +274,12 @@ function toDecorations(state: EditorState): DecorationSet {
       ranges.push(Decoration.mark({ class: item.className ?? '' }).range(item.from, item.to));
     else if (item.kind === 'hide' && item.to > item.from)
       ranges.push(Decoration.replace({}).range(item.from, item.to));
+    else if (item.kind === 'task')
+      ranges.push(
+        Decoration.replace({
+          widget: new TaskWidget(item.checked === true, item.label ?? ''),
+        }).range(item.from, item.to),
+      );
   }
   return Decoration.set(ranges, true);
 }
@@ -261,6 +332,15 @@ const theme = EditorView.theme({
   },
   '.cm-lp-link': { color: 'var(--theme-accent)', textDecoration: 'underline' },
   '.cm-lp-listmark': { color: 'var(--theme-accent)' },
+  '.cm-lp-task': {
+    accentColor: 'var(--theme-accent)',
+    width: '1.05em',
+    height: '1.05em',
+    margin: '0 0.15em',
+    verticalAlign: '-0.15em',
+    cursor: 'pointer',
+  },
+  '.cm-lp-task-done': { color: 'var(--theme-muted)', textDecoration: 'line-through' },
   '.cm-lp-quote': {
     borderLeft: '2px solid var(--theme-border-strong)',
     paddingLeft: '0.75rem !important',
@@ -338,7 +418,9 @@ export function toggleLinePrefix(state: EditorState, prefix: string): Transactio
       else changes.push({ from: line.from, insert: prefix });
     }
   }
-  return { changes };
+  // 줄 맨 앞의 커서는 붙인 표시 뒤로 보낸다. 그대로 두면 이어 친 글자가 표시 앞에 들어간다(NOR-239).
+  const changeSet = state.changes(changes);
+  return { changes: changeSet, selection: state.selection.map(changeSet, 1) };
 }
 
 /** 선택을 링크로 만든다. 주소 자리를 선택해 바로 칠 수 있게 한다. */
@@ -352,4 +434,15 @@ export function insertLink(state: EditorState): TransactionSpec {
       range: EditorSelection.range(urlStart, urlStart + 8),
     };
   });
+}
+
+const TASK_LINE = /^(\s*(?:[-*+]|\d+[.)])\s+)\[([ xX])\]/u;
+
+/** `pos` 가 있는 줄의 작업 표시를 `[ ]` ↔ `[x]` 로 바꾼다(NOR-239). 작업 줄이 아니면 바꾸지 않는다. */
+export function toggleTask(state: EditorState, pos: number): TransactionSpec {
+  const line = state.doc.lineAt(pos);
+  const match = TASK_LINE.exec(line.text);
+  if (match?.[1] === undefined || match[2] === undefined) return {};
+  const at = line.from + match[1].length + 1;
+  return { changes: { from: at, to: at + 1, insert: match[2] === ' ' ? 'x' : ' ' } };
 }

@@ -37,3 +37,4 @@ export {
   type Profile,
   type SiteCollection,
 } from './site.ts';
+export { taskItemNode } from './task-list.ts';

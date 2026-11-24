@@ -91,6 +91,13 @@
   .preview ol {
     @apply list-decimal pl-6;
   }
+  /* 작업 목록(NOR-239). 블로그와 같은 모양이다. */
+  .preview li.task-list-item {
+    @apply -ml-6 list-none;
+  }
+  .preview li.task-list-item > input[type='checkbox'] {
+    @apply accent-accent mr-2 align-[-0.1em];
+  }
   .preview a {
     @apply text-accent underline;
   }
