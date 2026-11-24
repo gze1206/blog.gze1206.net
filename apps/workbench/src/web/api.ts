@@ -6,6 +6,9 @@ export interface TemplateSummary {
 }
 
 import type { BookExcerpt, ReadingMemo } from '../core/document/document.js';
+import type { ScheduleEvent, ScheduleEventInput } from '../core/schedule/event.js';
+import type { Occurrence } from '../core/schedule/recurrence.js';
+import type { ScheduleScope } from '../core/schedule/scope.js';
 
 export type { BookExcerpt, ReadingMemo };
 
@@ -263,6 +266,8 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
       .join(', ');
     throw new Error(issues ? `${message} (${issues})` : message);
   }
+  // 본문 없는 성공(지우기 등)은 값 없이 끝낸다.
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
 
@@ -633,4 +638,44 @@ export async function uploadPublicAsset(
   if (!response.ok || payload?.reference === undefined || payload.id === undefined)
     throw new Error(payload?.error?.message ?? '이미지를 올리지 못했습니다.');
   return { id: payload.id, reference: payload.reference, size: payload.size ?? 0 };
+}
+
+// 일정(NOR-242·243).
+export type { Occurrence, ScheduleEvent, ScheduleEventInput, ScheduleScope };
+
+export async function listSchedule(
+  from: string,
+  to: string,
+): Promise<{ readonly occurrences: Occurrence[]; readonly problems: readonly unknown[] }> {
+  return request(`/api/schedule?from=${from}&to=${to}`);
+}
+
+export async function readScheduleEvent(id: string): Promise<ScheduleEvent> {
+  return request(`/api/schedule/events/${encodeURIComponent(id)}`);
+}
+
+export async function createScheduleEvent(input: ScheduleEventInput): Promise<ScheduleEvent> {
+  return request('/api/schedule/events', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function updateScheduleEvent(
+  id: string,
+  scope: ScheduleScope,
+  occurrenceDate: string,
+  event: ScheduleEventInput,
+): Promise<unknown> {
+  return request(`/api/schedule/events/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ scope, occurrenceDate, event }),
+  });
+}
+
+export async function deleteScheduleEvent(
+  id: string,
+  scope: ScheduleScope,
+  date: string,
+): Promise<void> {
+  return request(`/api/schedule/events/${encodeURIComponent(id)}?scope=${scope}&date=${date}`, {
+    method: 'DELETE',
+  });
 }

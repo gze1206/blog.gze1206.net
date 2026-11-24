@@ -17,6 +17,8 @@ import { MigrateDialog } from '../MigrateDialog.js';
 import { QuickCapture } from '../QuickCapture.js';
 import { ReviewPanel } from '../ReviewPanel.js';
 import { ReviewPrompt } from '../ReviewPrompt.js';
+import { listSchedule, type Occurrence } from '../api.js';
+import { timeLabel } from '../schedule/scheduleForm.js';
 
 const glyph = (bullet: Bullet) =>
   bullet.status === 'completed'
@@ -33,6 +35,7 @@ export function DayPage({
   date,
   isToday,
   onEditSource,
+  onOpenSchedule,
   onError,
   reviewSuggestion,
   onDismissReviewSuggestion,
@@ -43,6 +46,8 @@ export function DayPage({
   readonly isToday: boolean;
   /** 그 날의 일지를 원본 편집기로 연다. 일지 문서가 없으면 버튼을 두지 않는다. */
   readonly onEditSource: (() => void) | undefined;
+  /** 그 날짜를 고른 일정 화면을 연다(NOR-243). */
+  readonly onOpenSchedule: (date: string) => void;
   readonly onError: (message: string) => void;
   readonly reviewSuggestion: ReviewSuggestion | null;
   readonly onDismissReviewSuggestion: () => void;
@@ -60,6 +65,19 @@ export function DayPage({
     readonly bullet: ReviewBullet;
     readonly mode: 'quick' | 'intentional';
   } | null>(null);
+
+  const [schedule, setSchedule] = useState<Occurrence[]>([]);
+  useEffect(() => {
+    let active = true;
+    void listSchedule(date, date)
+      .then((result) => {
+        if (active) setSchedule(result.occurrences);
+      })
+      .catch((error: unknown) => onError(toMessage(error)));
+    return () => {
+      active = false;
+    };
+  }, [date, onError]);
 
   const refresh = useCallback(async () => {
     const [day, older] = await Promise.all([readDay(date), reviewBullets(date)]);
@@ -191,6 +209,41 @@ export function DayPage({
           suggestion={reviewSuggestion}
         />
       ) : null}
+      <section
+        aria-label="이날의 일정"
+        className="mb-6 rounded-xl border border-border bg-surface p-4"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-bold tracking-[-0.02em] text-lg">이날의 일정</h2>
+          <button
+            className="min-h-10 rounded-md border border-border px-3 text-sm md:min-h-0 md:py-1"
+            onClick={() => onOpenSchedule(date)}
+            type="button"
+          >
+            일정 열기
+          </button>
+        </div>
+        {schedule.length ? (
+          <ul className="mt-2 space-y-1">
+            {schedule.map((item) => (
+              <li key={`${item.eventId}-${item.date}`}>
+                <button
+                  className="flex min-h-10 w-full items-center gap-3 rounded-md px-2 text-left text-sm hover:bg-surface-sunken"
+                  onClick={() => onOpenSchedule(date)}
+                  type="button"
+                >
+                  <span className="w-20 shrink-0 font-mono text-xs text-muted">
+                    {timeLabel(item)}
+                  </span>
+                  <span className="min-w-0 [overflow-wrap:anywhere]">{item.title}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-muted">일정이 없습니다.</p>
+        )}
+      </section>
       <QuickCapture busy={busy} onCapture={capture} />
       <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_22rem]">
         <section aria-label="오늘 불렛" className="rounded-xl border border-border bg-surface p-5">

@@ -226,3 +226,25 @@ test('NOR-239 AC-3: 체크박스를 눌러 원본을 바꾸고, 도구 막대로
   await expect(page.locator('.cm-line').filter({ hasText: '[x]' })).toHaveCount(0);
   await expect(page.locator('.cm-line.cm-lp-task-done')).toContainText('우유 사기');
 });
+
+test('NOR-243 AC-5: 휴대폰 화면에서 일정 화면과 대화 상자가 가로로 넘치지 않는다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await openMenu(page);
+  await page.getByRole('button', { name: '일정', exact: true }).tap();
+  await expect(page.getByRole('grid', { name: '월 달력' })).toBeVisible();
+  expect(await overflowing(page), '일정 화면').toEqual([]);
+  await page.getByRole('button', { name: '새 일정' }).tap();
+  const dialog = page.getByRole('dialog', { name: '새 일정' });
+  await dialog.getByLabel('반복').selectOption('weekly');
+  await expect(dialog).toBeVisible();
+  expect(await overflowing(page), '일정 대화 상자').toEqual([]);
+  const box = await dialog.boundingBox();
+  expect(box?.width ?? 999).toBeLessThanOrEqual(390);
+  // 화면보다 긴 대화 상자도 위가 잘리지 않고, 스크롤해 저장할 수 있다.
+  expect(box?.y ?? -1).toBeGreaterThanOrEqual(0);
+  await dialog.getByLabel('제목').fill('휴대폰 일정');
+  await dialog.getByRole('button', { name: '저장' }).tap();
+  await expect(dialog).toBeHidden();
+});
