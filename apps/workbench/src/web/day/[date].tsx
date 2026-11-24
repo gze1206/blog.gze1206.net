@@ -31,12 +31,18 @@ const touchButton =
 
 export function DayPage({
   date,
+  isToday,
+  onEditSource,
   onError,
   reviewSuggestion,
   onDismissReviewSuggestion,
   onCreateReview,
 }: {
   readonly date: string;
+  /** 머리글을 "Today" 로 쓸지(NOR-240). */
+  readonly isToday: boolean;
+  /** 그 날의 일지를 원본 편집기로 연다. 일지 문서가 없으면 버튼을 두지 않는다. */
+  readonly onEditSource: (() => void) | undefined;
   readonly onError: (message: string) => void;
   readonly reviewSuggestion: ReviewSuggestion | null;
   readonly onDismissReviewSuggestion: () => void;
@@ -157,9 +163,24 @@ export function DayPage({
 
   return (
     <div className="mx-auto w-full max-w-5xl overflow-y-auto px-4 py-6 md:px-8 md:py-10">
-      <header className="mb-7">
-        <p className="font-mono text-xs tracking-widest text-accent uppercase">Today</p>
-        <h1 className="mt-1 font-bold tracking-[-0.02em] text-2xl md:text-3xl">{date} 일일 로그</h1>
+      <header className="mb-7 flex items-end justify-between gap-3">
+        <div>
+          <p className="font-mono text-xs tracking-widest text-accent uppercase">
+            {isToday ? 'Today' : 'Daily log'}
+          </p>
+          <h1 className="mt-1 font-bold tracking-[-0.02em] text-2xl md:text-3xl">
+            {date} 일일 로그
+          </h1>
+        </div>
+        {onEditSource ? (
+          <button
+            className="min-h-10 shrink-0 rounded-md border border-border px-3 text-sm text-muted-strong hover:bg-surface-sunken md:min-h-0 md:py-1.5"
+            onClick={onEditSource}
+            type="button"
+          >
+            원본 편집
+          </button>
+        ) : null}
       </header>
       {loadedDate === date && reviewSuggestion ? (
         <ReviewPrompt
@@ -173,7 +194,9 @@ export function DayPage({
       <QuickCapture busy={busy} onCapture={capture} />
       <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_22rem]">
         <section aria-label="오늘 불렛" className="rounded-xl border border-border bg-surface p-5">
-          <h2 className="font-bold tracking-[-0.02em] text-xl">오늘의 불렛</h2>
+          <h2 className="font-bold tracking-[-0.02em] text-xl">
+            {isToday ? '오늘의 불렛' : '이날의 불렛'}
+          </h2>
           <ul className="mt-4 space-y-2" data-testid="day-bullets">
             {bullets.map((bullet) => (
               <li

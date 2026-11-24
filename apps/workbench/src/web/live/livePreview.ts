@@ -95,6 +95,18 @@ export function previewDecorations(state: EditorState, ensureMs = 200): PreviewI
   }
   const skip = (pos: number) => pos < fmEnd || markdocLines.has(lineOf(pos).number);
 
+  // 일지 불렛의 `<!-- wb:id=… -->` 는 워크벤치가 쓰는 표시다. 커서가 없는 줄에서는 앞 공백과 함께 숨긴다(NOR-240).
+  for (let n = lineOf(Math.min(fmEnd, doc.length)).number; n <= doc.lines; n += 1) {
+    const line = doc.line(n);
+    if (line.from < fmEnd || activeLines.has(n)) continue;
+    for (const match of line.text.matchAll(/\s*<!--\s*wb:[^>]*-->/gu))
+      items.push({
+        from: line.from + match.index,
+        to: line.from + match.index + match[0].length,
+        kind: 'hide',
+      });
+  }
+
   /** 표시 문자와, 뒤따르는 공백 하나를 함께 숨긴다(`# `, `> `). */
   const hideWithSpace = (from: number, to: number) => {
     const end = text[to] === ' ' ? to + 1 : to;
