@@ -39,6 +39,7 @@ import { ThemeToggle } from './ThemeToggle.js';
 import { TrashList } from './TrashList.js';
 import { SiteContent } from './site/SiteContent.js';
 import { DayPage } from './day/[date].js';
+import { SchedulePage } from './schedule/SchedulePage.js';
 import { PublishToasts } from './publish/PublishToasts.js';
 import { trackPublish } from './publish/trackPublish.js';
 
@@ -76,6 +77,8 @@ export function App() {
   const [day, setDay] = useState<string | null>(() => dayFromLocation());
   /** 앱이 알려 준 오늘. 지난 날을 보다가 "오늘의 로그" 로 돌아올 때 쓴다(NOR-240). */
   const [today, setToday] = useState<string | null>(null);
+  /** 일정 화면에서 고른 날. null 이면 일정 화면을 닫았다(NOR-243). */
+  const [scheduleDate, setScheduleDate] = useState<string | null>(null);
   const [publishReview, setPublishReview] = useState<PublishReviewData | null>(null);
   const [publishResult, setPublishResult] = useState<PublishResult | null>(null);
   const [publishAssets, setPublishAssets] = useState<PublicAssetCandidate[]>([]);
@@ -343,12 +346,27 @@ export function App() {
             onClick={() => {
               setSelected(null);
               setSiteOpen(false);
+              setScheduleDate(null);
               if (today !== null) setDay(today);
               closeMenu();
             }}
             type="button"
           >
             오늘의 로그
+          </button>
+          <button
+            className="mt-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-left text-sm disabled:opacity-50"
+            // 오늘 날짜를 받기 전에는 열 날짜가 없다.
+            disabled={(day ?? today) === null}
+            onClick={() => {
+              setSelected(null);
+              setSiteOpen(false);
+              setScheduleDate(day ?? today);
+              closeMenu();
+            }}
+            type="button"
+          >
+            일정
           </button>
           <button
             className="mt-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-left text-sm"
@@ -374,6 +392,7 @@ export function App() {
             className="mt-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-left text-sm"
             onClick={() => {
               setSelected(null);
+              setScheduleDate(null);
               setSiteOpen(true);
               closeMenu();
             }}
@@ -403,6 +422,7 @@ export function App() {
           documents={documents}
           onSelect={(id) => {
             setSiteOpen(false);
+            setScheduleDate(null);
             closeMenu();
             // 일지는 불렛을 다루는 일일 로그 화면으로 연다. 원본은 그 화면에서 연다(NOR-240).
             const journalDate = journalDateOf(documents.find((document) => document.id === id));
@@ -505,10 +525,19 @@ export function App() {
           </>
         ) : siteOpen ? (
           <SiteContent />
+        ) : scheduleDate !== null ? (
+          <SchedulePage
+            // 다른 날짜로 열면 그 날짜에서 새로 시작한다.
+            key={scheduleDate}
+            initialDate={scheduleDate}
+            onError={setError}
+            today={today ?? scheduleDate}
+          />
         ) : day ? (
           <DayPage
             date={day}
             isToday={day === today}
+            onOpenSchedule={(date) => setScheduleDate(date)}
             onEditSource={
               journalIdOf(documents, day) === null
                 ? undefined

@@ -242,4 +242,9 @@ test('NOR-243 AC-5: 휴대폰 화면에서 일정 화면과 대화 상자가 가
   expect(await overflowing(page), '일정 대화 상자').toEqual([]);
   const box = await dialog.boundingBox();
   expect(box?.width ?? 999).toBeLessThanOrEqual(390);
+  // 화면보다 긴 대화 상자도 위가 잘리지 않고, 스크롤해 저장할 수 있다.
+  expect(box?.y ?? -1).toBeGreaterThanOrEqual(0);
+  await dialog.getByLabel('제목').fill('휴대폰 일정');
+  await dialog.getByRole('button', { name: '저장' }).tap();
+  await expect(dialog).toBeHidden();
 });
