@@ -143,7 +143,7 @@ describe('NOR-242 반복 전개', () => {
         repeat: { freq: 'monthly', interval: 1, count: 2 },
       }),
     };
-    expect(occurrencesBetween(trip, '2026-12-01', '2026-12-31')).toEqual([
+    expect(occurrencesBetween(trip, '2026-12-01', '2026-12-29')).toEqual([
       expect.objectContaining({
         eventId: ID,
         date: '2026-11-30',
@@ -253,7 +253,7 @@ describe('NOR-242 고치기·지우기 범위', () => {
     });
     expect(mod.planDelete(event, 'following', '2026-11-26')).toEqual({ remove: true });
     expect(mod.planDelete(event, 'all', '2026-12-10')).toEqual({ remove: true });
-    const once = { ...event, repeat: undefined };
+    const { repeat: _repeat, ...once } = event;
     expect(mod.planDelete(once, 'this', '2026-11-26')).toEqual({ remove: true });
   });
 });

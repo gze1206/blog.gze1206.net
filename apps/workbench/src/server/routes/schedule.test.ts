@@ -101,3 +101,28 @@ it('NOR-242 AC-5: 잘못된 입력은 400, 없는 일정은 404, 400일 넘는 �
     ).status,
   ).toBe(404);
 });
+
+it('NOR-242 AC-5: 앱에 붙여도 잘못된 입력은 400, 없는 일정은 404 다', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'schedule-app-'));
+  const { createApp } = await import('../app.js');
+  const { ServerFileStore } = await import('../adapters/fileStore.js');
+  const { ServerJournalStore } = await import('../adapters/journalStore.js');
+  const { ServerScheduleStore } = await import('../adapters/scheduleStore.js');
+  const app = createApp(
+    new ServerFileStore(root),
+    new ServerJournalStore(root),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    new ServerScheduleStore(root),
+  );
+  const bad = await app.request('/api/schedule/events', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ title: '', date: '2026-11-26' }),
+  });
+  expect(bad.status).toBe(400);
+  expect((await app.request('/api/schedule/events/01M83945Q72TNSZD8E69SVBWMZ')).status).toBe(404);
+  expect((await app.request('/api/schedule?from=2026-11-01&to=2026-11-30')).status).toBe(200);
+});

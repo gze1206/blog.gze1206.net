@@ -9,6 +9,7 @@ import { calendarDateInTimeZone } from '../core/reviews/calendar.js';
 import { BookAssetStore } from './adapters/bookAssets.js';
 import { HttpBookMetadataProvider } from './adapters/bookMetadata.js';
 import { ServerFileStore } from './adapters/fileStore.js';
+import { ServerScheduleStore } from './adapters/scheduleStore.js';
 import { ServerJournalStore } from './adapters/journalStore.js';
 import { PublicBlogAdapter } from './adapters/publicBlog.js';
 import { ProductionRemotePolicy } from './adapters/remotePolicy.js';
@@ -69,6 +70,7 @@ const app = createApp(
       repo: new URL(config.publicBlogRemote).pathname.replace(/^\/|\.git$/gu, ''),
     }),
   },
+  new ServerScheduleStore(config.workspaceRoot),
 );
 
 app.use('*', serveStatic({ root: './dist/web' }));
