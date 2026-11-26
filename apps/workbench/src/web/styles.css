@@ -91,6 +91,14 @@
   .preview ol {
     @apply list-decimal pl-6;
   }
+  /* 느슨한 목록(항목 사이 빈 줄)은 항목을 <p> 로 감싼다. 블로그처럼 그 문단에는 여백을 두지 않고
+     항목 사이 간격만 둔다(NOR-246). */
+  .preview li > p {
+    @apply my-0;
+  }
+  .preview li + li {
+    @apply mt-1.5;
+  }
   /* 하위 목록은 붙여 두고 깊이마다 표시를 바꾼다(NOR-244). */
   .preview li > ul,
   .preview li > ol {

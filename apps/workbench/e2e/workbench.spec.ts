@@ -622,7 +622,7 @@ test('NOR-246 AC-1: 느슨한 목록도 미리보기에서 항목 간격이 고�
   await page.keyboard.press('ControlOrMeta+End');
   // 하위 목록 뒤의 빈 줄 하나가 목록 전체를 느슨한 목록으로 만든다.
   await page.keyboard.insertText('\n- 하나\n- 둘\n  - 하위 하나\n  - 하위 둘\n\n- 셋\n- 넷\n');
-  await page.getByRole('button', { name: '미리보기' }).click();
+  await page.getByRole('button', { name: '미리보기', exact: true }).click();
   const preview = page.getByRole('region', { name: '미리보기' });
   await expect(preview.locator('li > p').first()).toBeVisible();
   const gaps = await preview
