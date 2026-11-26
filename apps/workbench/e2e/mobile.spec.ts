@@ -296,3 +296,33 @@ test('NOR-245 AC-1, NOR-245 AC-2, NOR-245 AC-3: Enter 로 목록·체크리스�
   // 위 항목에 딸린 문단으로 남으므로 들여쓰기는 남을 수 있다. 번호 표시만 없으면 된다.
   await expect(page.locator('.cm-line').filter({ hasText: /^\s*번호 밖$/u })).toHaveCount(1);
 });
+
+test('NOR-248 AC-4, NOR-248 AC-5: 빠른 캡처의 일정은 이날의 일정으로 들어가고 완료할 수 있다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('group', { name: '불렛 유형' }).getByRole('button', { name: /일정/u }).tap();
+  await expect(page.getByLabel('일정 날짜')).toHaveValue('2026-08-12');
+  await page.getByLabel('일정 시각').fill('15:00');
+  await page.getByLabel('빠른 불렛 입력').fill('치과 예약');
+  await page.getByRole('button', { name: '추가', exact: true }).tap();
+  const schedule = page.getByRole('region', { name: '이날의 일정' });
+  await expect(schedule).toContainText('15:00');
+  await expect(schedule).toContainText('치과 예약');
+  await expect(page.getByTestId('day-bullets')).not.toContainText('치과 예약');
+
+  await schedule.getByRole('button', { name: '치과 예약 완료' }).tap();
+  await expect(schedule.getByRole('button', { name: '치과 예약 다시 열기' })).toBeVisible();
+  await page.reload();
+  const again = page.getByRole('region', { name: '이날의 일정' });
+  await again.getByRole('button', { name: '치과 예약 다시 열기' }).tap();
+  await expect(again.getByRole('button', { name: '치과 예약 완료' })).toBeVisible();
+});
+
+test('NOR-248 AC-6: ○ 불렛은 "일정으로" 를 누르면 이날의 일정으로 옮겨 간다', async ({ page }) => {
+  await page.goto('/day/2026-08-09');
+  const bullets = page.getByTestId('day-bullets');
+  await bullets.getByRole('button', { name: '옮길 컨퍼런스 일정으로' }).tap();
+  await expect(page.getByRole('region', { name: '이날의 일정' })).toContainText('옮길 컨퍼런스');
+  await expect(bullets).not.toContainText('옮길 컨퍼런스');
+});

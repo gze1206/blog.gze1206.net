@@ -17,7 +17,13 @@ import { MigrateDialog } from '../MigrateDialog.js';
 import { QuickCapture } from '../QuickCapture.js';
 import { ReviewPanel } from '../ReviewPanel.js';
 import { ReviewPrompt } from '../ReviewPrompt.js';
-import { listSchedule, type Occurrence } from '../api.js';
+import {
+  createScheduleEvent,
+  listSchedule,
+  scheduleBullet,
+  setScheduleCompletion,
+  type Occurrence,
+} from '../api.js';
 import { timeLabel } from '../schedule/scheduleForm.js';
 
 const glyph = (bullet: Bullet) =>
@@ -67,6 +73,8 @@ export function DayPage({
   } | null>(null);
 
   const [schedule, setSchedule] = useState<Occurrence[]>([]);
+  /** 일정을 바꾸면 올려서 다시 불러온다(NOR-248). */
+  const [scheduleVersion, setScheduleVersion] = useState(0);
   useEffect(() => {
     let active = true;
     void listSchedule(date, date)
@@ -77,7 +85,7 @@ export function DayPage({
     return () => {
       active = false;
     };
-  }, [date, onError]);
+  }, [date, onError, scheduleVersion]);
 
   const refresh = useCallback(async () => {
     const [day, older] = await Promise.all([readDay(date), reviewBullets(date)]);
@@ -100,15 +108,46 @@ export function DayPage({
     };
   }, [date, onError]);
 
-  const capture = async (type: BulletType, text: string) => {
+  const capture = async (
+    type: BulletType,
+    text: string,
+    when?: { readonly date: string; readonly time: string },
+  ) => {
     setBusy(true);
     try {
-      await captureBullet(date, { type, text });
+      // 일정은 불렛이 아니라 일정으로 넣는다(NOR-248).
+      if (type === 'event')
+        await createScheduleEvent({
+          title: text,
+          date: when?.date || date,
+          ...(when?.time ? { time: when.time } : {}),
+          exceptions: [],
+          notes: '',
+        });
+      else await captureBullet(date, { type, text });
+      setScheduleVersion((current) => current + 1);
       await refresh();
     } catch (error) {
       onError(toMessage(error));
     } finally {
       setBusy(false);
+    }
+  };
+  const toggleSchedule = async (item: Occurrence) => {
+    try {
+      await setScheduleCompletion(item.eventId, item.date, !item.completed);
+      setScheduleVersion((current) => current + 1);
+    } catch (error) {
+      onError(toMessage(error));
+    }
+  };
+  const moveToSchedule = async (bullet: Bullet) => {
+    try {
+      await scheduleBullet(date, bullet.id);
+      setScheduleVersion((current) => current + 1);
+      await refresh();
+    } catch (error) {
+      onError(toMessage(error));
     }
   };
   type Change = 'complete' | 'cancel' | 'reopen' | 'cycle-type';
@@ -226,16 +265,28 @@ export function DayPage({
         {schedule.length ? (
           <ul className="mt-2 space-y-1">
             {schedule.map((item) => (
-              <li key={`${item.eventId}-${item.date}`}>
+              <li className="flex items-center" key={`${item.eventId}-${item.date}`}>
                 <button
-                  className="flex min-h-10 w-full items-center gap-3 rounded-md px-2 text-left text-sm hover:bg-surface-sunken"
+                  aria-label={`${item.title} ${item.completed ? '다시 열기' : '완료'}`}
+                  className={touchButton}
+                  onClick={() => void toggleSchedule(item)}
+                  type="button"
+                >
+                  {item.completed ? '◉' : '○'}
+                </button>
+                <button
+                  className="flex min-h-10 min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-left text-sm hover:bg-surface-sunken"
                   onClick={() => onOpenSchedule(date)}
                   type="button"
                 >
                   <span className="w-20 shrink-0 font-mono text-xs text-muted">
                     {timeLabel(item)}
                   </span>
-                  <span className="min-w-0 [overflow-wrap:anywhere]">{item.title}</span>
+                  <span
+                    className={`min-w-0 [overflow-wrap:anywhere] ${item.completed ? 'text-muted line-through' : ''}`}
+                  >
+                    {item.title}
+                  </span>
                 </button>
               </li>
             ))}
@@ -244,7 +295,8 @@ export function DayPage({
           <p className="mt-2 text-sm text-muted">일정이 없습니다.</p>
         )}
       </section>
-      <QuickCapture busy={busy} onCapture={capture} />
+      {/* 다른 날짜로 옮기면 일정의 기본 날짜도 그날로 새로 잡는다. */}
+      <QuickCapture busy={busy} date={date} key={date} onCapture={capture} />
       <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_22rem]">
         <section aria-label="오늘 불렛" className="rounded-xl border border-border bg-surface p-5">
           <h2 className="font-bold tracking-[-0.02em] text-xl">
@@ -296,6 +348,17 @@ export function DayPage({
                         type="button"
                       >
                         취소
+                      </button>
+                    ) : null}
+                    {bullet.type === 'event' ? (
+                      <button
+                        aria-label={`${bullet.text} 일정으로`}
+                        className={`${touchButton} px-2 text-xs text-muted`}
+                        onClick={() => void moveToSchedule(bullet)}
+                        title="일정으로 옮기기"
+                        type="button"
+                      >
+                        일정으로
                       </button>
                     ) : null}
                     <button

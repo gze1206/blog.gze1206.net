@@ -34,8 +34,15 @@ export interface ScheduleEventInput {
   readonly location?: string;
   readonly repeat?: RepeatRule;
   readonly exceptions: readonly string[];
+  /** 완료한 회차의 날짜(NOR-248). 반복 일정도 회차마다 따로 끝낸다. */
+  readonly completed: readonly string[];
   readonly notes: string;
 }
+
+/** 화면이 보내는 입력. 완료 날짜는 서버가 지키므로 보내지 않아도 된다(NOR-248). */
+export type ScheduleEventDraft = Omit<ScheduleEventInput, 'completed'> & {
+  readonly completed?: readonly string[];
+};
 
 export interface ScheduleEvent extends ScheduleEventInput {
   readonly id: string;
@@ -73,6 +80,7 @@ const inputSchema = z
     location: z.string().trim().min(1).max(200).optional(),
     repeat: repeatSchema.optional(),
     exceptions: z.array(dateField).max(1000).default([]),
+    completed: z.array(dateField).max(5000).default([]),
     notes: z.string().max(20_000).default(''),
   })
   .strict()
@@ -135,6 +143,7 @@ export function validateEventInput(input: unknown): ScheduleEventInput {
     location: event.location,
     repeat,
     exceptions: [...new Set(event.exceptions)].sort(),
+    completed: [...new Set(event.completed)].sort(),
     notes: event.notes,
   }) as ScheduleEventInput;
 }
@@ -169,4 +178,16 @@ export function serializeEvent(event: ScheduleEvent): string {
 /** 값이 undefined 인 키를 뺀다. */
 export function clean<T extends Record<string, unknown>>(value: T): T {
   return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined)) as T;
+}
+
+/** 회차 하나의 완료를 켜고 끈다(NOR-248). */
+export function setCompleted(
+  event: ScheduleEvent,
+  date: string,
+  completed: boolean,
+): ScheduleEvent {
+  const dates = new Set(event.completed);
+  if (completed) dates.add(date);
+  else dates.delete(date);
+  return { ...event, completed: [...dates].sort() };
 }

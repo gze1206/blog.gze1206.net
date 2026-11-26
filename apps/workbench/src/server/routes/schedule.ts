@@ -3,6 +3,9 @@ import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 
 import { isCalendarDate } from '../../core/bullets/date.js';
+import { parseBulletLine } from '../../core/bullets/parse.js';
+import { assertBulletId } from '../../core/bullets/syntax.js';
+import { parseDocument, serializeDocument } from '../../core/document/document.js';
 import {
   SCHEDULE_ID_PATTERN,
   ScheduleValidationError,
@@ -10,18 +13,24 @@ import {
   expandSchedule,
   planDelete,
   planEdit,
+  setCompleted,
   validateEventInput,
   type ScheduleEvent,
 } from '../../core/schedule/index.js';
+import type { JournalStore } from '../adapters/journalStore.js';
 import type { ScheduleStore } from '../adapters/scheduleStore.js';
 
 const MAX_RANGE_DAYS = 400;
 const date = z.string().refine(isCalendarDate, 'date must be YYYY-MM-DD');
 const scope = z.enum(['this', 'following', 'all']);
 const editSchema = z.object({ scope, occurrenceDate: date, event: z.unknown() }).strict();
+const completionSchema = z.object({ date, completed: z.boolean() }).strict();
 
 export interface ScheduleRouteOptions {
   readonly createId: () => string;
+  /** 일지의 ○ 불렛을 일정으로 옮길 때 쓴다(NOR-248). 없으면 그 경로를 열지 않는다. */
+  readonly journal?: JournalStore;
+  readonly clock?: () => Date;
 }
 
 class NotFound extends Error {}
@@ -82,6 +91,60 @@ export function createScheduleRoutes(store: ScheduleStore, options: ScheduleRout
     });
     return context.json(plan);
   });
+
+  routes.post('/api/schedule/events/:id/completion', async (context) => {
+    const id = eventId(context.req.param('id'));
+    const body = completionSchema.parse(await readJson(context.req.raw));
+    const updated = await store.runExclusive(async (transaction) => {
+      const current = await transaction.read(id);
+      if (current === null) throw new NotFound();
+      const next = setCompleted(current, body.date, body.completed);
+      await transaction.write(next);
+      return next;
+    });
+    return context.json(updated);
+  });
+
+  const journal = options.journal;
+  if (journal) {
+    // 일지의 ○ 불렛을 같은 날짜의 종일 일정으로 옮긴다(NOR-248).
+    // 두 저장소가 같은 작업 공간 잠금을 쓰므로 겹쳐 잡지 않는다: 일정을 먼저 만들고 불렛을 지운다.
+    routes.post('/api/days/:date/bullets/:bulletId/schedule', async (context) => {
+      const day = date.parse(context.req.param('date'));
+      const bulletId = context.req.param('bulletId');
+      try {
+        assertBulletId(bulletId);
+      } catch {
+        throw new ScheduleValidationError('invalid bullet id');
+      }
+      const source = await journal.read(day);
+      const line = source
+        ?.split(/\r?\n/u)
+        .find((candidate) => candidate.includes(`wb:id=${bulletId}`));
+      if (source === null || line === undefined) throw new NotFound();
+      const bullet = parseBulletLine(line);
+      if (bullet.type !== 'event')
+        throw new ScheduleValidationError('only event bullets can be scheduled');
+      const event: ScheduleEvent = {
+        id: options.createId(),
+        ...validateEventInput({ title: bullet.text, date: day }),
+      };
+      await store.runExclusive((transaction) => transaction.write(event));
+      await journal.runExclusive(async (transaction) => {
+        const current = await transaction.read(day);
+        if (current === null) return;
+        const document = parseDocument(current);
+        const content = document.content
+          .split(/\r?\n/u)
+          .filter((candidate) => !candidate.includes(`wb:id=${bulletId}`))
+          .join('\n');
+        if (content === document.content) return;
+        const now = (options.clock ?? (() => new Date()))().toISOString().slice(0, 10);
+        await transaction.write(day, serializeDocument({ ...document, updatedAt: now, content }));
+      });
+      return context.json(event, 201);
+    });
+  }
 
   routes.delete('/api/schedule/events/:id', async (context) => {
     const id = eventId(context.req.param('id'));

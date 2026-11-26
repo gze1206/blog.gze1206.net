@@ -59,15 +59,19 @@ export function planEdit(
         date,
         endDate: span === 0 ? undefined : addDays(date, span),
         exceptions: event.exceptions.map((day) => addDays(day, shift)),
+        completed: event.completed.map((day) => addDays(day, shift)),
       }) as ScheduleEvent,
     };
   }
   if (scope === 'this')
     return {
       update: withException(event, occurrenceDate),
-      create: (({ repeat: _repeat, ...single }) => ({ ...single, id: newId, exceptions: [] }))(
-        fields,
-      ),
+      create: (({ repeat: _repeat, ...single }) => ({
+        ...single,
+        id: newId,
+        exceptions: [],
+        completed: [],
+      }))(fields),
     };
   const before = countBefore(event, occurrenceDate);
   const repeat =
@@ -75,12 +79,16 @@ export function planEdit(
       ? { ...fields.repeat, count: Math.max(1, fields.repeat.count - before) }
       : fields.repeat;
   return {
-    update: endBefore(event, occurrenceDate),
+    update: {
+      ...endBefore(event, occurrenceDate),
+      completed: event.completed.filter((day) => dayNumber(day) < dayNumber(occurrenceDate)),
+    },
     create: clean({
       ...fields,
       id: newId,
       repeat,
       exceptions: event.exceptions.filter((day) => dayNumber(day) >= dayNumber(occurrenceDate)),
+      completed: event.completed.filter((day) => dayNumber(day) >= dayNumber(occurrenceDate)),
     }) as ScheduleEvent,
   };
 }

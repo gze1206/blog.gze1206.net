@@ -15,18 +15,30 @@ const choices: ReadonlyArray<{
 
 export function QuickCapture({
   busy,
+  date,
   onCapture,
 }: {
   readonly busy: boolean;
-  readonly onCapture: (type: BulletType, text: string) => Promise<void>;
+  /** 일정의 기본 날짜. 보고 있는 날이다(NOR-248). */
+  readonly date: string;
+  readonly onCapture: (
+    type: BulletType,
+    text: string,
+    when?: { readonly date: string; readonly time: string },
+  ) => Promise<void>;
 }) {
   const [type, setType] = useState<BulletType>('memo');
   const [text, setText] = useState('');
+  const [eventDate, setEventDate] = useState(date);
+  const [eventTime, setEventTime] = useState('');
 
   const submit = async () => {
     const trimmed = text.trim();
     if (!trimmed || busy) return;
-    await onCapture(type, trimmed);
+    if (type === 'event') {
+      await onCapture(type, trimmed, { date: eventDate || date, time: eventTime });
+      setEventTime('');
+    } else await onCapture(type, trimmed);
     setText('');
   };
 
@@ -56,6 +68,25 @@ export function QuickCapture({
           </button>
         ))}
       </div>
+      {type === 'event' ? (
+        // 일정은 일정으로 들어간다. 날짜(기본: 보고 있는 날)와 시각(선택)을 고른다(NOR-248).
+        <div className="mb-2 grid grid-cols-2 gap-2">
+          <input
+            aria-label="일정 날짜"
+            className="field"
+            onChange={(event) => setEventDate(event.target.value)}
+            type="date"
+            value={eventDate}
+          />
+          <input
+            aria-label="일정 시각"
+            className="field"
+            onChange={(event) => setEventTime(event.target.value)}
+            type="time"
+            value={eventTime}
+          />
+        </div>
+      ) : null}
       <div className="flex gap-2">
         <input
           aria-label="빠른 불렛 입력"

@@ -46,6 +46,21 @@ date: 2026-08-11
 - □ 두 번째 남은 일 <!-- wb:id=01J5AR7W6M3Q9N8K2T4V1X0ZBD -->
 `,
 );
+// ○ 불렛을 일정으로 옮기는 시험용(NOR-248).
+await writeFile(
+  path.join(workspaceRoot, 'journal', '2026', '08', '2026-08-09.md'),
+  `---
+title: 2026-08-09
+kind: journal
+createdAt: 2026-08-09
+updatedAt: 2026-08-09
+date: 2026-08-09
+---
+# 2026-08-09
+
+- ○ 옮길 컨퍼런스 <!-- wb:id=01J5AR7W6M3Q9N8K2T4V1X0ZBG -->
+`,
+);
 // 손가락으로 지난 할 일을 닫는 시험용(NOR-238). 다른 시험이 쓰는 2026-08-11 과 겹치지 않게 따로 둔다.
 await writeFile(
   path.join(workspaceRoot, 'journal', '2026', '08', '2026-08-10.md'),
