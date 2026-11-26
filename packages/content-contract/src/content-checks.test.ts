@@ -57,3 +57,14 @@ it('NOR-237 AC-7: 저장소의 포트폴리오·글·책이 새 규칙을 통과
   }
   expect(failures).toEqual([]);
 });
+
+it('NOR-250 AC-1: 시리즈는 선택 필드 en 에 영어 이름과 설명을 받는다', async () => {
+  const { seriesSchema } = await import('./index.ts');
+  const base = { name: '개발기', slug: 'devlog', description: '설명' };
+  expect(seriesSchema.parse(base)).not.toHaveProperty('en');
+  expect(seriesSchema.parse({ ...base, en: { name: 'Devlog', description: 'Notes' } }).en).toEqual({
+    name: 'Devlog',
+    description: 'Notes',
+  });
+  expect(seriesSchema.safeParse({ ...base, en: { name: '' } }).success).toBe(false);
+});

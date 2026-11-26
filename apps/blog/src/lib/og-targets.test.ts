@@ -139,3 +139,20 @@ it('NOR-216 AC-4: 책 상세 페이지마다 OG 타깃이 있다', () => {
   // 페이지 메타와 같은 인코딩된 경로다(태그와 같은 규칙).
   expect(paths(targets)).toContain(ogImagePath(`/books/${encodeURIComponent('니체의-초월자')}`));
 });
+
+it('NOR-250 AC-5: 영어 첫 화면·목록·글 카드를 영어 경로로 만든다', () => {
+  const targets = buildOgTargets(
+    input({ en: { posts: [{ slug: 'hello-world', title: 'Hello' }], blogPageCount: 2 } }),
+  );
+  expect(targets.map((target) => target.path)).toEqual(
+    expect.arrayContaining([
+      '/og/en.png',
+      '/og/en/blog.png',
+      '/og/en/blog/2.png',
+      '/og/en/blog/hello-world.png',
+      '/og/blog/hello-world.png',
+    ]),
+  );
+  const card = targets.find((target) => target.path === '/og/en/blog.png')?.card;
+  expect(card?.title).toBe('Blog');
+});
