@@ -16,7 +16,7 @@
       "handle": "gze1206"
     },
     {
-      "label": "이메일",
+      "label": "E-mail",
       "url": "mailto:gze1206@kakao.com",
       "handle": "gze1206@kakao.com"
     },
@@ -42,6 +42,7 @@
     ],
     "linkLabels": {
       "이메일": "Email"
-    }
+    },
+    "name": "KIM MYOUNG SIK"
   }
 }
