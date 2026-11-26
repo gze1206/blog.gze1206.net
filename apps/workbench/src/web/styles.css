@@ -66,7 +66,7 @@
 /* 문서 미리보기 (NOR-206). 블로그 글 본문과 비슷한 읽기 모양. */
 @layer components {
   .preview {
-    @apply text-body max-w-3xl text-[0.9375rem] leading-8;
+    @apply text-body text-[0.9375rem] leading-8;
   }
   .preview h1 {
     @apply text-foreground mt-2 mb-4 text-3xl font-bold tracking-[-0.02em];
