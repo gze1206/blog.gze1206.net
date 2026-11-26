@@ -70,7 +70,14 @@ export function createApp(
   app.route('/', createReviewRoutes(store, journalStore, reviewOptions));
   if (journalStore) app.route('/', createBulletRoutes(journalStore, bulletOptions));
   if (schedule)
-    app.route('/', createScheduleRoutes(schedule, { createId: () => bulletOptions.createId() }));
+    app.route(
+      '/',
+      createScheduleRoutes(schedule, {
+        createId: () => bulletOptions.createId(),
+        clock: () => bulletOptions.clock(),
+        ...(journalStore ? { journal: journalStore } : {}),
+      }),
+    );
   if (books) app.route('/', createBookRoutes(store, books.provider, books.assets, books.options));
   if (progress) app.route('/', createPublishProgressRoutes(progress));
   if (publisher) app.route('/', createPublishRoutes(store, publisher));

@@ -13,6 +13,8 @@ export interface Occurrence {
   readonly endTime?: string;
   readonly location?: string;
   readonly recurring: boolean;
+  /** 이 회차를 끝냈는지(NOR-248). */
+  readonly completed: boolean;
 }
 
 /** 후보 시작 날짜를 차례로 낸다. 없는 날(31일·2월 29일)은 null 과 그 무렵 날짜(`near`)를 낸다. */
@@ -95,6 +97,7 @@ export function occurrencesBetween(event: ScheduleEvent, from: string, to: strin
         ...(event.endTime === undefined ? {} : { endTime: event.endTime }),
         ...(event.location === undefined ? {} : { location: event.location }),
         recurring: event.repeat !== undefined,
+        completed: event.completed.includes(candidate.date),
       });
     if (limit !== undefined && produced >= limit) break;
   }

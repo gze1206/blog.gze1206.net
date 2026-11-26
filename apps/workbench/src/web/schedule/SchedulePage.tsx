@@ -7,6 +7,7 @@ import {
   deleteScheduleEvent,
   listSchedule,
   readScheduleEvent,
+  setScheduleCompletion,
   updateScheduleEvent,
   type Occurrence,
   type ScheduleEvent,
@@ -219,7 +220,19 @@ export function SchedulePage({
           {selectedItems.length ? (
             <ul className="mt-3 space-y-1">
               {selectedItems.map((item) => (
-                <li key={`${item.eventId}-${item.date}`}>
+                <li className="flex items-start" key={`${item.eventId}-${item.date}`}>
+                  <button
+                    aria-label={`${item.title} ${item.completed ? '다시 열기' : '완료'}`}
+                    className="inline-flex min-h-10 min-w-10 shrink-0 items-center justify-center rounded-md hover:bg-surface-sunken"
+                    onClick={() =>
+                      void done(() =>
+                        setScheduleCompletion(item.eventId, item.date, !item.completed),
+                      )
+                    }
+                    type="button"
+                  >
+                    {item.completed ? '◉' : '○'}
+                  </button>
                   <button
                     className="flex min-h-10 w-full items-start gap-3 rounded-md px-2 py-2 text-left hover:bg-surface-sunken"
                     onClick={() => void openItem(item)}
@@ -229,7 +242,9 @@ export function SchedulePage({
                       {timeLabel(item)}
                     </span>
                     <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">
-                      <span className="block text-sm">
+                      <span
+                        className={`block text-sm ${item.completed ? 'text-muted line-through' : ''}`}
+                      >
                         {item.title}
                         {item.recurring ? (
                           <span className="ml-1 text-muted" title="반복 일정">

@@ -50,7 +50,7 @@ test('NOR-243 AC-2, NOR-243 AC-3, NOR-243 AC-4: 반복 일정을 만들고 회�
   // 한 회차만 고친다.
   await cell(page, '2026-08-19').click();
   await dayList(page, '2026-08-19')
-    .getByRole('button', { name: /주간 회의/u })
+    .getByRole('button', { name: /\d{2}:\d{2}.*주간 회의/u })
     .click();
   const edit = page.getByRole('dialog', { name: '일정 고치기' });
   await expect(edit.getByLabel('날짜', { exact: true })).toHaveValue('2026-08-19');
@@ -65,7 +65,7 @@ test('NOR-243 AC-2, NOR-243 AC-3, NOR-243 AC-4: 반복 일정을 만들고 회�
 
   // 이후 모든 일정을 지운다.
   await dayList(page, '2026-08-26')
-    .getByRole('button', { name: /주간 회의/u })
+    .getByRole('button', { name: /\d{2}:\d{2}.*주간 회의/u })
     .click();
   await page
     .getByRole('dialog', { name: '일정 고치기' })

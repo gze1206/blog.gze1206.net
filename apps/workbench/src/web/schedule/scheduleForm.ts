@@ -4,7 +4,7 @@ import type { Occurrence } from '../../core/schedule/recurrence.js';
 import type {
   RepeatFrequency,
   ScheduleEvent,
-  ScheduleEventInput,
+  ScheduleEventDraft,
   Weekday,
 } from '../../core/schedule/event.js';
 
@@ -49,7 +49,10 @@ export function emptyForm(date: string): EventForm {
 }
 
 /** 일정을 회차 날짜(`occurrenceDate`)로 채운다. 여러 날 일정은 길이를 지킨다. */
-export function formFromEvent(event: ScheduleEvent, occurrenceDate: string): EventForm {
+export function formFromEvent(
+  event: Omit<ScheduleEvent, 'completed'>,
+  occurrenceDate: string,
+): EventForm {
   const span = event.endDate === undefined ? 0 : dayNumber(event.endDate) - dayNumber(event.date);
   const rule = event.repeat;
   return {
@@ -71,7 +74,7 @@ export function formFromEvent(event: ScheduleEvent, occurrenceDate: string): Eve
   };
 }
 
-export function formToInput(form: EventForm): ScheduleEventInput {
+export function formToInput(form: EventForm): ScheduleEventDraft {
   const timed = !form.allDay && form.time !== '';
   const location = form.location.trim();
   const repeat =

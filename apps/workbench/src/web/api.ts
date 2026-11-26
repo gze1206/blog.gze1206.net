@@ -6,7 +6,7 @@ export interface TemplateSummary {
 }
 
 import type { BookExcerpt, ReadingMemo } from '../core/document/document.js';
-import type { ScheduleEvent, ScheduleEventInput } from '../core/schedule/event.js';
+import type { ScheduleEvent, ScheduleEventDraft } from '../core/schedule/event.js';
 import type { Occurrence } from '../core/schedule/recurrence.js';
 import type { ScheduleScope } from '../core/schedule/scope.js';
 
@@ -641,7 +641,7 @@ export async function uploadPublicAsset(
 }
 
 // 일정(NOR-242·243).
-export type { Occurrence, ScheduleEvent, ScheduleEventInput, ScheduleScope };
+export type { Occurrence, ScheduleEvent, ScheduleEventDraft, ScheduleScope };
 
 export async function listSchedule(
   from: string,
@@ -654,7 +654,7 @@ export async function readScheduleEvent(id: string): Promise<ScheduleEvent> {
   return request(`/api/schedule/events/${encodeURIComponent(id)}`);
 }
 
-export async function createScheduleEvent(input: ScheduleEventInput): Promise<ScheduleEvent> {
+export async function createScheduleEvent(input: ScheduleEventDraft): Promise<ScheduleEvent> {
   return request('/api/schedule/events', { method: 'POST', body: JSON.stringify(input) });
 }
 
@@ -662,7 +662,7 @@ export async function updateScheduleEvent(
   id: string,
   scope: ScheduleScope,
   occurrenceDate: string,
-  event: ScheduleEventInput,
+  event: ScheduleEventDraft,
 ): Promise<unknown> {
   return request(`/api/schedule/events/${encodeURIComponent(id)}`, {
     method: 'PUT',
@@ -677,5 +677,23 @@ export async function deleteScheduleEvent(
 ): Promise<void> {
   return request(`/api/schedule/events/${encodeURIComponent(id)}?scope=${scope}&date=${date}`, {
     method: 'DELETE',
+  });
+}
+
+export async function setScheduleCompletion(
+  id: string,
+  date: string,
+  completed: boolean,
+): Promise<ScheduleEvent> {
+  return request(`/api/schedule/events/${encodeURIComponent(id)}/completion`, {
+    method: 'POST',
+    body: JSON.stringify({ date, completed }),
+  });
+}
+
+/** 일지의 ○ 불렛을 같은 날짜의 일정으로 옮긴다(NOR-248). */
+export async function scheduleBullet(date: string, id: string): Promise<ScheduleEvent> {
+  return request(`/api/days/${date}/bullets/${encodeURIComponent(id)}/schedule`, {
+    method: 'POST',
   });
 }
