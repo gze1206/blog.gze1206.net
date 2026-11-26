@@ -257,3 +257,52 @@ describe('NOR-242 고치기·지우기 범위', () => {
     expect(mod.planDelete(once, 'this', '2026-11-26')).toEqual({ remove: true });
   });
 });
+
+describe('NOR-248 회차 완료', () => {
+  it('NOR-248 AC-1: completed 를 읽고 쓰고, 회차에 완료 여부를 붙이고, 그 날짜만 켜고 끈다', async () => {
+    const mod = await schedule();
+    expect(mod).toHaveProperty('setCompleted');
+    const event = {
+      id: ID,
+      ...mod.validateEventInput({
+        ...base,
+        repeat: { freq: 'weekly', interval: 1 },
+        completed: ['2026-12-03', '2026-12-03'],
+      }),
+    };
+    expect(event.completed).toEqual(['2026-12-03']);
+    expect(mod.parseEvent(ID, mod.serializeEvent(event))).toEqual(event);
+    expect(
+      mod.occurrencesBetween(event, '2026-11-26', '2026-12-10').map((item) => item.completed),
+    ).toEqual([false, true, false]);
+    const done = mod.setCompleted(event, '2026-12-10', true);
+    expect(done.completed).toEqual(['2026-12-03', '2026-12-10']);
+    expect(mod.setCompleted(done, '2026-12-03', false).completed).toEqual(['2026-12-10']);
+    expect(mod.validateEventInput(base)).toMatchObject({ completed: [] });
+  });
+
+  it('NOR-248 AC-1: 범위 편집은 완료 날짜를 옮기거나 나눈다', async () => {
+    const mod = await schedule();
+    const event = {
+      id: ID,
+      ...mod.validateEventInput({
+        ...base,
+        repeat: { freq: 'weekly', interval: 1 },
+        completed: ['2026-11-26', '2026-12-10'],
+      }),
+    };
+    const occurrence = { ...event, date: '2026-12-03' };
+    const NEW = '01M83945Q72TNSZD8E69SVBWMH';
+    expect(
+      mod.planEdit(event, 'all', '2026-12-03', { ...occurrence, date: '2026-12-04' }, NEW).update
+        ?.completed,
+    ).toEqual(['2026-11-27', '2026-12-11']);
+    expect(
+      mod.planEdit(event, 'this', '2026-12-10', { ...event, date: '2026-12-10' }, NEW).create
+        ?.completed,
+    ).toEqual([]);
+    const following = mod.planEdit(event, 'following', '2026-12-03', occurrence, NEW);
+    expect(following.update?.completed).toEqual(['2026-11-26']);
+    expect(following.create?.completed).toEqual(['2026-12-10']);
+  });
+});
