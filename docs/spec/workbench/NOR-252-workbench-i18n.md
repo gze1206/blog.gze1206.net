@@ -16,7 +16,7 @@
 ## 수용 기준
 
 - **AC-1** 공개 초안 문서는 `lang`·`translationKey` 를 받고, 영어 초안을 변환하면 공개 frontmatter 에 `lang: en` 과 `translationKey` 가 들어간다. 한국어 초안은 `lang` 을 쓰지 않는다.
-- **AC-2** 영어 초안의 발행 검토는 대상 경로가 `posts/en/<slug>.mdoc` 이고 브랜치가 `content/en-<slug>` 다.
+- **AC-2** 영어 초안의 발행 검토는 대상 경로가 `posts/en/<slug>.mdoc` 이고 브랜치가 `content/en-<slug>` 다. 발행 릴레이와 콘텐츠 PR 검사의 허용 경로도 `posts/en/<slug>.mdoc` 를 받는다(그 아래 다른 자리는 받지 않는다).
 - **AC-3** 영어판 계획은 한국어 공개 초안에서 영어 초안 원문과 자리(`drafts/<slug>.en.md`)를 만들고, 원본에 키가 없으면 원본에 넣을 원문도 돌려준다. 공개 초안이 아니거나 이미 영어면 거절한다.
 - **AC-4** `POST /api/documents/:id/translation` 은 영어 초안을 만들어 201 로 돌려주고, 이미 있으면 409 다.
 - **AC-5** 편집기에서 한국어 공개 초안을 열면 "영어판 만들기" 가 있고, 누르면 새 영어 초안이 열린다.

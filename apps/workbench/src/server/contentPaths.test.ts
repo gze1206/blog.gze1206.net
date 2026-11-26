@@ -49,3 +49,13 @@ describe('포트폴리오 이미지 경로', () => {
       expect(allowed(path), path).toBe(false);
   });
 });
+
+it('NOR-252 AC-2: 영어 글 posts/en/<slug>.mdoc 를 받고 그 아래 다른 자리는 받지 않는다', () => {
+  expect(allowed('apps/blog/src/content/posts/en/devlog-1.mdoc')).toBe(true);
+  for (const path of [
+    'apps/blog/src/content/posts/en/nested/a.mdoc',
+    'apps/blog/src/content/posts/ja/a.mdoc',
+    'apps/blog/src/content/posts/en/Upper.mdoc',
+  ])
+    expect(allowed(path), path).toBe(false);
+});
