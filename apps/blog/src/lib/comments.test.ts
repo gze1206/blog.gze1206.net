@@ -21,17 +21,19 @@ describe('comments', () => {
   });
 });
 
-describe('NOR-253 번역판 댓글 통합', () => {
-  it('NOR-253 AC-2: 영어 글은 한국어판이 있으면 한국어판 경로를 댓글 묶음으로 쓴다', async () => {
+describe('NOR-254 번역판 댓글 묶음', () => {
+  it('NOR-254 AC-1: 영어 글은 translationKey 로 처음부터 한국어판 묶음을 쓰고, 한국어 글은 자기 경로다', async () => {
     const mod = await import('./comments.ts');
-    expect(mod).toHaveProperty('commentThreadPath');
-    const ko = { slug: 'devlog-1', lang: 'ko' as const };
-    const en = { slug: 'devlog-1-en', lang: 'en' as const };
-    expect(mod.commentThreadPath(ko, en)).toBe('/blog/devlog-1');
-    expect(mod.commentThreadPath(en, ko)).toBe('/blog/devlog-1');
-    expect(mod.commentThreadPath(en, undefined)).toBe('/en/blog/devlog-1-en');
-    expect(mod.commentThreadPath(ko, undefined)).toBe('/blog/devlog-1');
-    expect(mod.commentsEmbed('devlog-1-en', 'en', '/blog/devlog-1')).toMatchObject({
+    expect(
+      mod.commentThreadPath({ slug: 'devlog-1', lang: 'ko', translationKey: 'devlog-1' }),
+    ).toBe('/blog/devlog-1');
+    // 한국어판이 아직 공개되지 않았어도 같다.
+    expect(
+      mod.commentThreadPath({ slug: 'devlog-one', lang: 'en', translationKey: 'devlog-1' }),
+    ).toBe('/blog/devlog-1');
+    expect(mod.commentThreadPath({ slug: 'solo', lang: 'en' })).toBe('/en/blog/solo');
+    expect(mod.commentThreadPath({ slug: 'plain', lang: 'ko' })).toBe('/blog/plain');
+    expect(mod.commentsEmbed('devlog-one', 'en', '/blog/devlog-1')).toMatchObject({
       pageId: '/blog/devlog-1',
       lang: 'en',
     });
