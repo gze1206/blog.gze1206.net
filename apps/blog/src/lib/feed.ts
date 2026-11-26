@@ -1,3 +1,5 @@
+import { postPath } from './routes';
+
 /** RSS 항목으로 내보낼 공개 글의 최소 계약 (NOR-30). */
 interface FeedPost {
   readonly data: {
@@ -8,6 +10,7 @@ interface FeedPost {
     readonly tags: readonly string[];
     readonly publishedAt: Date;
     readonly draft: boolean;
+    readonly lang?: 'ko' | 'en' | undefined;
   };
 }
 
@@ -44,7 +47,7 @@ export function toRssItems(posts: readonly FeedPost[], site: URL | string): Feed
     return {
       title: post.data.title,
       description: post.data.description,
-      link: new URL(`/blog/${encodeURIComponent(post.data.slug)}`, base).href,
+      link: new URL(postPath(post.data.slug, post.data.lang), base).href,
       pubDate: post.data.publishedAt,
       customData: categories,
     };

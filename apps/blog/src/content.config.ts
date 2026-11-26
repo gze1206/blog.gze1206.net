@@ -11,7 +11,15 @@ import {
 } from './content/schemas';
 
 const posts = defineCollection({
-  loader: glob({ base: './src/content/posts', pattern: POST_GLOB }),
+  loader: glob({
+    base: './src/content/posts',
+    pattern: POST_GLOB,
+    // 언어가 다르면 같은 slug 를 쓸 수 있다. 영어 글의 id 는 `en/<slug>` 라 한국어 글과 겹치지 않는다(NOR-250).
+    generateId: ({ data, entry }) => {
+      const slug = typeof data['slug'] === 'string' ? data['slug'] : entry;
+      return data['lang'] === 'en' ? `en/${slug}` : slug;
+    },
+  }),
   schema: postSchema,
 });
 

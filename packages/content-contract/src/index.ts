@@ -1,6 +1,8 @@
 export { SLUG_PATTERN, SLUG_PATTERN_MESSAGE } from './slug.ts';
 export {
   POST_FIELD_ORDER,
+  POST_LANGS,
+  type PostLang,
   TOC_MODES,
   postObject,
   postSchema,

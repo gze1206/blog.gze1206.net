@@ -21,6 +21,7 @@ import type { OgCardInput } from './og-card';
 import {
   blogPagePath,
   categoryPath,
+  homePath,
   ogImageParam,
   ogImagePath,
   postPath,
@@ -71,6 +72,15 @@ export interface OgTargetsInput {
     readonly name: string;
     readonly description: string;
   }[];
+  /** 영어 페이지(NOR-250). 영어 글이 없어도 첫 화면과 목록은 있다. */
+  readonly en?: {
+    readonly posts: readonly {
+      readonly slug: string;
+      readonly title: string;
+      readonly seriesName?: string | undefined;
+    }[];
+    readonly blogPageCount: number;
+  };
 }
 
 function target(path: string, card: OgCardInput): OgTarget {
@@ -132,6 +142,34 @@ export function buildOgTargets(input: OgTargetsInput): OgTarget[] {
       brand,
     }),
   ];
+
+  if (input.en !== undefined) {
+    const en = input.en;
+    const description = 'Posts written in English by gze1206.';
+    targets.push(
+      target(homePath('en'), { kind: 'list', title: brand, description, brand }),
+      target(blogPagePath(1, 'en'), { kind: 'list', title: 'Blog', description, brand }),
+    );
+    for (let page = 2; page <= en.blogPageCount; page++)
+      targets.push(
+        target(blogPagePath(page, 'en'), {
+          kind: 'list',
+          title: 'Blog',
+          eyebrow: `Page ${page} of ${en.blogPageCount}`,
+          description,
+          brand,
+        }),
+      );
+    for (const post of en.posts)
+      targets.push(
+        target(postPath(post.slug, 'en'), {
+          kind: 'post',
+          title: post.title,
+          eyebrow: post.seriesName === undefined ? undefined : `Series · ${post.seriesName}`,
+          brand,
+        }),
+      );
+  }
 
   for (const book of input.books ?? []) {
     targets.push(

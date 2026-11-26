@@ -22,7 +22,14 @@ export interface PostLike {
     readonly seriesOrder?: number | undefined;
     readonly publishedAt: Date;
     readonly draft: boolean;
+    /** 글 언어(NOR-250). 없으면 한국어다. */
+    readonly lang?: 'ko' | 'en' | undefined;
   };
+}
+
+/** 언어 안에서의 글 열쇠. 언어가 다르면 같은 slug 를 쓸 수 있다(NOR-250). */
+function slugKey(slug: string, lang: string | undefined): string {
+  return `${lang ?? 'ko'}:${slug}`;
 }
 
 /** 표시용 원문(label)과 URL 슬러그를 함께 들고 다니는 분류 묶음. */
@@ -60,6 +67,12 @@ export function sortByPublishedDesc<T extends PostLike>(posts: readonly T[]): T[
   });
 }
 
+/** 원본 프론트매터의 `lang:` 값. 없으면 `ko`. */
+function readFrontmatterLang(source: string): string {
+  const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(source)?.[1] ?? '';
+  return /^lang:[ \t]*['"]?([a-z]+)['"]?[ \t]*(?:#.*)?$/m.exec(frontmatter)?.[1] ?? 'ko';
+}
+
 /** 원본 파일 텍스트에서 프론트매터의 `slug:` 한 줄만 뽑는다. 못 찾으면 `null`. */
 function readFrontmatterSlug(source: string): string | null {
   const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(source)?.[1];
@@ -92,13 +105,14 @@ export function assertUniqueSourceSlugs(sources: Readonly<Record<string, string>
       );
     }
 
-    const previous = seen.get(slug);
+    const key = slugKey(slug, readFrontmatterLang(sources[path] ?? ''));
+    const previous = seen.get(key);
     if (previous !== undefined) {
       throw new ContentIntegrityError(
         `slug 중복: '${slug}' 를 '${previous}' 와 '${path}' 가 함께 사용합니다. 그대로 두면 한쪽 글이 사라집니다.`,
       );
     }
-    seen.set(slug, path);
+    seen.set(key, path);
   }
 }
 
@@ -111,13 +125,14 @@ export function assertUniqueSourceSlugs(sources: Readonly<Record<string, string>
 export function assertUniquePostSlugs(posts: readonly PostLike[]): void {
   const seen = new Map<string, string>();
   for (const post of posts) {
-    const previous = seen.get(post.data.slug);
+    const key = slugKey(post.data.slug, post.data.lang);
+    const previous = seen.get(key);
     if (previous !== undefined) {
       throw new ContentIntegrityError(
         `slug 중복: '${post.data.slug}' 를 '${previous}' 와 '${post.id}' 가 함께 사용합니다.`,
       );
     }
-    seen.set(post.data.slug, post.id);
+    seen.set(key, post.id);
   }
 }
 
@@ -203,7 +218,9 @@ export function assertSeriesIntegrity(
     const order = post.data.seriesOrder;
     if (order === undefined) continue;
 
-    const taken = orders.get(seriesId) ?? new Map<number, string>();
+    // 번역판은 같은 편 번호를 쓴다. 편 번호는 언어 안에서만 유일하면 된다(NOR-250).
+    const orderKey = slugKey(seriesId, post.data.lang);
+    const taken = orders.get(orderKey) ?? new Map<number, string>();
     const previous = taken.get(order);
     if (previous !== undefined) {
       throw new ContentIntegrityError(
@@ -211,7 +228,7 @@ export function assertSeriesIntegrity(
       );
     }
     taken.set(order, post.id);
-    orders.set(seriesId, taken);
+    orders.set(orderKey, taken);
   }
 }
 

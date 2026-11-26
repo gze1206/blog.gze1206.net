@@ -1,0 +1,42 @@
+---
+/**
+ * 영어 글 상세 (NOR-250). 한국어 `/blog/[slug]` 와 같은 레이아웃을 쓰고, 경로 목록만 영어 글에서 만든다.
+ * 이전/다음·진행도는 영어 글 목록 안에서 잇는다.
+ */
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import PostLayout from '../../../layouts/PostLayout.astro';
+import SeriesNav from '../../../components/SeriesNav.astro';
+import PostComments from '../../../components/PostComments.astro';
+import { getVisiblePosts, type Post } from '../../../lib/content';
+import { derivePostDetail } from '../../../lib/post-detail';
+import { buildSeriesNav, type SeriesNavigation } from '../../../lib/series-nav';
+
+export const getStaticPaths = (async () => {
+  const posts = await getVisiblePosts('en');
+  return posts.map((post) => ({
+    params: { slug: post.data.slug },
+    props: { post, seriesNav: buildSeriesNav(posts, post.data.slug) },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  post: Post;
+  seriesNav: SeriesNavigation<Post> | null;
+}
+
+const { post, seriesNav } = Astro.props;
+const { Content, headings } = await render(post);
+const detail = derivePostDetail({
+  publishedAt: post.data.publishedAt,
+  updatedAt: post.data.updatedAt,
+  body: post.body,
+  headings,
+});
+---
+
+<PostLayout post={post} detail={detail}>
+  <Content />
+  <SeriesNav slot="after-content" nav={seriesNav} />
+  <PostComments slot="after-content" slug={post.data.slug} />
+</PostLayout>

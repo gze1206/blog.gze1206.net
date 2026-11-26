@@ -11,7 +11,9 @@ test('NOR-250 AC-6: 영어 첫 화면·목록·피드가 있고 페이지 언어
     await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute('content', 'en_US');
     const nav = page.getByRole('navigation', { name: 'Main' });
     await expect(nav.getByRole('link', { name: 'Blog' })).toBeVisible();
-    await expect(page.getByRole('link', { name: '한국어' })).toBeVisible();
+    await expect(
+      page.getByRole('banner').getByRole('link', { name: '한국어', exact: true }),
+    ).toBeVisible();
   }
   const feed = await request.get('/en/rss.xml');
   expect(feed.status()).toBe(200);
@@ -23,6 +25,9 @@ test('NOR-250 AC-6: 한국어 페이지는 한국어로 남고 영어 첫 화면
 }) => {
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
-  await page.getByRole('link', { name: 'English' }).click();
+  await page.getByRole('banner').getByRole('link', { name: 'English', exact: true }).click();
   await expect(page).toHaveURL(/\/en$/u);
+  // 글 머리의 한국어 문구는 그대로이고, 문구와 값 사이 공백도 남아 있다.
+  await page.goto('/blog/c-9-0-record-type');
+  await expect(page.locator('.article__meta')).toContainText(/읽는 시간 (약 \d+분|1분 미만)/u);
 });

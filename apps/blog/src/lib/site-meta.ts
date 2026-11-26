@@ -26,11 +26,9 @@
 
 import { OG_IMAGE_HEIGHT, OG_IMAGE_TYPE, OG_IMAGE_WIDTH } from './og-card';
 import { normalizePath, ogImagePath } from './routes';
+import { langFromPath, UI, type Lang } from './i18n';
 
 export const SITE_NAME = 'gze1206.net';
-/** `<html lang>` 값. `og:locale` 과 짝이다. */
-export const SITE_LANG = 'ko';
-const SITE_LOCALE = 'ko_KR';
 /** description 이 비었을 때의 마지막 방어선. 빈 description 을 내보내는 것보다 낫다. */
 export const DEFAULT_DESCRIPTION = 'gze1206의 개인 블로그';
 /**
@@ -120,6 +118,10 @@ export interface SeoInput {
   readonly article?: ArticleTimes | undefined;
   /** 경로 규칙(`/smoke/*`) 밖에서 개별적으로 색인을 막고 싶을 때. */
   readonly noindex?: boolean | undefined;
+  /** 다른 언어판(NOR-250). 자기 자신은 넣지 않는다 — 메타가 현재 페이지를 함께 낸다. */
+  readonly alternates?: readonly { readonly lang: Lang; readonly path: string }[] | undefined;
+  /** 헤더의 언어 전환 링크가 갈 곳. 없으면 다른 언어의 첫 화면이다. */
+  readonly languageSwitch?: string | undefined;
 }
 
 /** 렌더 시점 정보. `Astro.url.pathname` 과 `Astro.site` 를 그대로 넘긴다. */
@@ -149,6 +151,8 @@ interface SeoMeta {
   readonly twitterCard: 'summary_large_image';
   readonly publishedTime?: string | undefined;
   readonly modifiedTime?: string | undefined;
+  /** `<link rel="alternate" hreflang>` 목록. 다른 언어판이 없으면 비어 있다. */
+  readonly alternates: readonly { readonly hreflang: string; readonly href: string }[];
 }
 
 function normalizeDescription(description: string | undefined): string {
@@ -192,9 +196,19 @@ export function buildSeoMeta(input: SeoInput, context: SeoContext): SeoMeta {
     ogImageHeight: OG_IMAGE_HEIGHT,
     ogImageType: OG_IMAGE_TYPE,
     siteName: SITE_NAME,
-    locale: SITE_LOCALE,
+    locale: UI[langFromPath(context.pathname)].locale,
     twitterCard: 'summary_large_image',
     publishedTime: times?.publishedTime,
     modifiedTime: times?.modifiedTime,
+    alternates:
+      input.alternates === undefined || input.alternates.length === 0
+        ? []
+        : [
+            { hreflang: UI[langFromPath(context.pathname)].htmlLang, href: canonical },
+            ...input.alternates.map((alternate) => ({
+              hreflang: UI[alternate.lang].htmlLang,
+              href: absoluteUrl(alternate.path, context.site),
+            })),
+          ],
   };
 }

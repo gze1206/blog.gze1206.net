@@ -5,6 +5,7 @@
  * `/blog/x` 와 `/blog/x/` 가 다른 댓글 목록이 된다.
  */
 import { postPath } from './routes';
+import type { Lang } from './i18n';
 
 export const COMMENTS_ORIGIN = 'https://comments.gze1206.net';
 
@@ -19,15 +20,16 @@ export interface CommentsEmbed {
   scriptSrc: string;
   integrity: string;
   pageId: string;
-  lang: 'ko';
+  lang: Lang;
 }
 
-export function commentsEmbed(slug: string): CommentsEmbed {
+/** 영어 글은 경로가 달라 댓글 묶음도 따로다(NOR-250). */
+export function commentsEmbed(slug: string, lang: Lang = 'ko'): CommentsEmbed {
   return {
     scriptSrc: `${COMMENTS_ORIGIN}/comentario.js`,
     integrity: COMMENTS_SCRIPT_INTEGRITY,
-    pageId: postPath(slug),
-    lang: 'ko',
+    pageId: postPath(slug, lang),
+    lang,
   };
 }
 

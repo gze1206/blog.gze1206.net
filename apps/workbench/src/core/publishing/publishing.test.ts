@@ -60,7 +60,8 @@ describe('toc', () => {
       ...reread,
       publishedAt: reread.publishedAt.toISOString().slice(0, 10),
       updatedAt: reread.updatedAt.toISOString().slice(0, 10),
-    }).toEqual(result.metadata);
+      // 한국어 글은 lang 을 쓰지 않고, 블로그 스키마가 기본값 ko 를 채운다(NOR-250).
+    }).toEqual({ lang: 'ko', ...result.metadata });
   });
 });
 

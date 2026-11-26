@@ -5,18 +5,25 @@
  * 슬러그에 한글이 올 수 있으므로 세그먼트는 항상 퍼센트 인코딩한다.
  */
 
+import { localizePath, type Lang } from './i18n';
+
 function segment(value: string): string {
   return encodeURIComponent(value);
 }
 
-/** 글 상세. 프론트매터 slug 기준. */
-export function postPath(slug: string): string {
-  return `/blog/${segment(slug)}`;
+/** 글 상세. 프론트매터 slug 기준. 영어 글은 `/en/blog/<slug>` 다(NOR-250). */
+export function postPath(slug: string, lang: Lang = 'ko'): string {
+  return localizePath(lang, `/blog/${segment(slug)}`);
 }
 
 /** 목록 페이지네이션. 1페이지는 `/blog` 로 고정해 중복 URL 을 만들지 않는다. */
-export function blogPagePath(pageNumber: number): string {
-  return pageNumber <= 1 ? '/blog' : `/blog/${pageNumber}`;
+export function blogPagePath(pageNumber: number, lang: Lang = 'ko'): string {
+  return localizePath(lang, pageNumber <= 1 ? '/blog' : `/blog/${pageNumber}`);
+}
+
+/** 그 언어의 첫 화면. */
+export function homePath(lang: Lang = 'ko'): string {
+  return localizePath(lang, '/');
 }
 
 export function categoryPath(slug: string): string {
