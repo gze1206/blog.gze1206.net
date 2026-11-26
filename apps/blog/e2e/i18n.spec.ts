@@ -43,6 +43,8 @@ for (const [ko, en, heading] of [
     expect(response?.status()).toBe(200);
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.getByText(heading, { exact: true }).first()).toBeVisible();
+    // 깨진 이미지가 없다(주소 없는 img 를 만들지 않는다).
+    expect(await page.locator('main img:not([src])').count()).toBe(0);
     await expect(page.locator(`link[rel="alternate"][hreflang="ko"]`)).toHaveAttribute(
       'href',
       `https://gze1206.net${ko}`,

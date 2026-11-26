@@ -17,5 +17,16 @@
       "height": 720
     }
   ],
-  "links": []
+  "links": [],
+  "en": {
+    "title": "Mabinogi Mobile",
+    "summary": "A mobile MMORPG I worked on at devCAT. I handled game logic, optimization and UX work, and built tools that improved the development environment.",
+    "role": "Game client — Game Logic Team 3",
+    "highlights": [
+      "Implemented game logic and UX features",
+      "Optimized the client",
+      "Built tools and improved workflows for the development environment"
+    ],
+    "media": [{ "alt": "Mabinogi Mobile key visual" }]
+  }
 }

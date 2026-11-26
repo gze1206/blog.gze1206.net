@@ -17,5 +17,17 @@
       "height": 600
     }
   ],
-  "links": []
+  "links": [],
+  "en": {
+    "title": "TERA Origin",
+    "summary": "The Japanese service of an MMORPG I worked on at KRAFTON SQUALL. I managed servers and databases, worked on combat logic, and automated verification with testing tools I built.",
+    "role": "Server — Platform Development Team",
+    "stack": ["C#", "Game server", "DB"],
+    "highlights": [
+      "Operated the Japanese service and managed servers and databases",
+      "Worked on combat logic",
+      "Built automated testing tools and developer utilities"
+    ],
+    "media": [{ "alt": "TERA Origin key visual" }]
+  }
 }

@@ -4,5 +4,10 @@
   "period": "2025.05 – 2025.09",
   "endDate": "2025-09-01",
   "highlights": ["플레이어블 광고 제작"],
-  "visible": true
+  "visible": true,
+  "en": {
+    "organization": "GameDuo",
+    "role": "GL Team",
+    "highlights": ["Built playable ads"]
+  }
 }

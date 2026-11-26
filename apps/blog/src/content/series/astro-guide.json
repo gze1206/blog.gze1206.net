@@ -1,5 +1,9 @@
 {
   "name": "Astro 가이드",
   "slug": "astro-guide",
-  "description": "Astro 프레임워크를 활용한 블로그 구축 시리즈입니다."
+  "description": "Astro 프레임워크를 활용한 블로그 구축 시리즈입니다.",
+  "en": {
+    "name": "Astro Guide",
+    "description": "A series on building a blog with the Astro framework."
+  }
 }

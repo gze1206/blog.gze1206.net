@@ -8,5 +8,14 @@
     "개발 환경 개선을 위한 툴 제작 및 작업 공정 개선",
     "최적화 및 로직과 UX 관련 작업 진행"
   ],
-  "visible": true
+  "visible": true,
+  "en": {
+    "organization": "devCAT",
+    "role": "Game Logic Team 3 — Mabinogi Mobile",
+    "highlights": [
+      "Developed Mabinogi Mobile",
+      "Built tools to improve the development environment and workflow",
+      "Worked on optimization, game logic and UX"
+    ]
+  }
 }

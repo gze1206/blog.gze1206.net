@@ -104,6 +104,19 @@ export const portfolioSchema = z
     media: z.array(portfolioMediaSchema).default([]),
     highlights: z.array(z.string().min(1)).default([]),
     thumbnail: sitePathSchema.optional(),
+    /** 영어판(NOR-251). 번역할 글자만 담고, 비면 한국어 값을 쓴다. 이미지 설명은 `media` 순서를 따른다. */
+    en: z
+      .object({
+        title: z.string().min(1).optional(),
+        summary: z.string().min(1),
+        role: z.string().min(1).optional(),
+        stack: z.array(z.string().min(1)).min(1).optional(),
+        highlights: z.array(z.string().min(1)).default([]),
+        media: z
+          .array(z.object({ alt: z.string().min(1), caption: z.string().min(1).optional() }))
+          .default([]),
+      })
+      .optional(),
   })
   // 예정된 작업이 있으므로 포트폴리오는 미래의 끝 달도 받는다(NOR-237).
   .superRefine((value, context) => {
@@ -139,6 +152,17 @@ export const profileSchema = z.object({
       }),
     )
     .default([]),
+  /** 영어판(NOR-251). `linkLabels` 는 한국어 라벨 → 영어 라벨이다. */
+  en: z
+    .object({
+      name: z.string().min(1).optional(),
+      headline: z.string().min(1),
+      tagline: z.string().min(1).optional(),
+      introduction: z.string().min(1),
+      about: z.array(z.string().min(1)).default([]),
+      linkLabels: z.record(z.string(), z.string().min(1)).default({}),
+    })
+    .optional(),
 });
 
 export const experienceSchema = z
@@ -153,6 +177,14 @@ export const experienceSchema = z
       .transform((value) => value ?? null),
     highlights: z.array(z.string().min(1)).min(1),
     visible: z.boolean(),
+    /** 영어판(NOR-251). 기간은 한국어판 값을 함께 쓴다. */
+    en: z
+      .object({
+        organization: z.string().min(1).optional(),
+        role: z.string().min(1),
+        highlights: z.array(z.string().min(1)).min(1),
+      })
+      .optional(),
   })
   .superRefine((value, context) => {
     const period = checkPeriod(value.period, context);

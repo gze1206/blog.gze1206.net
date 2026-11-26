@@ -21,37 +21,59 @@ import { getProfile } from '../lib/content';
 import { getVisibleExperiences } from '../lib/experience';
 import { coverImage } from '../lib/book-cover';
 import { booksPath, portfolioPath } from '../lib/routes';
+import { langFromPath, localizePath } from '../lib/i18n';
+import { localizeExperience, localizeProfile } from '../lib/site-i18n';
 
-const [profile, experiences, books] = await Promise.all([
+// `/en/about` 도 이 페이지를 그린다. 언어는 경로에서 읽는다(NOR-251).
+const lang = langFromPath(Astro.url.pathname);
+const en = lang === 'en';
+const [profileEntry, experienceEntries, books] = await Promise.all([
   getProfile(),
   getVisibleExperiences(),
-  getVisibleBooks(),
+  // 책 기록은 한국어라 영어 소개에는 두지 않는다.
+  en ? Promise.resolve([]) : getVisibleBooks(),
 ]);
+const profile = { data: localizeProfile(profileEntry.data, lang) };
+const experiences = experienceEntries.map((entry) => ({
+  data: localizeExperience(entry.data, lang),
+}));
+const pair = en ? aboutPathFor('ko') : aboutPathFor('en');
+function aboutPathFor(target: 'ko' | 'en') {
+  return localizePath(target, '/about');
+}
 /** 목록은 이미 "읽는 중 먼저, 그다음 최근 순"이다. 여기서는 앞에서 몇 권만 떼어 온다. */
 const recentBooks = books.slice(0, 3);
 const paragraphs = profile.data.about.length > 0 ? profile.data.about : [profile.data.introduction];
 ---
 
 <ListLayout
-  title="소개"
-  description={`${profile.data.name}(gze1206)의 소개와 연락처입니다.`}
-  eyebrow="소개"
+  title={en ? 'About' : '소개'}
+  description={en
+    ? `About ${profile.data.name} (gze1206) and how to get in touch.`
+    : `${profile.data.name}(gze1206)의 소개와 연락처입니다.`}
+  eyebrow={en ? 'About' : '소개'}
   heading={profile.data.name}
   lead={profile.data.headline}
+  alternates={[{ lang: en ? 'ko' : 'en', path: pair }]}
+  languageSwitch={pair}
 >
   <div class="about">
     <section class="about__body" aria-labelledby="about-intro-heading">
-      <h2 id="about-intro-heading" class="sr-only">소개</h2>
+      <h2 id="about-intro-heading" class="sr-only">{en ? 'About' : '소개'}</h2>
       {paragraphs.map((paragraph) => <p>{paragraph}</p>)}
 
       <p class="about__more">
-        <a href={portfolioPath()} class="home-text-link">포트폴리오 보기 →</a>
+        <a href={localizePath(lang, portfolioPath())} class="home-text-link"
+          >{en ? 'See portfolio →' : '포트폴리오 보기 →'}</a
+        >
       </p>
     </section>
 
     <aside class="about__side">
       <section aria-labelledby="about-skills-heading">
-        <h2 id="about-skills-heading" class="about__side-heading">주로 쓰는 것</h2>
+        <h2 id="about-skills-heading" class="about__side-heading">
+          {en ? 'Tools I use' : '주로 쓰는 것'}
+        </h2>
         <ul class="portfolio-card__stack">
           {profile.data.skills.map((skill) => <li class="stack-token">{skill}</li>)}
         </ul>
@@ -104,7 +126,7 @@ const paragraphs = profile.data.about.length > 0 ? profile.data.about : [profile
         profile.data.links.length > 0 && (
           <section aria-labelledby="about-links-heading">
             <h2 id="about-links-heading" class="about__side-heading">
-              연락과 프로필
+              {en ? 'Contact & profiles' : '연락과 프로필'}
             </h2>
             <ul class="about__links">
               {profile.data.links.map((link) => (
@@ -125,7 +147,7 @@ const paragraphs = profile.data.about.length > 0 ? profile.data.about : [profile
       experiences.length > 0 && (
         <section class="about__career" aria-labelledby="about-career-heading">
           <h2 id="about-career-heading" class="taxonomy-section__title">
-            경력
+            {en ? 'Experience' : '경력'}
           </h2>
           <ol class="career-timeline">
             {experiences.map((experience) => (

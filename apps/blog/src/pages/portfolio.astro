@@ -13,33 +13,57 @@ import { getPortfolio } from '../lib/portfolio';
 import { portfolioCover } from '../lib/portfolio-cover';
 import ListLayout from '../layouts/ListLayout.astro';
 import EmptyState from '../components/EmptyState.astro';
+import { langFromPath, localizePath } from '../lib/i18n';
+import { localizePortfolio } from '../lib/site-i18n';
 
-const entries = await getPortfolio();
+// `/en/portfolio` 도 이 페이지를 그린다. 언어는 경로에서 읽는다(NOR-251).
+const lang = langFromPath(Astro.url.pathname);
+const en = lang === 'en';
+const entries = (await getPortfolio()).map((entry) => ({
+  id: entry.id,
+  data: localizePortfolio(entry.data, lang),
+}));
 const covers = new Map(
   await Promise.all(
-    entries.map(async (entry) => [entry.id, await portfolioCover(entry.data)] as const),
+    entries.map(async (entry) => {
+      const cover = await portfolioCover(entry.data);
+      return [
+        entry.id,
+        // 표지가 없으면 null 이다. 영어판은 대체 문구만 바꾼다.
+        !cover || !en ? cover : { ...cover, alt: `${entry.data.title} cover image` },
+      ] as const;
+    }),
   ),
 );
+const pair = localizePath(en ? 'ko' : 'en', '/portfolio');
 
 /** 링크 종류를 화면 문구로 바꾼다. 키 이름(`repo`)을 그대로 내보내면 방문자에게는 은어다. */
-const LINK_LABELS: Record<string, string> = {
-  repo: '저장소',
-  demo: '데모',
-  video: '영상',
-  article: '관련 글',
-};
+const LINK_LABELS: Record<string, string> = en
+  ? { repo: 'Repository', demo: 'Demo', video: 'Video', article: 'Article' }
+  : {
+      repo: '저장소',
+      demo: '데모',
+      video: '영상',
+      article: '관련 글',
+    };
 ---
 
 <ListLayout
-  title="포트폴리오"
-  description="개인 프로젝트와 업무 경험 중 공개 가능한 작업을 문제·역할·기술·결과 중심으로 소개합니다."
-  eyebrow="포트폴리오"
-  heading="문제를 풀며 남긴 결과물"
-  lead="공개할 수 있는 작업만 담았습니다. 각 항목은 무엇을 만들었고 무엇으로 만들었는지를 함께 보여 줍니다."
+  title={en ? 'Portfolio' : '포트폴리오'}
+  description={en
+    ? 'Public work from personal projects and past jobs: the problem, my role, the tech and the result.'
+    : '개인 프로젝트와 업무 경험 중 공개 가능한 작업을 문제·역할·기술·결과 중심으로 소개합니다.'}
+  eyebrow={en ? 'Portfolio' : '포트폴리오'}
+  heading={en ? 'What I have built' : '문제를 풀며 남긴 결과물'}
+  lead={en
+    ? 'Only work I can share publicly. Each entry shows what I built and what I built it with.'
+    : '공개할 수 있는 작업만 담았습니다. 각 항목은 무엇을 만들었고 무엇으로 만들었는지를 함께 보여 줍니다.'}
+  alternates={[{ lang: en ? 'ko' : 'en', path: pair }]}
+  languageSwitch={pair}
 >
   {
     entries.length === 0 ? (
-      <EmptyState message="공개된 작업이 아직 없습니다." />
+      <EmptyState message={en ? 'No public work yet.' : '공개된 작업이 아직 없습니다.'} />
     ) : (
       <ol class="portfolio-list">
         {entries.map((entry) => (
@@ -82,7 +106,12 @@ const LINK_LABELS: Record<string, string> = {
                     ))}
                   </ul>
                 )}
-                <ul class="portfolio-card__stack" aria-label={`${entry.data.title} 기술 스택`}>
+                <ul
+                  class="portfolio-card__stack"
+                  aria-label={
+                    en ? `${entry.data.title} tech stack` : `${entry.data.title} 기술 스택`
+                  }
+                >
                   {entry.data.stack.map((technology) => (
                     <li class="stack-token">{technology}</li>
                   ))}

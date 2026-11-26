@@ -1,5 +1,9 @@
 {
   "name": "SW마에스트로 17기 / BossToss",
   "slug": "project-arcana-devlog",
-  "description": "AI/SW마에스트로 17기 연수생으로 참여하여, BossToss를 개발하는 동안 겪은 것들을 정리하는 시리즈입니다."
+  "description": "AI/SW마에스트로 17기 연수생으로 참여하여, BossToss를 개발하는 동안 겪은 것들을 정리하는 시리즈입니다.",
+  "en": {
+    "name": "SW Maestro 17th / BossToss",
+    "description": "A series about what I went through while developing BossToss as a trainee in the 17th AI/SW Maestro program."
+  }
 }

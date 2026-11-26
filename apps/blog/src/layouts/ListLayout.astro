@@ -9,6 +9,7 @@
  * 않도록 호출부에 문장을 강제한다.
  */
 import BaseLayout from './BaseLayout.astro';
+import type { SeoInput } from '../lib/site-meta';
 
 interface Props {
   /** **사이트 이름 없는** 맨 제목. 생략하면 heading 을 그대로 쓴다. */
@@ -21,12 +22,21 @@ interface Props {
   lead?: string | undefined;
   /** 제목 앞 아이콘. 태그 페이지는 `#` 대신 태그 아이콘을 쓴다(NOR-223). */
   icon?: 'tag' | undefined;
+  /** 다른 언어판(NOR-251). `BaseLayout` 에 그대로 넘긴다. */
+  alternates?: SeoInput['alternates'];
+  languageSwitch?: string | undefined;
 }
 
-const { title, description, eyebrow, heading, lead, icon } = Astro.props;
+const { title, description, eyebrow, heading, lead, icon, alternates, languageSwitch } =
+  Astro.props;
 ---
 
-<BaseLayout title={title ?? heading} description={description}>
+<BaseLayout
+  title={title ?? heading}
+  description={description}
+  alternates={alternates}
+  languageSwitch={languageSwitch}
+>
   <main id="main-content" class="list-page">
     <div class="list-page__head">
       {eyebrow && <p class="list-page__eyebrow">{eyebrow}</p>}

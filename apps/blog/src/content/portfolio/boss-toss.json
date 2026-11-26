@@ -22,5 +22,15 @@
     "기초 시스템 아키텍처 설계"
   ],
   "media": [],
-  "thumbnail": "/img/portfolio/thumbnail-b-bosses-61aabe146105502e.webp"
+  "thumbnail": "/img/portfolio/thumbnail-b-bosses-61aabe146105502e.webp",
+  "en": {
+    "summary": "A party-style co-op bullet-hell raid game developed by team “Storm of Madness” (광기의 폭풍) in the 17th AI·SW Maestro program. Starting from zero, I chose the tech stack, designed the architecture and built the infrastructure, and the team ran influencer marketing and took the game to Steam Next Fest.",
+    "role": "PM / Infrastructure & architecture / Server and client development support",
+    "highlights": [
+      "Chose the overall tech stack",
+      "Built internal development infrastructure (CI/CD, Tailscale, OCI and mini PCs for development)",
+      "Designed operations infrastructure (OpenTelemetry into Aspire Dashboard for development and Grafana Cloud for production)",
+      "Designed the core system architecture"
+    ]
+  }
 }

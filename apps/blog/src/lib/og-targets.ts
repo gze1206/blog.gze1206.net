@@ -149,6 +149,18 @@ export function buildOgTargets(input: OgTargetsInput): OgTarget[] {
     targets.push(
       target(homePath('en'), { kind: 'list', title: brand, description, brand }),
       target(blogPagePath(1, 'en'), { kind: 'list', title: 'Blog', description, brand }),
+      target('/en/about', {
+        kind: 'about',
+        title: brand,
+        description: 'Game client and server developer.',
+        brand,
+      }),
+      target('/en/portfolio', {
+        kind: 'list',
+        title: 'Portfolio',
+        description: 'What I have built.',
+        brand,
+      }),
     );
     for (let page = 2; page <= en.blogPageCount; page++)
       targets.push(
