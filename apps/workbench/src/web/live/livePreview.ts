@@ -183,6 +183,21 @@ export function previewDecorations(state: EditorState, ensureMs = 200): PreviewI
         if (!isActive(node.from)) items.push({ from: node.from, to: node.to, kind: 'hide' });
         return;
       }
+      if (name === 'ListItem') {
+        // 깊이마다 들여 보이고 감긴 줄은 표시 뒤에서 시작한다(NOR-244). 원본의 앞 공백은 커서가 없으면 숨긴다.
+        let depth = 0;
+        for (let parent = node.node.parent; parent; parent = parent.parent)
+          if (parent.name === 'BulletList' || parent.name === 'OrderedList') depth += 1;
+        const line = lineOf(node.from);
+        items.push({
+          from: line.from,
+          to: line.from,
+          kind: 'line',
+          className: `cm-lp-li-${Math.min(depth, 6)}`,
+        });
+        if (node.from > line.from && !isActive(line.from))
+          items.push({ from: line.from, to: node.from, kind: 'hide' });
+      }
       if (name === 'Task') {
         const marker = node.node.getChild('TaskMarker');
         if (marker === null) return;
@@ -318,7 +333,8 @@ const livePreviewPlugin = ViewPlugin.fromClass(
 const theme = EditorView.theme({
   '&': { height: '100%', backgroundColor: 'var(--theme-background)', color: 'var(--theme-body)' },
   '.cm-scroller': { fontFamily: 'var(--font-sans)', lineHeight: '1.9', padding: '1.5rem 0' },
-  '.cm-content': { padding: '0 1.5rem', maxWidth: '52rem', caretColor: 'var(--theme-foreground)' },
+  // 칸을 채운다(NOR-244). 읽기 좋은 너비는 미리보기가 맡는다.
+  '.cm-content': { padding: '0 1.5rem', caretColor: 'var(--theme-foreground)' },
   '.cm-line': { padding: '0' },
   '&.cm-focused': { outline: 'none' },
   '.cm-lp-h1': {
@@ -344,6 +360,12 @@ const theme = EditorView.theme({
   },
   '.cm-lp-link': { color: 'var(--theme-accent)', textDecoration: 'underline' },
   '.cm-lp-listmark': { color: 'var(--theme-accent)' },
+  '.cm-lp-li-1': { paddingLeft: '1.25em !important', textIndent: '-1.25em' },
+  '.cm-lp-li-2': { paddingLeft: '2.75em !important', textIndent: '-1.25em' },
+  '.cm-lp-li-3': { paddingLeft: '4.25em !important', textIndent: '-1.25em' },
+  '.cm-lp-li-4': { paddingLeft: '5.75em !important', textIndent: '-1.25em' },
+  '.cm-lp-li-5': { paddingLeft: '7.25em !important', textIndent: '-1.25em' },
+  '.cm-lp-li-6': { paddingLeft: '8.75em !important', textIndent: '-1.25em' },
   '.cm-lp-task': {
     accentColor: 'var(--theme-accent)',
     width: '1.05em',
