@@ -60,3 +60,25 @@ for (const [ko, en, heading] of [
     );
   });
 }
+
+for (const [path, name] of [
+  ['/', 'English'],
+  ['/en', '한국어'],
+] as const) {
+  test(`NOR-253 AC-1: ${path} 의 언어 전환은 테마 버튼과 같은 둥근 버튼이다`, async ({ page }) => {
+    await page.goto(path);
+    const banner = page.getByRole('banner');
+    const language = banner.getByRole('link', { name, exact: true });
+    const theme = banner.locator('[data-theme-toggle]');
+    const [lang, toggle] = await Promise.all([language.boundingBox(), theme.boundingBox()]);
+    expect(lang?.width).toBe(toggle?.width);
+    expect(lang?.height).toBe(toggle?.height);
+    // 바로 옆에 붙어 있다(사이 간격이 버튼 하나보다 작다).
+    expect((toggle?.x ?? 0) - ((lang?.x ?? 0) + (lang?.width ?? 0))).toBeLessThan(
+      toggle?.width ?? 0,
+    );
+    expect(await language.evaluate((element) => getComputedStyle(element).borderRadius)).toBe(
+      await theme.evaluate((element) => getComputedStyle(element).borderRadius),
+    );
+  });
+}

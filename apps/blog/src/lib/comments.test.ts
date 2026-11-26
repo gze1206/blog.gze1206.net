@@ -20,3 +20,20 @@ describe('comments', () => {
     expect(mod.commentsTheme(false)).toBe('light');
   });
 });
+
+describe('NOR-253 번역판 댓글 통합', () => {
+  it('NOR-253 AC-2: 영어 글은 한국어판이 있으면 한국어판 경로를 댓글 묶음으로 쓴다', async () => {
+    const mod = await import('./comments.ts');
+    expect(mod).toHaveProperty('commentThreadPath');
+    const ko = { slug: 'devlog-1', lang: 'ko' as const };
+    const en = { slug: 'devlog-1-en', lang: 'en' as const };
+    expect(mod.commentThreadPath(ko, en)).toBe('/blog/devlog-1');
+    expect(mod.commentThreadPath(en, ko)).toBe('/blog/devlog-1');
+    expect(mod.commentThreadPath(en, undefined)).toBe('/en/blog/devlog-1-en');
+    expect(mod.commentThreadPath(ko, undefined)).toBe('/blog/devlog-1');
+    expect(mod.commentsEmbed('devlog-1-en', 'en', '/blog/devlog-1')).toMatchObject({
+      pageId: '/blog/devlog-1',
+      lang: 'en',
+    });
+  });
+});
