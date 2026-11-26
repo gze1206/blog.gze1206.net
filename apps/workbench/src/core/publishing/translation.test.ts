@@ -52,14 +52,20 @@ describe('NOR-252 영어판 만들기', () => {
     expect(parseDocument(result.originalSource ?? '').lang).toBeUndefined();
   });
 
-  it('NOR-252 AC-3: 원본에 키가 있으면 그 키를 쓰고 원본은 고치지 않는다', async () => {
-    const keyed = korean.replace(
+  it('NOR-254 AC-3: 원본 키가 slug 와 같으면 원본을 고치지 않고, 다르면 slug 로 고친다', async () => {
+    const make = await plan();
+    const same = korean.replace(
+      'publishedAt: 2026-11-21\n',
+      'publishedAt: 2026-11-21\ntranslationKey: devlog-1\n',
+    );
+    expect(make(same, '2026-11-26').originalSource).toBeNull();
+    const other = korean.replace(
       'publishedAt: 2026-11-21\n',
       'publishedAt: 2026-11-21\ntranslationKey: arcana-1\n',
     );
-    const result = (await plan())(keyed, '2026-11-26');
-    expect(parseDocument(result.source).translationKey).toBe('arcana-1');
-    expect(result.originalSource).toBeNull();
+    const result = make(other, '2026-11-26');
+    expect(parseDocument(result.source).translationKey).toBe('devlog-1');
+    expect(parseDocument(result.originalSource ?? '').translationKey).toBe('devlog-1');
   });
 
   it('NOR-252 AC-3: 공개 초안이 아니거나 이미 영어면 거절한다', async () => {
