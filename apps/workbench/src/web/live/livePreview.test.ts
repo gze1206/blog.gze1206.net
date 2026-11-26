@@ -182,3 +182,64 @@ it('NOR-240 AC-3: 커서가 없는 줄의 wb 주석만 숨긴다', async () => {
   expect(at(doc.length)).toEqual([' <!-- wb:id=01M83945Q72TNSZD8E69SVBWME -->']);
   expect(at(2)).toEqual([]);
 });
+
+it('NOR-244 AC-3: 목록 항목 줄에 깊이 클래스를 붙이고 커서 없는 하위 항목의 앞 공백을 숨긴다', async () => {
+  const mod = await import('./livePreview.js');
+  const doc = '- 상위\n  - 하위\n    - 더 하위\n\n끝';
+  const state = EditorState.create({
+    doc,
+    selection: EditorSelection.cursor(doc.length),
+    extensions: [mod.markdownLanguage()],
+  });
+  const items = mod.previewDecorations(state) as Item[];
+  const depth = (line: string) =>
+    items
+      .filter((item) => item.kind === 'line' && item.from === doc.indexOf(line))
+      .map((item) => item.className);
+  expect(depth('- 상위')).toContain('cm-lp-li-1');
+  expect(depth('  - 하위')).toContain('cm-lp-li-2');
+  expect(depth('    - 더 하위')).toContain('cm-lp-li-3');
+  const hidden = items
+    .filter((item) => item.kind === 'hide')
+    .map((item) => doc.slice(item.from, item.to));
+  expect(hidden).toEqual(['  ', '    ']);
+  // 커서가 있는 줄은 원본 공백을 보인다.
+  const active = EditorState.create({
+    doc,
+    selection: EditorSelection.cursor(doc.indexOf('하위')),
+    extensions: [mod.markdownLanguage()],
+  });
+  expect(
+    (mod.previewDecorations(active) as Item[])
+      .filter((item) => item.kind === 'hide')
+      .map((item) => doc.slice(item.from, item.to)),
+  ).toEqual(['    ']);
+});
+
+it('NOR-245 AC-1: Enter 는 목록·체크리스트·번호를 이어 쓰고 빈 줄을 넣지 않는다', async () => {
+  const mod = await import('./livePreview.js');
+  const { ensureSyntaxTree } = await import('@codemirror/language');
+  const enter = (doc: string) => {
+    let state = EditorState.create({
+      doc,
+      selection: EditorSelection.cursor(doc.length),
+      extensions: [mod.markdownLanguage()],
+    });
+    ensureSyntaxTree(state, state.doc.length, 1000);
+    const handled = mod.continueMarkup({
+      state,
+      dispatch: (transaction) => {
+        state = transaction.state;
+      },
+    });
+    return { handled, doc: state.doc.toString(), cursor: state.selection.main.head };
+  };
+  expect(enter('- 사과').doc).toBe('- 사과\n- ');
+  expect(enter('- [x] 끝').doc).toBe('- [x] 끝\n- [ ] ');
+  expect(enter('1. 하나').doc).toBe('1. 하나\n2. ');
+  const loose = enter('- 앞\n\n- 사과');
+  expect(loose.doc).toBe('- 앞\n\n- 사과\n- ');
+  expect(loose.cursor).toBe(loose.doc.length);
+  expect(enter('- ').doc).toBe('');
+  expect(enter('문장').handled).toBe(false);
+});

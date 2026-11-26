@@ -4,13 +4,19 @@
  *
  * 장식 계산(`previewDecorations`)은 DOM 없이 `EditorState` 만으로 하므로 단위 테스트할 수 있다.
  */
-import { markdown, markdownLanguage as baseMarkdown } from '@codemirror/lang-markdown';
+import {
+  insertNewlineContinueMarkup,
+  markdown,
+  markdownLanguage as baseMarkdown,
+} from '@codemirror/lang-markdown';
 import { ensureSyntaxTree, syntaxHighlighting, syntaxTree } from '@codemirror/language';
 import {
   EditorSelection,
   EditorState,
   type Extension,
   type Range,
+  type StateCommand,
+  type Transaction,
   type TransactionSpec,
 } from '@codemirror/state';
 import {
@@ -37,7 +43,7 @@ export interface PreviewItem {
   readonly label?: string;
 }
 
-/** 목록 자동 이어쓰기 같은 입력 변경 키맵은 넣지 않는다. 입력한 글자가 그대로 원본이다(AC-8). */
+/** 키맵은 편집기(LiveEditor)가 정한다. 목록 이어쓰기는 거기서 붙인다(NOR-245). */
 export function markdownLanguage(): Extension {
   // 코드 블록 안의 언어도 파싱한다(NOR-229). 언어 파서는 처음 쓸 때 불러온다.
   return markdown({ base: baseMarkdown, addKeymap: false, codeLanguages: codeLanguage });
@@ -183,6 +189,21 @@ export function previewDecorations(state: EditorState, ensureMs = 200): PreviewI
         if (!isActive(node.from)) items.push({ from: node.from, to: node.to, kind: 'hide' });
         return;
       }
+      if (name === 'ListItem') {
+        // 깊이마다 들여 보이고 감긴 줄은 표시 뒤에서 시작한다(NOR-244). 원본의 앞 공백은 커서가 없으면 숨긴다.
+        let depth = 0;
+        for (let parent = node.node.parent; parent; parent = parent.parent)
+          if (parent.name === 'BulletList' || parent.name === 'OrderedList') depth += 1;
+        const line = lineOf(node.from);
+        items.push({
+          from: line.from,
+          to: line.from,
+          kind: 'line',
+          className: `cm-lp-li-${Math.min(depth, 6)}`,
+        });
+        if (node.from > line.from && !isActive(line.from))
+          items.push({ from: line.from, to: node.from, kind: 'hide' });
+      }
       if (name === 'Task') {
         const marker = node.node.getChild('TaskMarker');
         if (marker === null) return;
@@ -318,7 +339,8 @@ const livePreviewPlugin = ViewPlugin.fromClass(
 const theme = EditorView.theme({
   '&': { height: '100%', backgroundColor: 'var(--theme-background)', color: 'var(--theme-body)' },
   '.cm-scroller': { fontFamily: 'var(--font-sans)', lineHeight: '1.9', padding: '1.5rem 0' },
-  '.cm-content': { padding: '0 1.5rem', maxWidth: '52rem', caretColor: 'var(--theme-foreground)' },
+  // 칸을 채운다(NOR-244). 읽기 좋은 너비는 미리보기가 맡는다.
+  '.cm-content': { padding: '0 1.5rem', caretColor: 'var(--theme-foreground)' },
   '.cm-line': { padding: '0' },
   '&.cm-focused': { outline: 'none' },
   '.cm-lp-h1': {
@@ -344,6 +366,12 @@ const theme = EditorView.theme({
   },
   '.cm-lp-link': { color: 'var(--theme-accent)', textDecoration: 'underline' },
   '.cm-lp-listmark': { color: 'var(--theme-accent)' },
+  '.cm-lp-li-1': { paddingLeft: '1.25em !important', textIndent: '-1.25em' },
+  '.cm-lp-li-2': { paddingLeft: '2.75em !important', textIndent: '-1.25em' },
+  '.cm-lp-li-3': { paddingLeft: '4.25em !important', textIndent: '-1.25em' },
+  '.cm-lp-li-4': { paddingLeft: '5.75em !important', textIndent: '-1.25em' },
+  '.cm-lp-li-5': { paddingLeft: '7.25em !important', textIndent: '-1.25em' },
+  '.cm-lp-li-6': { paddingLeft: '8.75em !important', textIndent: '-1.25em' },
   '.cm-lp-task': {
     accentColor: 'var(--theme-accent)',
     width: '1.05em',
@@ -458,3 +486,38 @@ export function toggleTask(state: EditorState, pos: number): TransactionSpec {
   const at = line.from + match[1].length + 1;
   return { changes: { from: at, to: at + 1, insert: match[2] === ' ' ? 'x' : ' ' } };
 }
+
+/**
+ * Enter 로 목록·체크리스트를 이어 쓴다(NOR-245). 빈 줄로 떨어진 항목이 같은 목록으로 읽혀도
+ * 이어 쓸 때는 빈 줄을 넣지 않는다. 쓰는 사람에게는 바로 다음 줄에 이어지는 것이 자연스럽다.
+ */
+export const continueMarkup: StateCommand = ({ state, dispatch }) => {
+  let captured: Transaction | null = null;
+  const handled = insertNewlineContinueMarkup({
+    state,
+    dispatch: (transaction) => {
+      captured = transaction;
+    },
+  });
+  const transaction = captured as Transaction | null;
+  if (!handled || transaction === null) return handled;
+  const changes: { from: number; to: number; insert: string }[] = [];
+  transaction.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+    changes.push({ from: fromA, to: toA, insert: inserted.toString() });
+  });
+  const only = changes[0];
+  const tightened = only === undefined ? '' : only.insert.replace(/^\n[ \t]*\n/u, '\n');
+  if (changes.length !== 1 || only === undefined || tightened === only.insert) {
+    dispatch(transaction);
+    return true;
+  }
+  dispatch(
+    state.update({
+      changes: { from: only.from, to: only.to, insert: tightened },
+      selection: EditorSelection.cursor(only.from + tightened.length),
+      scrollIntoView: true,
+      userEvent: 'input',
+    }),
+  );
+  return true;
+};

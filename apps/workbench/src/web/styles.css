@@ -91,6 +91,17 @@
   .preview ol {
     @apply list-decimal pl-6;
   }
+  /* 하위 목록은 붙여 두고 깊이마다 표시를 바꾼다(NOR-244). */
+  .preview li > ul,
+  .preview li > ol {
+    @apply my-1;
+  }
+  .preview ul ul {
+    @apply list-[circle];
+  }
+  .preview ul ul ul {
+    @apply list-[square];
+  }
   /* 작업 목록(NOR-239). 블로그와 같은 모양이다. */
   .preview li.task-list-item {
     @apply -ml-6 list-none;

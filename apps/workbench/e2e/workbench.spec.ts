@@ -572,3 +572,42 @@ test('NOR-240 AC-1, NOR-240 AC-2: 목록의 일지는 일일 로그로 열고 �
   await page.getByRole('button', { name: '오늘의 로그' }).click();
   await expect(page.getByRole('heading', { name: '2026-08-12 일일 로그' })).toBeVisible();
 });
+
+test('NOR-244 AC-1, NOR-244 AC-2: 편집기는 칸을 채우고 미리보기 하위 목록은 붙어 있다', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await page.goto('/');
+  await page.getByLabel('새 문서 제목').fill('목록 모양 시험');
+  await page.getByRole('button', { name: /private-post$/u }).click();
+  const editor = page.getByLabel('Markdown 문서');
+  await expect(editor).toBeVisible();
+  const widths = await page.evaluate(() => {
+    const content = document.querySelector<HTMLElement>('.cm-content');
+    const scroller = document.querySelector<HTMLElement>('.cm-scroller');
+    return { content: content?.offsetWidth ?? 0, scroller: scroller?.clientWidth ?? 0 };
+  });
+  expect(widths.content).toBeGreaterThan(widths.scroller * 0.9);
+
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+End');
+  await page.keyboard.type('\n- 상위\n  - 하위 하나\n  - 하위 둘\n    - 더 하위\n- 다음 상위\n');
+  await page.getByRole('button', { name: '나란히' }).click();
+  const preview = page.getByRole('region', { name: '미리보기' });
+  const nested = preview.locator('li > ul').first();
+  await expect(nested).toBeVisible();
+  const style = await nested.evaluate((element) => {
+    const computed = getComputedStyle(element);
+    const deeper = element.querySelector('ul');
+    return {
+      top: parseFloat(computed.marginTop),
+      bottom: parseFloat(computed.marginBottom),
+      marker: computed.listStyleType,
+      deeper: deeper ? getComputedStyle(deeper).listStyleType : '',
+      parent: getComputedStyle(element.parentElement?.parentElement as Element).listStyleType,
+    };
+  });
+  expect(style.top).toBeLessThanOrEqual(4);
+  expect(style.bottom).toBeLessThanOrEqual(4);
+  expect(new Set([style.parent, style.marker, style.deeper]).size).toBe(3);
+});

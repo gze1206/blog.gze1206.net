@@ -248,3 +248,51 @@ test('NOR-243 AC-5: 휴대폰 화면에서 일정 화면과 대화 상자가 가
   await dialog.getByRole('button', { name: '저장' }).tap();
   await expect(dialog).toBeHidden();
 });
+
+test('NOR-245 AC-1, NOR-245 AC-2, NOR-245 AC-3: Enter 로 목록·체크리스트를 이어 쓰고 빈 항목에서 끝낸다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await openMenu(page);
+  await page.getByLabel('새 문서 제목').fill('이어쓰기 시험');
+  await page.getByRole('button', { name: /capture$/u }).tap();
+  const editor = page.getByLabel('Markdown 문서');
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+End');
+  await page.keyboard.press('Enter');
+  const source = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('.cm-line')].map((line) => line.textContent ?? '').join('\n'),
+    );
+
+  await page.keyboard.type('- 우유');
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('빵');
+  await expect.poll(source).toContain('빵');
+  await expect(page.locator('.cm-line').filter({ hasText: /^- 빵$/u })).toHaveCount(1);
+  // 빈 줄을 사이에 두지 않고 바로 다음 줄에 이어 쓴다.
+  expect(await source()).toContain('- 우유\n- 빵');
+  // 빈 항목에서 Enter 를 누르면 목록이 끝난다.
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('목록 밖');
+  await expect(page.locator('.cm-line').filter({ hasText: /^목록 밖$/u })).toHaveCount(1);
+
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: '체크리스트' }).tap();
+  await page.keyboard.type('할 일 하나');
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('할 일 둘');
+  await expect(page.locator('.cm-line').filter({ hasText: /^- \[ \] 할 일 둘$/u })).toHaveCount(1);
+  // 이어 붙은 빈 체크리스트 항목에서 Enter 를 눌러 목록을 끝낸다.
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('1. 첫째');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.cm-line').filter({ hasText: /^2\. $/u })).toHaveCount(1);
+  // 표시만 있는 줄에서 Backspace 를 누르면 표시가 지워진다.
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type('번호 밖');
+  // 위 항목에 딸린 문단으로 남으므로 들여쓰기는 남을 수 있다. 번호 표시만 없으면 된다.
+  await expect(page.locator('.cm-line').filter({ hasText: /^\s*번호 밖$/u })).toHaveCount(1);
+});
