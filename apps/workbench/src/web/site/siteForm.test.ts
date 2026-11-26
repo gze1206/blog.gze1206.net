@@ -14,7 +14,14 @@ describe('사이트 콘텐츠 폼', () => {
     );
     expect(SITE_FIELDS.experience.find((field) => field.key === 'visible')?.type).toBe('boolean');
     expect(SITE_FIELDS.portfolio.find((field) => field.key === 'media')?.type).toBe('rows');
-    expect(SITE_FIELDS.series.map((field) => field.key)).toEqual(['name', 'slug', 'description']);
+    // 영어 칸(NOR-252)이 뒤에 붙는다.
+    expect(SITE_FIELDS.series.map((field) => field.key)).toEqual([
+      'name',
+      'slug',
+      'description',
+      'en.name',
+      'en.description',
+    ]);
   });
 
   it('NOR-208 AC-7: 목록은 한 줄에 하나, 문단은 빈 줄로 나눈다', async () => {
@@ -97,4 +104,36 @@ it('NOR-237 AC-1: 포트폴리오 기간도 표준 형식으로 고친다', asyn
   const normalize = field !== undefined && 'normalize' in field ? field.normalize : undefined;
   expect(normalize).toBeTypeOf('function');
   expect(normalize?.('2026.04 ~ 2026.12')).toBe('2026.04 – 2026.12');
+});
+
+it('NOR-252 AC-6: 영어 칸은 en 안의 값을 읽고 쓰고, 모두 비우면 en 을 지운다', async () => {
+  const { SITE_FIELDS, applyFormValue, toFormValue } = await form();
+  for (const collection of ['profile', 'experience', 'portfolio', 'series'] as const)
+    expect(
+      SITE_FIELDS[collection].some((field) => field.key.startsWith('en.')),
+      collection,
+    ).toBe(true);
+  const headline = SITE_FIELDS.profile.find((field) => field.key === 'en.headline');
+  const intro = SITE_FIELDS.profile.find((field) => field.key === 'en.introduction');
+  expect(headline).toBeDefined();
+  expect(intro).toBeDefined();
+  if (headline === undefined || intro === undefined) return;
+  const base = {
+    name: '이름',
+    en: { headline: 'Dev', introduction: 'Hi', linkLabels: { 이메일: 'Email' } },
+  };
+  expect(toFormValue(headline, base)).toBe('Dev');
+  expect(applyFormValue(base, headline, 'Developer')['en']).toEqual({
+    headline: 'Developer',
+    introduction: 'Hi',
+    linkLabels: { 이메일: 'Email' },
+  });
+  const highlights = SITE_FIELDS.experience.find((field) => field.key === 'en.highlights');
+  expect(highlights?.type).toBe('lines');
+  const cleared = applyFormValue(
+    applyFormValue({ name: '이름', en: { headline: 'Dev', introduction: 'Hi' } }, headline, ''),
+    intro,
+    '',
+  );
+  expect(cleared).toEqual({ name: '이름' });
 });

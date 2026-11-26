@@ -190,6 +190,15 @@ export interface PublicBlogAdapterOptions {
 /** 블로그 저장소에서 글이 사는 자리. 발행과 가져오기가 같은 값을 본다. */
 const POSTS_DIRECTORY = BLOG_LAYOUT.postsDir;
 
+/** 글이 놓일 자리와 브랜치. 영어 글은 `posts/en/<slug>.mdoc`·`content/en-<slug>` 다(NOR-252). */
+function postTarget(metadata: { readonly slug: string; readonly lang?: string | undefined }) {
+  const english = metadata.lang === 'en';
+  return {
+    path: `${POSTS_DIRECTORY}/${english ? 'en/' : ''}${metadata.slug}.mdoc`,
+    branch: `content/${english ? 'en-' : ''}${metadata.slug}`,
+  };
+}
+
 /**
  * 블로그 글 파일에서 목록에 필요한 것만 뽑는다.
  *
@@ -312,14 +321,17 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       for (const draft of drafts) {
         let slug: string | null = null;
         let hidden = false;
+        let english = false;
         try {
           const parsed = parseDocument(draft.source);
           slug = parsed.slug ?? null;
           hidden = parsed.draft === true;
+          english = parsed.lang === 'en';
         } catch {
           slug = null;
         }
-        if (slug) slugs.add(slug);
+        // 블로그에만 있는 글은 한국어 글(posts 바로 아래)과 견준다. 영어 초안은 같은 slug 라도 짝이 아니다.
+        if (slug && !english) slugs.add(slug);
         let status: PublishState;
         try {
           const inspected = await this.inspectAssets(draft.documentId);
@@ -331,7 +343,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
             },
             await this.existingPublicAssets(clone.repositoryRoot, draft.source),
           );
-          const targetPath = `${POSTS_DIRECTORY}/${prepared.transformed.metadata.slug}.mdoc`;
+          const targetPath = postTarget(prepared.transformed.metadata).path;
           const current = await this.readOutput(clone.repositoryRoot, targetPath);
           status =
             current === null
@@ -414,7 +426,8 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
         );
       }
       await this.cloneManager.git(clone, ['add', '--', review.targetPath, ...review.assets]);
-      const commitMessage = `✨ feat(content): ${prepared.transformed.metadata.slug} 게시`;
+      const { slug: postSlug, lang: postLang } = prepared.transformed.metadata;
+      const commitMessage = `✨ feat(content): ${postLang === 'en' ? 'en/' : ''}${postSlug} 게시`;
       await this.cloneManager.git(clone, [
         '-c',
         'user.useConfigOnly=true',
@@ -1236,7 +1249,8 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
     prepared: PreparedPublish,
     clone: EphemeralClone,
   ): Promise<ReviewState> {
-    const targetPath = `${POSTS_DIRECTORY}/${prepared.transformed.metadata.slug}.mdoc`;
+    const target = postTarget(prepared.transformed.metadata);
+    const targetPath = target.path;
     const [existing, baseHead, destinationStates] = await Promise.all([
       this.readOutput(clone.repositoryRoot, targetPath),
       this.cloneManager.git(clone, ['rev-parse', 'HEAD']),
@@ -1256,7 +1270,7 @@ export class PublicBlogAdapter implements PublicBlogPublisher {
       source,
       review: {
         baseHead,
-        branch: `content/${prepared.transformed.metadata.slug}`,
+        branch: target.branch,
         targetPath,
         metadata: prepared.transformed.metadata,
         assets: prepared.transformed.assets.map(

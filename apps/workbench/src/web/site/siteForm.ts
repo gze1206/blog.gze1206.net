@@ -68,6 +68,12 @@ export const SITE_FIELDS: Record<SiteCollection, readonly SiteField[]> = {
     { key: 'introduction', label: '소개', type: 'textarea' },
     { key: 'skills', label: '기술(한 줄에 하나)', type: 'lines' },
     { key: 'about', label: '소개 페이지 문단(빈 줄로 구분)', type: 'paragraphs' },
+    // 영어판(NOR-251·252). 비면 블로그가 한국어 값을 쓴다. 라벨은 영어로 써서 한국어 칸 라벨과 겹치지 않게 한다.
+    { key: 'en.name', label: 'EN · Name', type: 'text', optional: true },
+    { key: 'en.headline', label: 'EN · Headline', type: 'text', optional: true },
+    { key: 'en.tagline', label: 'EN · Tagline', type: 'text', optional: true },
+    { key: 'en.introduction', label: 'EN · Introduction', type: 'textarea', optional: true },
+    { key: 'en.about', label: 'EN · About paragraphs (blank line between)', type: 'paragraphs' },
     {
       key: 'links',
       label: '링크',
@@ -92,6 +98,9 @@ export const SITE_FIELDS: Record<SiteCollection, readonly SiteField[]> = {
     { key: 'endDate', label: '끝난 날짜', type: 'date' },
     { key: 'highlights', label: '한 일(한 줄에 하나)', type: 'lines' },
     { key: 'visible', label: '공개', type: 'boolean' },
+    { key: 'en.organization', label: 'EN · Organization', type: 'text', optional: true },
+    { key: 'en.role', label: 'EN · Role', type: 'text', optional: true },
+    { key: 'en.highlights', label: 'EN · Highlights (one per line)', type: 'lines' },
   ],
   portfolio: [
     { key: 'title', label: '제목', type: 'text' },
@@ -132,11 +141,17 @@ export const SITE_FIELDS: Record<SiteCollection, readonly SiteField[]> = {
       ],
     },
     { key: 'thumbnail', label: '썸네일', type: 'image', optional: true },
+    { key: 'en.title', label: 'EN · Title', type: 'text', optional: true },
+    { key: 'en.summary', label: 'EN · Summary', type: 'textarea', optional: true },
+    { key: 'en.role', label: 'EN · Role', type: 'text', optional: true },
+    { key: 'en.highlights', label: 'EN · Highlights (one per line)', type: 'lines' },
   ],
   series: [
     { key: 'name', label: '이름', type: 'text' },
     { key: 'slug', label: 'slug', type: 'text' },
     { key: 'description', label: '설명', type: 'textarea' },
+    { key: 'en.name', label: 'EN · Name', type: 'text', optional: true },
+    { key: 'en.description', label: 'EN · Description', type: 'textarea', optional: true },
   ],
 };
 
@@ -151,8 +166,21 @@ export function newSiteData(collection: SiteCollection): Record<string, unknown>
   return structuredClone(NEW_DATA[collection]) as Record<string, unknown>;
 }
 
+/** `en.headline` → `{ parent: 'en', child: 'headline' }`. 점이 없으면 null. */
+function splitKey(key: string): { parent: string; child: string } | null {
+  const dot = key.indexOf('.');
+  return dot < 0 ? null : { parent: key.slice(0, dot), child: key.slice(dot + 1) };
+}
+
 /** 데이터에서 칸에 보일 값을 꺼낸다. */
 export function toFormValue(field: SiteField, data: Data): FormValue {
+  // 영어 칸(`en.headline`)은 `en` 안의 값을 읽는다(NOR-252).
+  const nested = splitKey(field.key);
+  if (nested !== null) {
+    const parent = data[nested.parent];
+    const inner = parent !== null && typeof parent === 'object' ? (parent as Data) : {};
+    return toFormValue({ ...field, key: nested.child } as SiteField, inner);
+  }
   const value = data[field.key];
   switch (field.type) {
     case 'boolean':
@@ -184,6 +212,22 @@ export function applyFormValue(
   field: SiteField,
   value: FormValue,
 ): Record<string, unknown> {
+  // 영어 칸은 `en` 안에 쓴다. 빈 칸은 지우고, 영어 칸이 모두 비면 `en` 을 지운다(NOR-252).
+  const nested = splitKey(field.key);
+  if (nested !== null) {
+    const parent = data[nested.parent];
+    const inner: Record<string, unknown> = {
+      ...(parent !== null && typeof parent === 'object' ? (parent as Data) : {}),
+    };
+    const updated = applyFormValue(inner, { ...field, key: nested.child } as SiteField, value);
+    const written = updated[nested.child];
+    if (written === '' || written === null || (Array.isArray(written) && written.length === 0))
+      Reflect.deleteProperty(updated, nested.child);
+    const next: Record<string, unknown> = { ...data };
+    if (Object.keys(updated).length === 0) Reflect.deleteProperty(next, nested.parent);
+    else next[nested.parent] = updated;
+    return next;
+  }
   const next: Record<string, unknown> = { ...data };
   switch (field.type) {
     case 'boolean':

@@ -660,3 +660,14 @@ test('NOR-247 AC-1: 미리보기 본문은 칸을 채운다', async ({ page }) =
   }));
   expect(widths.body).toBeGreaterThan(widths.pane * 0.9);
 });
+
+test('NOR-252 AC-5: 한국어 공개 초안에서 영어판 초안을 만든다', async ({ page }) => {
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Translate me/u }).click();
+  await expect(page.getByLabel('Markdown 문서')).toBeVisible();
+  await page.getByRole('button', { name: '영어판 만들기' }).click();
+  await expect(page.getByRole('heading', { name: '[EN] Translate me' })).toBeVisible();
+  await expect(page.getByLabel('Markdown 문서')).toContainText('lang: en');
+  await expect(page.getByRole('button', { name: '영어판 만들기' })).toHaveCount(0);
+});

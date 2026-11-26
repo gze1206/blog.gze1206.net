@@ -63,6 +63,9 @@ export function validatePublicDraft(
       updatedAt: document.updatedAt,
       draft: document.draft ?? false,
       ...(document.toc === undefined ? {} : { toc: document.toc }),
+      // 영어 초안(NOR-252). 값 검사는 발행 계약(lang: ko·en, translationKey: slug)이 한다.
+      ...(document.lang === undefined ? {} : { lang: document.lang }),
+      ...(document.translationKey === undefined ? {} : { translationKey: document.translationKey }),
     });
     const assets = validateAssets(input.assets, input.privateRoot, metadata.slug);
     assertAllAssetReferencesResolved(expanded.body, assets, input.existingPublicAssets);

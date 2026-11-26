@@ -6,6 +6,7 @@ import { z } from 'zod';
 import type { WorkbenchDocument } from '../../core/document/document.js';
 import type { DocumentEntry, DocumentSummary, FileStore } from '../../core/ports.js';
 import { encodeDocumentId, isDocumentId } from '../documentIds.js';
+import { TranslationPlanError, planTranslationDraft } from '../../core/publishing/translation.js';
 
 const createSchema = z.object({
   templateId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u),
@@ -74,6 +75,37 @@ export function createDocumentRoutes(
     const relativePath = await resolveDocumentPath(store, id);
     if (!relativePath) return context.json(errorBody('not_found', 'Document not found'), 404);
     return context.json(toHttpEntry(await store.writeDocument(relativePath, input.data.source)));
+  });
+
+  // 한국어 공개 초안의 영어판 초안을 만든다(NOR-252).
+  routes.post('/api/documents/:id/translation', async (context) => {
+    const id = context.req.param('id');
+    if (!isDocumentId(id)) return context.json(errorBody('invalid_id', 'Invalid document id'), 400);
+    const relativePath = await resolveDocumentPath(store, id);
+    if (!relativePath) return context.json(errorBody('not_found', 'Document not found'), 404);
+    const original = await store.readDocument(relativePath);
+    let plan;
+    try {
+      plan = planTranslationDraft(original.source, clock().toISOString().slice(0, 10));
+    } catch (error) {
+      if (error instanceof TranslationPlanError)
+        return context.json(errorBody('invalid_request', error.message), 400);
+      throw error;
+    }
+    let created;
+    try {
+      created = await store.importDocument({
+        relativePath: plan.relativePath,
+        source: plan.source,
+        overwrite: false,
+      });
+    } catch (error) {
+      if ((error as { code?: unknown }).code === 'EEXIST')
+        return context.json(errorBody('conflict', 'Translation draft already exists'), 409);
+      throw error;
+    }
+    if (plan.originalSource !== null) await store.writeDocument(relativePath, plan.originalSource);
+    return context.json(toHttpEntry(created), 201);
   });
 
   return routes;

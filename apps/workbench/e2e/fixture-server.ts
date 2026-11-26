@@ -114,6 +114,24 @@ publishedAt: 2026-08-12
 {% bookquote book="9788934972464" excerpt="01J5AR7W6M3Q9N8K2T4V1X0ZBC" /%}
 `,
 );
+// 영어판 만들기 시험용(NOR-252). 다른 시험이 쓰는 초안을 고치지 않게 따로 둔다.
+await writeFile(
+  path.join(workspaceRoot, 'drafts/translate-me.md'),
+  `---
+title: Translate me
+kind: public-draft
+createdAt: 2026-08-12
+updatedAt: 2026-08-12
+publicEligible: true
+description: translation test
+slug: translate-me
+category: engineering
+tags: [git]
+publishedAt: 2026-08-12
+---
+본문
+`,
+);
 const seededDraftPath = 'drafts/asset-publish.md';
 const seededDraftId = createHash('sha256').update(seededDraftPath, 'utf8').digest('base64url');
 await writeFile(
