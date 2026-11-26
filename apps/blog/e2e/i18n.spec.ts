@@ -31,3 +31,32 @@ test('NOR-250 AC-6: 한국어 페이지는 한국어로 남고 영어 첫 화면
   await page.goto('/blog/c-9-0-record-type');
   await expect(page.locator('.article__meta')).toContainText(/읽는 시간 (약 \d+분|1분 미만)/u);
 });
+
+for (const [ko, en, heading] of [
+  ['/about', '/en/about', 'Experience'],
+  ['/portfolio', '/en/portfolio', 'Portfolio'],
+] as const) {
+  test(`NOR-251 AC-4: ${en} 는 영어로 그려지고 ${ko} 와 hreflang 으로 이어진다`, async ({
+    page,
+  }) => {
+    const response = await page.goto(en);
+    expect(response?.status()).toBe(200);
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.getByText(heading, { exact: true }).first()).toBeVisible();
+    // 깨진 이미지가 없다(주소 없는 img 를 만들지 않는다).
+    expect(await page.locator('main img:not([src])').count()).toBe(0);
+    await expect(page.locator(`link[rel="alternate"][hreflang="ko"]`)).toHaveAttribute(
+      'href',
+      `https://gze1206.net${ko}`,
+    );
+    const nav = page.getByRole('navigation', { name: 'Main' });
+    await expect(nav.getByRole('link', { name: 'About' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Portfolio' })).toBeVisible();
+    await page.getByRole('banner').getByRole('link', { name: '한국어', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${ko}$`, 'u'));
+    await expect(page.locator(`link[rel="alternate"][hreflang="en"]`)).toHaveAttribute(
+      'href',
+      `https://gze1206.net${en}`,
+    );
+  });
+}

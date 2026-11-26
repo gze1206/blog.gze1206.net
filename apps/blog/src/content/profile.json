@@ -30,5 +30,18 @@
       "url": "https://steamcommunity.com/id/gze1206/",
       "handle": "gze1206"
     }
-  ]
+  ],
+  "en": {
+    "headline": "Game client & server developer",
+    "tagline": "I make games, and the tools that make them.",
+    "introduction": "I work across game clients and servers, building systems meant to last. I also build tools and web services that make development easier, and write down what I learn along the way.",
+    "about": [
+      "I have worked on both game clients and servers. On Mabinogi Mobile I handled game logic, optimization and UX work; on TERA Origin I worked on servers, databases and combat logic.",
+      "I care about how things are made as much as what gets made. I have built tools that improve development environments and automated testing tools, and that habit now carries over into my personal tools and this blog.",
+      "My language of choice is C#. Outside of games I build web services, servers and developer utilities, learning whatever each one needs."
+    ],
+    "linkLabels": {
+      "이메일": "Email"
+    }
+  }
 }

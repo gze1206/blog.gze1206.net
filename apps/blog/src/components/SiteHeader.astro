@@ -8,7 +8,7 @@
 import ThemeToggle from './ThemeToggle.astro';
 import SearchTrigger from './SearchTrigger.astro';
 import { aboutPath, blogPagePath, homePath, portfolioPath, topicsPath } from '../lib/routes';
-import { langFromPath, UI } from '../lib/i18n';
+import { langFromPath, localizePath, UI } from '../lib/i18n';
 import BrandMark from './BrandMark.astro';
 
 interface Props {
@@ -25,7 +25,11 @@ const switchHref = Astro.props.languageSwitch ?? homePath(otherLang);
 // 영어 페이지는 영어로 있는 곳만 둔다(분류 탐색은 한국어 글만 다룬다).
 const NAV_ITEMS =
   lang === 'en'
-    ? [{ href: blogPagePath(1, 'en'), label: ui.navBlog }]
+    ? [
+        { href: blogPagePath(1, 'en'), label: ui.navBlog },
+        { href: localizePath('en', aboutPath()), label: ui.navAbout },
+        { href: localizePath('en', portfolioPath()), label: ui.navPortfolio },
+      ]
     : [
         { href: '/blog', label: ui.navBlog },
         { href: aboutPath(), label: ui.navAbout },

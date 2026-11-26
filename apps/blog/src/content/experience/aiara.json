@@ -8,5 +8,14 @@
     "C# WinForm 기반 바코드 리더기 제작",
     "사물 인식 기반 SNS 등 모바일 프로젝트 참여"
   ],
-  "visible": true
+  "visible": true,
+  "en": {
+    "organization": "AIARA",
+    "role": "Programming Team 2",
+    "highlights": [
+      "Worked on web projects including an education service and an admin page for a fitness company",
+      "Built a barcode reader application with C# WinForms",
+      "Worked on mobile projects such as an object-recognition-based social app"
+    ]
+  }
 }

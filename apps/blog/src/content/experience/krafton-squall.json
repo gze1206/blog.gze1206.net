@@ -8,5 +8,14 @@
     "서버 및 DB 관리, 전투 관련 로직 작업",
     "자동화 테스트 툴과 개발 편의 도구 제작"
   ],
-  "visible": true
+  "visible": true,
+  "en": {
+    "organization": "KRAFTON SQUALL",
+    "role": "Platform Development Team — TERA Origin (Japan)",
+    "highlights": [
+      "Developed and operated TERA Origin for the Japanese market",
+      "Managed servers and databases, and worked on combat logic",
+      "Built automated testing tools and developer utilities"
+    ]
+  }
 }

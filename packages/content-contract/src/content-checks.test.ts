@@ -68,3 +68,43 @@ it('NOR-250 AC-1: 시리즈는 선택 필드 en 에 영어 이름과 설명을 �
   });
   expect(seriesSchema.safeParse({ ...base, en: { name: '' } }).success).toBe(false);
 });
+
+it('NOR-251 AC-1: 프로필·경력·포트폴리오는 선택 필드 en 을 받고 빈 문자열은 거절한다', async () => {
+  const {
+    profileSchema,
+    experienceSchema: experience,
+    portfolioSchema: portfolio,
+  } = await import('./index.ts');
+  const profile = { name: '이름', headline: '직함', introduction: '소개', skills: ['C#'] };
+  expect(
+    profileSchema.parse({
+      ...profile,
+      en: { headline: 'Developer', introduction: 'Hello', linkLabels: { 이메일: 'Email' } },
+    }).en,
+  ).toEqual({
+    headline: 'Developer',
+    introduction: 'Hello',
+    about: [],
+    linkLabels: { 이메일: 'Email' },
+  });
+  expect(
+    profileSchema.safeParse({ ...profile, en: { headline: '', introduction: 'x' } }).success,
+  ).toBe(false);
+  const job = {
+    organization: '회사',
+    role: '개발',
+    period: '2025.05 – 현재',
+    highlights: ['일'],
+    visible: true,
+  };
+  expect(experience.parse({ ...job, en: { role: 'Developer', highlights: ['Work'] } }).en).toEqual({
+    role: 'Developer',
+    highlights: ['Work'],
+  });
+  expect(experience.safeParse({ ...job, en: { role: 'Dev', highlights: [] } }).success).toBe(false);
+  const work = { title: '작업', summary: '요약', stack: ['C#'] };
+  expect(
+    portfolio.parse({ ...work, en: { summary: 'Summary', media: [{ alt: 'Key visual' }] } }).en,
+  ).toEqual({ summary: 'Summary', highlights: [], media: [{ alt: 'Key visual' }] });
+  expect(portfolio.safeParse({ ...work, en: { summary: '' } }).success).toBe(false);
+});
