@@ -98,3 +98,35 @@ it('NOR-237 AC-1: 포트폴리오 기간도 표준 형식으로 고친다', asyn
   expect(normalize).toBeTypeOf('function');
   expect(normalize?.('2026.04 ~ 2026.12')).toBe('2026.04 – 2026.12');
 });
+
+it('NOR-252 AC-6: 영어 칸은 en 안의 값을 읽고 쓰고, 모두 비우면 en 을 지운다', async () => {
+  const { SITE_FIELDS, applyFormValue, toFormValue } = await form();
+  for (const collection of ['profile', 'experience', 'portfolio', 'series'] as const)
+    expect(
+      SITE_FIELDS[collection].some((field) => field.key.startsWith('en.')),
+      collection,
+    ).toBe(true);
+  const headline = SITE_FIELDS.profile.find((field) => field.key === 'en.headline');
+  const intro = SITE_FIELDS.profile.find((field) => field.key === 'en.introduction');
+  expect(headline).toBeDefined();
+  expect(intro).toBeDefined();
+  if (headline === undefined || intro === undefined) return;
+  const base = {
+    name: '이름',
+    en: { headline: 'Dev', introduction: 'Hi', linkLabels: { 이메일: 'Email' } },
+  };
+  expect(toFormValue(headline, base)).toBe('Dev');
+  expect(applyFormValue(base, headline, 'Developer')['en']).toEqual({
+    headline: 'Developer',
+    introduction: 'Hi',
+    linkLabels: { 이메일: 'Email' },
+  });
+  const highlights = SITE_FIELDS.experience.find((field) => field.key === 'en.highlights');
+  expect(highlights?.type).toBe('lines');
+  const cleared = applyFormValue(
+    applyFormValue({ name: '이름', en: { headline: 'Dev', introduction: 'Hi' } }, headline, ''),
+    intro,
+    '',
+  );
+  expect(cleared).toEqual({ name: '이름' });
+});

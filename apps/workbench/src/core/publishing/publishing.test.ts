@@ -396,3 +396,22 @@ it('NOR-219 AC-7: 고른 자산을 본문이 참조하지 않으면 거절한다
     }),
   ).toThrow('unreferenced asset');
 });
+
+describe('NOR-252 초안 언어', () => {
+  const transform = (source: string) =>
+    transformPublicDraft({ source, privateRoot: '/srv/private-workbench', assets: [] });
+  it('NOR-252 AC-1: 영어 초안은 lang·translationKey 를 공개 frontmatter 에 쓰고, 한국어 초안은 lang 을 쓰지 않는다', () => {
+    const english = validDraft.replace(
+      'publishedAt: 2026-08-12\n',
+      'publishedAt: 2026-08-12\nlang: en\ntranslationKey: safe-publish\n',
+    );
+    const data = parseFrontmatter(transform(english).source).data;
+    expect(data).toMatchObject({ lang: 'en', translationKey: 'safe-publish' });
+    expect(parseFrontmatter(transform(validDraft).source).data).not.toHaveProperty('lang');
+    expect(() =>
+      transform(
+        validDraft.replace('publishedAt: 2026-08-12\n', 'publishedAt: 2026-08-12\nlang: ja\n'),
+      ),
+    ).toThrow();
+  });
+});

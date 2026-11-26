@@ -500,3 +500,20 @@ describe('NOR-237 발행 검토의 참조와 분류', { timeout: 30_000 }, () =>
     }
   });
 });
+
+it(
+  'NOR-252 AC-2: 영어 초안은 posts/en 에 content/en-<slug> 브랜치로 낸다',
+  { timeout: 30_000 },
+  async () => {
+    const fixture = await createFixture();
+    try {
+      const source = plainDraft("category: engineering\ntags: ['git']\nlang: en");
+      const review = await fixture.adapter().review({ documentId, source, assetIds: [] });
+      expect(review.targetPath).toBe(`${BLOG_LAYOUT.postsDir}/en/safe-publish.mdoc`);
+      expect(review.branch).toBe('content/en-safe-publish');
+      expect(review.diff).toContain('lang: en');
+    } finally {
+      await fixture.close();
+    }
+  },
+);

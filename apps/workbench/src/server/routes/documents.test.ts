@@ -171,3 +171,28 @@ it('NOR-227 AC-1: 목록 요약은 문서의 카테고리를 싣는다', async (
   expect(listed.documents).toHaveLength(1);
   expect(listed.documents[0]).toHaveProperty('category', 'Programming');
 });
+
+it('NOR-252 AC-4: 공개 초안의 영어판을 만들고, 이미 있으면 409 다', async () => {
+  const { mkdtemp, mkdir, writeFile, readFile } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { encodeDocumentId } = await import('../documentIds.js');
+  const root = await mkdtemp(path.join(tmpdir(), 'translation-'));
+  await mkdir(path.join(root, 'drafts'), { recursive: true });
+  await writeFile(
+    path.join(root, 'drafts', 'devlog-1.md'),
+    "---\ntitle: 개발기\nkind: public-draft\ncreatedAt: 2026-11-20\nupdatedAt: 2026-11-21\npublicEligible: true\ndescription: 설명\nslug: devlog-1\ncategory: 개발기\ntags: ['unity']\npublishedAt: 2026-11-21\n---\n본문\n",
+  );
+  const app = createApp(new ServerFileStore(root));
+  const id = encodeDocumentId('drafts/devlog-1.md');
+  const created = await app.request(`/api/documents/${id}/translation`, { method: 'POST' });
+  expect(created.status).toBe(201);
+  const body = (await created.json()) as { id: string; source: string; title: string };
+  expect(body.id).toBe(encodeDocumentId('drafts/devlog-1.en.md'));
+  expect(body.source).toContain('lang: en');
+  expect(await readFile(path.join(root, 'drafts', 'devlog-1.md'), 'utf8')).toContain(
+    'translationKey: devlog-1',
+  );
+  expect((await app.request(`/api/documents/${id}/translation`, { method: 'POST' })).status).toBe(
+    409,
+  );
+});
