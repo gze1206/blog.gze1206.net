@@ -108,3 +108,16 @@ describe('migrateBullet', () => {
     expect(target).not.toContain('migrated-from');
   });
 });
+
+it('NOR-249 AC-1: 유형 순환은 할 일·메모·노트만 돌고, ○ 불렛은 할 일이 된다', () => {
+  const start = {
+    id: '01J5AR7W6M3Q9N8K2T4V1X0ZBC',
+    type: 'task' as const,
+    status: 'open' as const,
+    text: '일',
+  };
+  const memo = cycleBulletType(start);
+  const note = cycleBulletType(memo);
+  expect([memo.type, note.type, cycleBulletType(note).type]).toEqual(['memo', 'note', 'task']);
+  expect(cycleBulletType({ ...start, type: 'event' }).type).toBe('task');
+});
