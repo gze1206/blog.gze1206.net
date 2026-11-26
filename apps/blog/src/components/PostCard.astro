@@ -8,7 +8,8 @@
  */
 import SeriesLabel from './SeriesLabel.astro';
 import { getSeriesLabels, type Post } from '../lib/content';
-import { formatKoreanDate, toISODate } from '../lib/date';
+import { toISODate } from '../lib/date';
+import { formatDate, UI } from '../lib/i18n';
 import { categoryPath, postPath, tagPath } from '../lib/routes';
 import { toSlug } from '../lib/slug';
 
@@ -19,8 +20,11 @@ interface Props {
 }
 
 const { post, headingLevel = 2 } = Astro.props;
-const { title, description, category, tags, publishedAt, draft } = post.data;
-const seriesLabel = (await getSeriesLabels()).get(post.data.slug);
+const { title, description, category, tags, publishedAt, draft, lang } = post.data;
+const ui = UI[lang];
+// 분류 페이지는 한국어 글만 다룬다. 영어 글의 카테고리·태그는 링크 없이 보인다(NOR-250).
+const linkTaxonomy = lang === 'ko';
+const seriesLabel = (await getSeriesLabels(lang)).get(post.data.slug);
 const Heading = `h${headingLevel}` as const;
 ---
 
@@ -29,12 +33,20 @@ const Heading = `h${headingLevel}` as const;
   data-draft={draft ? 'true' : undefined}
 >
   <div class="text-muted flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-    <time datetime={toISODate(publishedAt)}>{formatKoreanDate(publishedAt)}</time>
-    <a href={categoryPath(toSlug(category))} class="rounded hover:underline">{category}</a>
+    <time datetime={toISODate(publishedAt)}>{formatDate(publishedAt, lang)}</time>
+    {
+      linkTaxonomy ? (
+        <a href={categoryPath(toSlug(category))} class="rounded hover:underline">
+          {category}
+        </a>
+      ) : (
+        <span>{category}</span>
+      )
+    }
     {
       draft && (
         <span class="bg-notice text-notice-foreground rounded px-1.5 py-0.5 text-xs font-semibold">
-          초안
+          {ui.draft}
         </span>
       )
     }
@@ -43,21 +55,27 @@ const Heading = `h${headingLevel}` as const;
   {seriesLabel !== undefined && <SeriesLabel label={seriesLabel} />}
 
   <Heading class={`${seriesLabel === undefined ? 'mt-2' : 'mt-1'} text-xl font-bold sm:text-2xl`}>
-    <a href={postPath(post.data.slug)} class="rounded hover:underline">{title}</a>
+    <a href={postPath(post.data.slug, lang)} class="rounded hover:underline">{title}</a>
   </Heading>
 
   <p class="text-muted mt-2">{description}</p>
 
-  <ul class="mt-3 flex flex-wrap gap-2" aria-label="태그">
+  <ul class="mt-3 flex flex-wrap gap-2" aria-label={ui.tags}>
     {
       tags.map((tag) => (
         <li>
-          <a
-            href={tagPath(toSlug(tag))}
-            class="tag-icon bg-surface-sunken text-body hover:bg-accent-soft inline-block rounded-full px-2.5 py-0.5 text-sm"
-          >
-            {tag}
-          </a>
+          {linkTaxonomy ? (
+            <a
+              href={tagPath(toSlug(tag))}
+              class="tag-icon bg-surface-sunken text-body hover:bg-accent-soft inline-block rounded-full px-2.5 py-0.5 text-sm"
+            >
+              {tag}
+            </a>
+          ) : (
+            <span class="tag-icon bg-surface-sunken text-body inline-block rounded-full px-2.5 py-0.5 text-sm">
+              {tag}
+            </span>
+          )}
         </li>
       ))
     }

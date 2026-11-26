@@ -51,3 +51,18 @@ describe('postSchema', () => {
     expect([...POST_FIELD_ORDER].sort()).toEqual(Object.keys(postObject.shape).sort());
   });
 });
+
+describe('NOR-250 글 언어', () => {
+  it('NOR-250 AC-1: lang 은 ko·en 이고 기본은 ko, translationKey 는 slug 형식이다', () => {
+    for (const schema of [postSchema, strictPostSchema]) {
+      expect(schema.parse(valid).lang).toBe('ko');
+      expect(schema.parse({ ...valid, lang: 'en', translationKey: 'hello-world' })).toMatchObject({
+        lang: 'en',
+        translationKey: 'hello-world',
+      });
+      expect(schema.safeParse({ ...valid, lang: 'ja' }).success).toBe(false);
+      expect(schema.safeParse({ ...valid, translationKey: 'Hello World' }).success).toBe(false);
+    }
+    expect(POST_FIELD_ORDER).toEqual(expect.arrayContaining(['lang', 'translationKey']));
+  });
+});

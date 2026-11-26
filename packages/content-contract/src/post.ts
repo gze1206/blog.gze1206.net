@@ -10,6 +10,10 @@ const text = z.string().trim().min(1);
 export const TOC_MODES = ['auto', 'inline', 'floating'] as const;
 export const tocSchema = z.union([z.enum(TOC_MODES), z.literal(false)]);
 
+/** 글 언어 (NOR-250). 한국어가 기본이고, 영어 글은 `/en/blog/<slug>` 에 실린다. */
+export const POST_LANGS = ['ko', 'en'] as const;
+export type PostLang = (typeof POST_LANGS)[number];
+
 /** refine 전의 모양. 키 목록 검사와 strict 변형이 여기서 갈라진다. */
 export const postObject = z.object({
   title: text,
@@ -23,6 +27,9 @@ export const postObject = z.object({
   updatedAt: z.coerce.date(),
   draft: z.boolean().default(false),
   toc: tocSchema.default('auto'),
+  lang: z.enum(POST_LANGS).default('ko'),
+  /** 같은 값을 가진 다른 언어 글이 번역판이다(NOR-250). */
+  translationKey: z.string().regex(SLUG_PATTERN).optional(),
 });
 
 const seriesPaired = (post: { series?: string | undefined; seriesOrder?: number | undefined }) =>
@@ -52,4 +59,6 @@ export const POST_FIELD_ORDER = [
   'updatedAt',
   'draft',
   'toc',
+  'lang',
+  'translationKey',
 ] as const satisfies readonly (keyof typeof postObject.shape)[];

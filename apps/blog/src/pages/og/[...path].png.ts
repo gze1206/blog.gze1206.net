@@ -35,8 +35,9 @@ import { DEFAULT_DESCRIPTION, SITE_NAME } from '../../lib/site-meta';
  * 템플릿(`kind: 'about'`)은 이미 있다.
  */
 async function listOgTargets(): Promise<OgTarget[]> {
-  const [posts, seriesById, categories, tags, seriesEntries, books] = await Promise.all([
+  const [posts, enPosts, seriesById, categories, tags, seriesEntries, books] = await Promise.all([
     getVisiblePosts(),
+    getVisiblePosts('en'),
     getSeriesById(),
     getCategoryGroups(),
     getTagGroups(),
@@ -52,6 +53,19 @@ async function listOgTargets(): Promise<OgTarget[]> {
       authors: book.data.authors,
     })),
     siteDescription: DEFAULT_DESCRIPTION,
+    // 영어 페이지(NOR-250). 영어 글이 없어도 첫 화면과 목록은 있다.
+    en: {
+      posts: enPosts.map((post) => ({
+        slug: post.data.slug,
+        title: post.data.title,
+        seriesName:
+          post.data.series === undefined
+            ? undefined
+            : (seriesById.get(post.data.series)?.data.en?.name ??
+              seriesById.get(post.data.series)?.data.name),
+      })),
+      blogPageCount: Math.max(1, Math.ceil(enPosts.length / POSTS_PER_PAGE)),
+    },
     posts: posts.map((post) => ({
       slug: post.data.slug,
       title: post.data.title,

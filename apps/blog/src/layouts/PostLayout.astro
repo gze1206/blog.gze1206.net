@@ -24,11 +24,11 @@ import BaseLayout from './BaseLayout.astro';
 import katexCss from 'katex/dist/katex.min.css?url';
 import TableOfContents from '../components/TableOfContents.astro';
 import TocFab from '../components/TocFab.astro';
-import { formatKoreanDate } from '../lib/date';
-import { categoryPath, tagPath } from '../lib/routes';
+import { formatDate, readingLabel, UI } from '../lib/i18n';
+import { categoryPath, postPath, tagPath } from '../lib/routes';
 import { toSlug } from '../lib/slug';
 import SeriesLabel from '../components/SeriesLabel.astro';
-import { getSeriesLabels, type Post } from '../lib/content';
+import { getSeriesLabels, getTranslation, type Post } from '../lib/content';
 import type { PostDetail } from '../lib/post-detail';
 import { buildArticleJsonLd, buildBreadcrumbJsonLd } from '../lib/json-ld';
 import { resolveTocPlacement } from '../lib/toc';
@@ -40,20 +40,38 @@ interface Props {
 }
 
 const { post, detail } = Astro.props;
+const lang = post.data.lang;
+const ui = UI[lang];
+// 분류 페이지는 한국어 글만 다룬다. 영어 글의 카테고리·태그는 링크 없이 보인다(NOR-250).
+const linkTaxonomy = lang === 'ko';
 // 헤더의 소속 표시(NOR-241): 제목 위 라벨. 이전/다음·목록·진행도는 `SeriesNav` 가 그린다(NOR-18).
-const seriesLabel = (await getSeriesLabels()).get(post.data.slug);
+const seriesLabel = (await getSeriesLabels(lang)).get(post.data.slug);
+// 번역판(NOR-250): 있으면 글 머리에 링크를 두고, 메타에 hreflang 대안을 낸다.
+const translation = await getTranslation(post);
+const translationPath =
+  translation === undefined ? undefined : postPath(translation.data.slug, translation.data.lang);
 // Markdown 의 rehype-katex 결과는 Markdoc 컴포넌트를 거치지 않는다.
 const renderedContent = await Astro.slots.render('default');
 const hasMath = /class=["'][^"']*\bkatex\b[^"']*["']/.test(renderedContent);
 const { title, description, category, tags, publishedAt, updatedAt, draft } = post.data;
 const { toc, readingTime, publishedISO, updatedISO, isUpdated } = detail;
 const tocPlacement = resolveTocPlacement(post.data.toc, toc.length);
-const url = `https://gze1206.net/blog/${post.data.slug}`;
+const site = 'https://gze1206.net';
+const url = `${site}${postPath(post.data.slug, lang)}`;
 const jsonLd = [
-  buildArticleJsonLd({ title, description, url, published: publishedISO, modified: updatedISO }),
+  {
+    ...buildArticleJsonLd({
+      title,
+      description,
+      url,
+      published: publishedISO,
+      modified: updatedISO,
+    }),
+    inLanguage: ui.htmlLang,
+  },
   buildBreadcrumbJsonLd([
-    { name: '홈', url: 'https://gze1206.net/' },
-    { name: '블로그', url: 'https://gze1206.net/blog' },
+    { name: ui.home, url: `${site}${lang === 'en' ? '/en' : '/'}` },
+    { name: ui.blogHeading, url: `${site}${lang === 'en' ? '/en/blog' : '/blog'}` },
     { name: title, url },
   ]),
 ];
@@ -65,22 +83,52 @@ const jsonLd = [
   type="article"
   article={{ publishedTime: publishedISO, modifiedTime: updatedISO }}
   jsonLd={jsonLd}
+  alternates={translation === undefined || translationPath === undefined
+    ? undefined
+    : [{ lang: translation.data.lang, path: translationPath }]}
+  languageSwitch={translationPath}
 >
   {hasMath && <link rel="stylesheet" href={katexCss} />}
   <main id="main-content" class="article">
-    <article data-pagefind-body>
+    {/* 사이트 검색은 한국어 글만 색인한다(NOR-250). */}
+    <article data-pagefind-body={lang === 'ko' ? '' : undefined}>
       <header class="article__head">
         {
           draft && (
             <p class="bg-notice text-notice-foreground mb-5 inline-block rounded px-2 py-1 text-sm font-semibold">
-              초안 — 개발 서버에서만 보입니다
+              {lang === 'en'
+                ? 'Draft — only visible on the dev server'
+                : '초안 — 개발 서버에서만 보입니다'}
+            </p>
+          )
+        }
+
+        {
+          translationPath !== undefined && translation !== undefined && (
+            <p class="mb-4 text-sm">
+              <a
+                href={translationPath}
+                hreflang={UI[translation.data.lang].htmlLang}
+                lang={UI[translation.data.lang].htmlLang}
+                class="text-accent underline"
+              >
+                {ui.readTranslation}
+              </a>
             </p>
           )
         }
 
         <div class="article-taxonomy">
-          <span class="article-taxonomy__label">카테고리</span>
-          <a href={categoryPath(toSlug(category))} class="category-badge">{category}</a>
+          <span class="article-taxonomy__label">{ui.category}</span>
+          {
+            linkTaxonomy ? (
+              <a href={categoryPath(toSlug(category))} class="category-badge">
+                {category}
+              </a>
+            ) : (
+              <span class="category-badge">{category}</span>
+            )
+          }
         </div>
 
         {seriesLabel !== undefined && <SeriesLabel label={seriesLabel} pagefindMeta />}
@@ -88,26 +136,33 @@ const jsonLd = [
         <p class="article__summary">{description}</p>
 
         <div class="article__meta">
-          <time datetime={publishedISO}>{formatKoreanDate(publishedAt)}</time>
+          <time datetime={publishedISO}>{formatDate(publishedAt, lang)}</time>
           {
             isUpdated && (
               <span>
-                (수정 <time datetime={updatedISO}>{formatKoreanDate(updatedAt)}</time>)
+                ({ui.updated} <time datetime={updatedISO}>{formatDate(updatedAt, lang)}</time>)
               </span>
             )
           }
-          <span>읽는 시간 <time datetime={readingTime.iso}>{readingTime.label}</time></span>
+          <span>
+            {`${ui.readingTime} `}
+            <time datetime={readingTime.iso}>{readingLabel(readingTime, lang)}</time>
+          </span>
         </div>
 
         <div class="article-taxonomy">
-          <span class="article-taxonomy__label" id="post-tags-label">태그</span>
+          <span class="article-taxonomy__label" id="post-tags-label">{ui.tags}</span>
           <ul class="tag-chips" aria-labelledby="post-tags-label">
             {
               tags.map((tag) => (
                 <li>
-                  <a href={tagPath(toSlug(tag))} class="tag-chip">
-                    {tag}
-                  </a>
+                  {linkTaxonomy ? (
+                    <a href={tagPath(toSlug(tag))} class="tag-chip">
+                      {tag}
+                    </a>
+                  ) : (
+                    <span class="tag-chip">{tag}</span>
+                  )}
                 </li>
               ))
             }

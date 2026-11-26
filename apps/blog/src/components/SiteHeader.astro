@@ -7,16 +7,31 @@
  */
 import ThemeToggle from './ThemeToggle.astro';
 import SearchTrigger from './SearchTrigger.astro';
-import { aboutPath, portfolioPath, topicsPath } from '../lib/routes';
+import { aboutPath, blogPagePath, homePath, portfolioPath, topicsPath } from '../lib/routes';
+import { langFromPath, UI } from '../lib/i18n';
 import BrandMark from './BrandMark.astro';
 
+interface Props {
+  /** 언어 전환 링크가 갈 곳(번역판). 없으면 다른 언어의 첫 화면이다(NOR-250). */
+  languageSwitch?: string | undefined;
+}
+
+const lang = langFromPath(Astro.url.pathname);
+const ui = UI[lang];
+const otherLang = lang === 'ko' ? 'en' : 'ko';
+const switchHref = Astro.props.languageSwitch ?? homePath(otherLang);
+
 // 시리즈는 글에서 자연스럽게 이어지므로 상단에서 뺐다. 푸터에서 접근할 수 있다.
-const NAV_ITEMS = [
-  { href: '/blog', label: '글' },
-  { href: aboutPath(), label: '소개' },
-  { href: portfolioPath(), label: '포트폴리오' },
-  { href: topicsPath(), label: '탐색' },
-] as const;
+// 영어 페이지는 영어로 있는 곳만 둔다(분류 탐색은 한국어 글만 다룬다).
+const NAV_ITEMS =
+  lang === 'en'
+    ? [{ href: blogPagePath(1, 'en'), label: ui.navBlog }]
+    : [
+        { href: '/blog', label: ui.navBlog },
+        { href: aboutPath(), label: ui.navAbout },
+        { href: portfolioPath(), label: ui.navPortfolio },
+        { href: topicsPath(), label: ui.navTopics },
+      ];
 
 const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
 
@@ -32,11 +47,11 @@ function currentState(href: string): 'page' | 'true' | undefined {
 
 <header class="border-border border-b">
   <div class="site-shell flex flex-wrap items-center gap-x-6 gap-y-2 py-4">
-    <a href="/" class="site-brand">
+    <a href={homePath(lang)} class="site-brand">
       <span class="site-brand__mark"><BrandMark size={19} weight="bold" /></span>
       <span class="site-brand__word">NORU</span>
     </a>
-    <nav aria-label="주요">
+    <nav aria-label={ui.mainNav}>
       <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
         {
           NAV_ITEMS.map((item) => (
@@ -49,7 +64,16 @@ function currentState(href: string): 'page' | 'true' | undefined {
         }
       </ul>
     </nav>
-    <SearchTrigger />
+    {/* 사이트 검색은 한국어 글만 색인한다(NOR-250). */}
+    {lang === 'ko' && <SearchTrigger />}
+    <a
+      href={switchHref}
+      hreflang={UI[otherLang].htmlLang}
+      lang={UI[otherLang].htmlLang}
+      class="site-nav__link text-sm"
+    >
+      {ui.switchLanguage}
+    </a>
     <ThemeToggle />
   </div>
 </header>

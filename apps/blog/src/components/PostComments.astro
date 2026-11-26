@@ -6,12 +6,15 @@
  * 붙인다. 사이트 테마가 바뀌면(`themechange`) `theme` 속성을 바꾸고, Comentario 는 그 자리에서 다시 그린다.
  */
 import { commentsEmbed } from '../lib/comments';
+import { langFromPath, UI } from '../lib/i18n';
 
 interface Props {
   slug: string;
 }
 
-const embed = commentsEmbed(Astro.props.slug);
+const lang = langFromPath(Astro.url.pathname);
+const ui = UI[lang];
+const embed = commentsEmbed(Astro.props.slug, lang);
 ---
 
 <section
@@ -21,8 +24,8 @@ const embed = commentsEmbed(Astro.props.slug);
   data-comments-src={embed.scriptSrc}
   data-comments-integrity={embed.integrity}
 >
-  <h2 id="comments-heading" class="text-body text-lg font-semibold">댓글</h2>
-  <p class="text-muted mt-1 text-sm">이름만 적으면 남길 수 있습니다. 확인한 뒤 공개합니다.</p>
+  <h2 id="comments-heading" class="text-body text-lg font-semibold">{ui.comments}</h2>
+  <p class="text-muted mt-1 text-sm">{ui.commentsHint}</p>
   <comentario-comments
     class="mt-4 block"
     page-id={embed.pageId}
@@ -31,7 +34,7 @@ const embed = commentsEmbed(Astro.props.slug);
     max-level="3"
     no-fonts="true"></comentario-comments>
   <noscript>
-    <p class="text-muted text-sm">댓글을 보려면 JavaScript 를 켜야 합니다.</p>
+    <p class="text-muted text-sm">{ui.commentsNoScript}</p>
   </noscript>
 </section>
 

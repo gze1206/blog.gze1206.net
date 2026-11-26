@@ -49,3 +49,24 @@ describe('toRssItems', () => {
     ]);
   });
 });
+
+it('NOR-250 AC-5: 영어 글의 RSS 링크는 /en/blog 를 쓴다', () => {
+  const [item] = toRssItems(
+    [
+      {
+        data: {
+          title: 'Hello',
+          description: 'd',
+          slug: 'hello',
+          category: 'dev',
+          tags: [],
+          publishedAt: new Date('2026-01-01'),
+          draft: false,
+          lang: 'en',
+        },
+      },
+    ],
+    'https://gze1206.net',
+  );
+  expect(item?.link).toBe('https://gze1206.net/en/blog/hello');
+});

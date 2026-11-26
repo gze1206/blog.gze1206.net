@@ -1,0 +1,56 @@
+---
+/**
+ * 영어 첫 화면 (NOR-250). 영어로 쓴 글과, 대부분의 글이 한국어라는 안내를 둔다.
+ * 소개·포트폴리오 영어판은 NOR-251 에서 붙는다.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getVisiblePosts } from '../../lib/content';
+import { blogPagePath } from '../../lib/routes';
+import { UI } from '../../lib/i18n';
+
+const ui = UI.en;
+const posts = (await getVisiblePosts('en')).slice(0, 5);
+---
+
+<BaseLayout
+  title="gze1206.net"
+  description="Game client and server developer. Building games, and the tools that make them."
+>
+  <main id="main-content" class="list-page">
+    <div class="list-page__head">
+      <p class="list-page__eyebrow">gze1206</p>
+      <h1 class="display-heading mt-2 text-3xl sm:text-4xl">
+        Building games, and the tools that make them.
+      </h1>
+      <p class="text-muted mt-3">
+        Game client and server developer. Most posts on this site are written in Korean; the ones
+        below are in English.
+      </p>
+    </div>
+    <section aria-labelledby="recent-posts">
+      <h2 id="recent-posts" class="mt-10 text-xl font-bold">Recent posts</h2>
+      {
+        posts.length === 0 ? (
+          <div class="mt-4">
+            <EmptyState message={ui.noPosts} />
+          </div>
+        ) : (
+          <div>
+            {posts.map((post) => (
+              <PostCard post={post} headingLevel={3} />
+            ))}
+          </div>
+        )
+      }
+      <p class="mt-6 text-sm">
+        <a href={blogPagePath(1, 'en')} class="text-accent underline">All posts in English</a>
+        <span class="text-muted"> · </span>
+        <a href={blogPagePath(1)} hreflang="ko" lang="ko" class="text-accent underline"
+          >한국어 글 전체</a
+        >
+      </p>
+    </section>
+  </main>
+</BaseLayout>

@@ -1,0 +1,41 @@
+---
+/** 영어 글 목록 + 페이지네이션 (NOR-250). 1페이지는 `/en/blog`, 2페이지부터 `/en/blog/2` 다. */
+import type { GetStaticPaths } from 'astro';
+import EmptyState from '../../../components/EmptyState.astro';
+import Pagination from '../../../components/Pagination.astro';
+import PostCard from '../../../components/PostCard.astro';
+import ListLayout from '../../../layouts/ListLayout.astro';
+import { POSTS_PER_PAGE, getVisiblePosts } from '../../../lib/content';
+import { UI } from '../../../lib/i18n';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getVisiblePosts('en');
+  return paginate(posts, { pageSize: POSTS_PER_PAGE });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const ui = UI.en;
+const isFirstPage = page.currentPage <= 1;
+const lead =
+  page.total > 0 ? `${page.total} posts · page ${page.currentPage} of ${page.lastPage}` : undefined;
+const title = isFirstPage ? undefined : `${ui.blogHeading} (page ${page.currentPage})`;
+const description = isFirstPage
+  ? ui.blogDescription
+  : `${ui.blogDescription} Page ${page.currentPage} of ${page.lastPage}.`;
+---
+
+<ListLayout title={title} heading={ui.blogHeading} description={description} lead={lead}>
+  {
+    page.data.length === 0 ? (
+      <EmptyState message={ui.noPosts} />
+    ) : (
+      <div>
+        {page.data.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </div>
+    )
+  }
+
+  <Pagination currentPage={page.currentPage} lastPage={page.lastPage} />
+</ListLayout>

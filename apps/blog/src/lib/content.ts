@@ -25,6 +25,7 @@ import {
   type TaxonomyGroup,
 } from './posts';
 import { buildSeriesLabels, type SeriesLabel } from './series-nav';
+import { findTranslation, type Lang } from './i18n';
 
 export type Post = CollectionEntry<'posts'>;
 export type Series = CollectionEntry<'series'>;
@@ -53,7 +54,7 @@ const RAW_POST_SOURCES = import.meta.glob<string>('../content/posts/**/*.{md,mdx
 });
 
 let visiblePostsCache: Post[] | null = null;
-let seriesLabelsCache: Promise<Map<string, SeriesLabel>> | null = null;
+const seriesLabelsCache = new Map<Lang, Promise<Map<string, SeriesLabel>>>();
 
 async function loadVisiblePosts(): Promise<Post[]> {
   const [allPosts, allSeries] = await Promise.all([
@@ -73,10 +74,23 @@ async function loadVisiblePosts(): Promise<Post[]> {
   return sortByPublishedDesc(selectVisible(allPosts, INCLUDE_DRAFTS));
 }
 
-/** 노출 대상 글 전체 (publishedAt 내림차순). 빌드 1회당 한 번만 계산한다. */
-export async function getVisiblePosts(): Promise<Post[]> {
+/** 모든 언어의 노출 대상 글 (publishedAt 내림차순). 빌드 1회당 한 번만 계산한다. */
+async function getAllVisiblePosts(): Promise<Post[]> {
   visiblePostsCache ??= await loadVisiblePosts();
   return visiblePostsCache;
+}
+
+/**
+ * 한 언어의 노출 대상 글 (publishedAt 내림차순). 기본은 한국어다 — 홈·목록·분류·시리즈·RSS 같은
+ * 기존 한국어 화면은 인자 없이 불러 한국어 글만 받는다(NOR-250).
+ */
+export async function getVisiblePosts(lang: Lang = 'ko'): Promise<Post[]> {
+  return (await getAllVisiblePosts()).filter((post) => post.data.lang === lang);
+}
+
+/** 이 글의 다른 언어판(같은 `translationKey`). 공개된 것만 찾는다. */
+export async function getTranslation(post: Post): Promise<Post | undefined> {
+  return findTranslation(post, await getAllVisiblePosts());
 }
 
 /** 홈페이지에 표시할 단일 공개 소개. 파일이 없으면 빌드를 중단한다. */
@@ -94,12 +108,29 @@ export async function getSeriesById(): Promise<Map<string, Series>> {
   return new Map(allSeries.map((entry) => [entry.id, entry]));
 }
 
-/** 글 slug → 시리즈 라벨. 목록 카드·상세 헤더가 같은 값을 쓴다(NOR-241). 빌드 1회당 한 번만 계산한다. */
-export async function getSeriesLabels(): Promise<Map<string, SeriesLabel>> {
-  seriesLabelsCache ??= Promise.all([getVisiblePosts(), getSeriesById()]).then(
-    ([posts, seriesById]) => buildSeriesLabels(posts, seriesById),
-  );
-  return seriesLabelsCache;
+/**
+ * 글 slug → 시리즈 라벨. 목록 카드·상세 헤더가 같은 값을 쓴다(NOR-241). 언어마다 따로 계산하고,
+ * 영어 라벨은 시리즈의 영어 이름이 있으면 그것을 쓴다(NOR-250). 빌드 1회당 언어별로 한 번만 계산한다.
+ */
+export async function getSeriesLabels(lang: Lang = 'ko'): Promise<Map<string, SeriesLabel>> {
+  let labels = seriesLabelsCache.get(lang);
+  if (labels === undefined) {
+    labels = Promise.all([getVisiblePosts(lang), getSeriesById()]).then(([posts, seriesById]) =>
+      buildSeriesLabels(
+        posts,
+        lang === 'ko'
+          ? seriesById
+          : new Map(
+              [...seriesById].map(([id, series]) => [
+                id,
+                { data: { ...series.data, name: series.data.en?.name ?? series.data.name } },
+              ]),
+            ),
+      ),
+    );
+    seriesLabelsCache.set(lang, labels);
+  }
+  return labels;
 }
 
 /** 노출 대상 글 기준 카테고리 묶음 (라벨 가나다순). */

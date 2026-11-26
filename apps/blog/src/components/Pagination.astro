@@ -6,6 +6,7 @@
  * 현재 페이지는 링크가 아니라 `<span>` 이다 — 자기 자신으로 가는 링크는 노이즈다.
  */
 import { blogPagePath } from '../lib/routes';
+import { langFromPath, UI } from '../lib/i18n';
 
 interface Props {
   currentPage: number;
@@ -13,6 +14,8 @@ interface Props {
 }
 
 const { currentPage, lastPage } = Astro.props;
+const lang = langFromPath(Astro.url.pathname);
+const ui = UI[lang];
 const pages = Array.from({ length: lastPage }, (_, index) => index + 1);
 const linkClass =
   'inline-flex min-w-9 items-center justify-center rounded border border-border-strong px-3 py-1.5 text-sm hover:bg-surface-sunken';
@@ -20,12 +23,12 @@ const linkClass =
 
 {
   lastPage > 1 && (
-    <nav aria-label="블로그 목록 페이지네이션" class="mt-10">
+    <nav aria-label={ui.pagination} class="mt-10">
       <ul class="flex flex-wrap items-center justify-center gap-2">
         {currentPage > 1 && (
           <li>
-            <a href={blogPagePath(currentPage - 1)} rel="prev" class={linkClass}>
-              이전 페이지
+            <a href={blogPagePath(currentPage - 1, lang)} rel="prev" class={linkClass}>
+              {ui.previousPage}
             </a>
           </li>
         )}
@@ -42,7 +45,7 @@ const linkClass =
             </li>
           ) : (
             <li>
-              <a href={blogPagePath(pageNumber)} class={linkClass}>
+              <a href={blogPagePath(pageNumber, lang)} class={linkClass}>
                 <span class="sr-only">페이지 </span>
                 {pageNumber}
               </a>
@@ -51,8 +54,8 @@ const linkClass =
         )}
         {currentPage < lastPage && (
           <li>
-            <a href={blogPagePath(currentPage + 1)} rel="next" class={linkClass}>
-              다음 페이지
+            <a href={blogPagePath(currentPage + 1, lang)} rel="next" class={linkClass}>
+              {ui.nextPage}
             </a>
           </li>
         )}

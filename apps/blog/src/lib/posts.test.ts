@@ -279,3 +279,26 @@ describe('selectSeriesPosts', () => {
     expect(selectSeriesPosts([post({ slug: 'a' })], 'astro-guide')).toEqual([]);
   });
 });
+
+describe('NOR-250 언어별 slug', () => {
+  it('NOR-250 AC-2: 원본 검사는 같은 언어 안의 slug 중복만 막는다', () => {
+    const ko = "---\nslug: 'hello'\n---\n";
+    const en = "---\nslug: 'hello'\nlang: 'en'\n---\n";
+    expect(() => assertUniqueSourceSlugs({ 'a.md': ko, 'en/a.md': en })).not.toThrow();
+    expect(() => assertUniqueSourceSlugs({ 'a.md': ko, 'b.md': ko })).toThrow(
+      ContentIntegrityError,
+    );
+    expect(() => assertUniqueSourceSlugs({ 'en/a.md': en, 'en/b.md': en })).toThrow(
+      ContentIntegrityError,
+    );
+  });
+
+  it('NOR-250 AC-2: 컬렉션 검사도 언어가 다르면 같은 slug 를 허용한다', () => {
+    const ko = post({ slug: 'hello' });
+    const en = { ...ko, id: 'en/hello', data: { ...ko.data, lang: 'en' as const } };
+    expect(() => assertUniquePostSlugs([ko, en])).not.toThrow();
+    expect(() => assertUniquePostSlugs([en, { ...en, id: 'en/other' }])).toThrow(
+      ContentIntegrityError,
+    );
+  });
+});

@@ -8,6 +8,7 @@
  */
 import type { SeriesLabel } from '../lib/series-nav';
 import { seriesPath } from '../lib/routes';
+import { langFromPath } from '../lib/i18n';
 
 interface Props {
   label: SeriesLabel;
@@ -16,12 +17,25 @@ interface Props {
 }
 
 const { label, pagefindMeta = false } = Astro.props;
+// 시리즈 페이지는 한국어 글만 다룬다. 영어 페이지의 라벨은 링크 없이 보인다(NOR-250).
+const english = langFromPath(Astro.url.pathname) === 'en';
 ---
 
 <p class="series-label">
-  <span class="sr-only">시리즈 </span><span data-pagefind-meta={pagefindMeta ? 'series' : undefined}
-    ><a href={seriesPath(label.slug)} class="series-label__link">{label.name}</a>{
-      label.position !== undefined && <span> · {label.position}편</span>
+  <span class="sr-only">{english ? 'Series ' : '시리즈 '}</span><span
+    data-pagefind-meta={pagefindMeta ? 'series' : undefined}
+    >{
+      english ? (
+        <span class="series-label__link">{label.name}</span>
+      ) : (
+        <a href={seriesPath(label.slug)} class="series-label__link">
+          {label.name}
+        </a>
+      )
+    }{
+      label.position !== undefined && (
+        <span>{english ? ` · Part ${label.position}` : ` · ${label.position}편`}</span>
+      )
     }</span
   >
 </p>
