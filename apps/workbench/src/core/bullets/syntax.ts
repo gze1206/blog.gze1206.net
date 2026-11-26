@@ -11,7 +11,11 @@ export interface Bullet {
   readonly migratedTo?: { readonly id: string; readonly at: string };
 }
 
-const typeOrder: readonly BulletType[] = ['task', 'memo', 'note', 'event'];
+/**
+ * 유형 순환 순서. 일정은 빠진다: 일정은 불렛이 아니라 일정으로 만들고, 불렛은 "일정으로" 버튼으로만
+ * 일정이 된다(NOR-249). ○ 불렛에서 순환하면 목록에 없으므로 맨 앞(할 일)이 된다.
+ */
+const typeOrder: readonly BulletType[] = ['task', 'memo', 'note'];
 const crockford = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 
 export function transitionBullet(bullet: Bullet, action: BulletAction): Bullet {
