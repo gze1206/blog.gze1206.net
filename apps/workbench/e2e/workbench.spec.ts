@@ -643,3 +643,20 @@ test('NOR-246 AC-1: 느슨한 목록도 미리보기에서 항목 간격이 고�
   expect(gaps.margin).toBe(0);
   expect(Math.abs(gaps.top - gaps.nested)).toBeLessThanOrEqual(1);
 });
+
+test('NOR-247 AC-1: 미리보기 본문은 칸을 채운다', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await page.goto('/');
+  await page.getByLabel('새 문서 제목').fill('미리보기 너비 시험');
+  await page.getByRole('button', { name: /private-post$/u }).click();
+  await expect(page.getByLabel('Markdown 문서')).toBeVisible();
+  await page.getByRole('button', { name: '미리보기', exact: true }).click();
+  const preview = page.getByRole('region', { name: '미리보기' });
+  const body = preview.locator('.preview').first();
+  await expect(body).toBeVisible();
+  const widths = await body.evaluate((element) => ({
+    body: element.getBoundingClientRect().width,
+    pane: (element.parentElement as Element).getBoundingClientRect().width,
+  }));
+  expect(widths.body).toBeGreaterThan(widths.pane * 0.9);
+});
