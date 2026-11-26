@@ -10,7 +10,7 @@ export interface TranslationPlan {
   readonly relativePath: string;
   /** 새 영어 초안 원문. */
   readonly source: string;
-  /** 원본에 `translationKey` 가 없었으면 키를 넣은 원본 원문. 있었으면 null(고치지 않는다). */
+  /** 원본 키가 없거나 slug 와 다르면 키를 slug 로 적은 원본 원문. 같으면 null(고치지 않는다). */
   readonly originalSource: string | null;
 }
 
@@ -28,7 +28,8 @@ export function planTranslationDraft(source: string, today: string): Translation
     throw new TranslationPlanError('only public drafts can be translated');
   if (original.lang === 'en') throw new TranslationPlanError('the draft is already in English');
   if (!original.slug) throw new TranslationPlanError('the draft needs a slug before translation');
-  const key = original.translationKey ?? original.slug;
+  // 키는 한국어판의 slug 다(NOR-254). 번역판 댓글 묶음이 이 값으로 한국어판 경로를 정한다.
+  const key = original.slug;
   const english = {
     ...original,
     title: `[EN] ${original.title}`,
@@ -46,8 +47,8 @@ export function planTranslationDraft(source: string, today: string): Translation
     relativePath: `drafts/${original.slug}.en.md`,
     source: serializeDocument(english),
     originalSource:
-      original.translationKey === undefined
-        ? serializeDocument({ ...original, translationKey: key })
-        : null,
+      original.translationKey === key
+        ? null
+        : serializeDocument({ ...original, translationKey: key }),
   };
 }

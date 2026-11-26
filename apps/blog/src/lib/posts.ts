@@ -24,6 +24,7 @@ export interface PostLike {
     readonly draft: boolean;
     /** 글 언어(NOR-250). 없으면 한국어다. */
     readonly lang?: 'ko' | 'en' | undefined;
+    readonly translationKey?: string | undefined;
   };
 }
 
@@ -237,4 +238,18 @@ export function selectSeriesPosts<T extends PostLike>(posts: readonly T[], serie
   return posts
     .filter((post) => post.data.series === seriesId)
     .sort((a, b) => (a.data.seriesOrder ?? 0) - (b.data.seriesOrder ?? 0));
+}
+
+/**
+ * `translationKey` 는 한국어판의 slug 다(NOR-254). 번역판 댓글 묶음이 이 값으로 한국어판 경로를 정하므로,
+ * 한국어 글의 키가 자기 slug 와 다르면 두 언어의 댓글이 갈라진다. 그래서 빌드를 세운다.
+ */
+export function assertTranslationKeys(posts: readonly PostLike[]): void {
+  for (const post of posts) {
+    const key = post.data.translationKey;
+    if ((post.data.lang ?? 'ko') === 'ko' && key !== undefined && key !== post.data.slug)
+      throw new ContentIntegrityError(
+        `'${post.id}' 의 translationKey '${key}' 가 slug '${post.data.slug}' 와 다릅니다. 한국어 글의 translationKey 는 자기 slug 여야 합니다.`,
+      );
+  }
 }

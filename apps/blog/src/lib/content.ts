@@ -15,6 +15,7 @@ import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import {
   assertPaginationSafeSlugs,
   assertSeriesIntegrity,
+  assertTranslationKeys,
   assertUniquePostSlugs,
   assertUniqueSourceSlugs,
   groupByCategory,
@@ -67,6 +68,7 @@ async function loadVisiblePosts(): Promise<Post[]> {
   assertUniquePostSlugs(allPosts);
   assertPaginationSafeSlugs(allPosts);
   assertSeriesIntegrity(allPosts, new Set(allSeries.map((entry) => entry.id)));
+  assertTranslationKeys(allPosts);
   // 분류 슬러그 충돌은 그룹핑 시점에 던진다. 노출 대상만이 아니라 전수로 미리 확인한다.
   groupByCategory(allPosts);
   groupByTag(allPosts);

@@ -26,14 +26,17 @@ export interface CommentsEmbed {
 interface PostRef {
   readonly slug: string;
   readonly lang: Lang;
+  readonly translationKey?: string | undefined;
 }
 
 /**
- * 댓글 묶음 경로(NOR-253). 같은 글은 언어가 달라도 한 묶음을 본다: 한국어 글은 자기 경로,
- * 한국어판이 있는 영어 글은 한국어판 경로, 없으면 자기 경로다. 한국어 글의 기존 묶음은 바뀌지 않는다.
+ * 댓글 묶음 경로(NOR-253·254). 같은 글은 언어가 달라도 한 묶음을 본다. `translationKey` 는 한국어판의
+ * slug 라서(무결성 검사가 지킨다), 영어 글은 한국어판 공개 여부와 상관없이 처음부터 한국어판 경로를 쓴다.
+ * 한국어 글은 자기 경로라 기존 묶음이 바뀌지 않는다. 키가 없는 영어 글은 자기 경로다.
  */
-export function commentThreadPath(post: PostRef, translation: PostRef | undefined): string {
-  if (post.lang !== 'ko' && translation?.lang === 'ko') return postPath(translation.slug, 'ko');
+export function commentThreadPath(post: PostRef): string {
+  if (post.lang !== 'ko' && post.translationKey !== undefined)
+    return postPath(post.translationKey, 'ko');
   return postPath(post.slug, post.lang);
 }
 
