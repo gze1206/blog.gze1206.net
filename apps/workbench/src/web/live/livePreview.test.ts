@@ -182,3 +182,36 @@ it('NOR-240 AC-3: 커서가 없는 줄의 wb 주석만 숨긴다', async () => {
   expect(at(doc.length)).toEqual([' <!-- wb:id=01M83945Q72TNSZD8E69SVBWME -->']);
   expect(at(2)).toEqual([]);
 });
+
+it('NOR-244 AC-3: 목록 항목 줄에 깊이 클래스를 붙이고 커서 없는 하위 항목의 앞 공백을 숨긴다', async () => {
+  const mod = await import('./livePreview.js');
+  const doc = '- 상위\n  - 하위\n    - 더 하위\n\n끝';
+  const state = EditorState.create({
+    doc,
+    selection: EditorSelection.cursor(doc.length),
+    extensions: [mod.markdownLanguage()],
+  });
+  const items = mod.previewDecorations(state) as Item[];
+  const depth = (line: string) =>
+    items
+      .filter((item) => item.kind === 'line' && item.from === doc.indexOf(line))
+      .map((item) => item.className);
+  expect(depth('- 상위')).toContain('cm-lp-li-1');
+  expect(depth('  - 하위')).toContain('cm-lp-li-2');
+  expect(depth('    - 더 하위')).toContain('cm-lp-li-3');
+  const hidden = items
+    .filter((item) => item.kind === 'hide')
+    .map((item) => doc.slice(item.from, item.to));
+  expect(hidden).toEqual(['  ', '    ']);
+  // 커서가 있는 줄은 원본 공백을 보인다.
+  const active = EditorState.create({
+    doc,
+    selection: EditorSelection.cursor(doc.indexOf('하위')),
+    extensions: [mod.markdownLanguage()],
+  });
+  expect(
+    (mod.previewDecorations(active) as Item[])
+      .filter((item) => item.kind === 'hide')
+      .map((item) => doc.slice(item.from, item.to)),
+  ).toEqual(['    ']);
+});
