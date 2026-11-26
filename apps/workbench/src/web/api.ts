@@ -148,6 +148,11 @@ export async function readDocument(id: string): Promise<DocumentEntry> {
   return request(`/api/documents/${encodeURIComponent(id)}`);
 }
 
+/** 한국어 공개 초안의 영어판 초안을 만든다(NOR-252). */
+export async function createTranslation(id: string): Promise<DocumentEntry> {
+  return request(`/api/documents/${encodeURIComponent(id)}/translation`, { method: 'POST' });
+}
+
 export async function createDocument(input: {
   readonly templateId: string;
   readonly title: string;

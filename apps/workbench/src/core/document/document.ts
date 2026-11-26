@@ -86,6 +86,10 @@ const commonSchema = z.object({
   publishedAt: publishDateInputSchema.optional(),
   draft: z.boolean().optional(),
   toc: tocSchema.optional(),
+  /** 공개 초안의 언어(NOR-252). 없으면 한국어다. 검사는 발행 계약이 한다. */
+  lang: z.string().optional(),
+  /** 같은 값을 가진 다른 언어 초안이 번역판이다(NOR-252). */
+  translationKey: z.string().optional(),
   // --- 책 (NOR-189) ---
   authors: z.array(z.string().min(1)).optional(),
   translators: z.array(z.string().min(1)).optional(),
@@ -145,6 +149,8 @@ const knownKeys = [
   'publishedAt',
   'draft',
   'toc',
+  'lang',
+  'translationKey',
   'authors',
   'translators',
   'publisher',
@@ -182,6 +188,8 @@ const kindKeys: Record<DocumentKind, readonly (typeof knownKeys)[number][]> = {
     'publishedAt',
     'draft',
     'toc',
+    'lang',
+    'translationKey',
   ],
   'weekly-review': ['period'],
   'monthly-review': ['period'],

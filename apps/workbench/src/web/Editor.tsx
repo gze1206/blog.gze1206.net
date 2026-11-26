@@ -21,6 +21,8 @@ interface Props {
   readonly onReviewPublish?: () => void;
   /** 휴지통으로 옮긴다(NOR-205). */
   readonly onDelete?: () => void;
+  /** 한국어 공개 초안이면 영어판 초안을 만든다(NOR-252). */
+  readonly onCreateTranslation?: () => void;
   readonly publishAssets?: readonly PublicAssetCandidate[];
   readonly selectedAssetIds?: readonly string[];
   readonly onToggleAsset?: (id: string) => void;
@@ -39,6 +41,7 @@ export function Editor({
   onChange,
   onSave,
   onDelete,
+  onCreateTranslation,
   onReviewPublish,
   publishAssets = [],
   selectedAssetIds = [],
@@ -88,6 +91,16 @@ export function Editor({
               type="button"
             >
               삭제
+            </button>
+          ) : null}
+          {onCreateTranslation ? (
+            <button
+              className="text-muted hover:text-foreground rounded-md px-3 py-2 text-sm disabled:opacity-40"
+              disabled={saving}
+              onClick={onCreateTranslation}
+              type="button"
+            >
+              영어판 만들기
             </button>
           ) : null}
           {onReviewPublish ? (

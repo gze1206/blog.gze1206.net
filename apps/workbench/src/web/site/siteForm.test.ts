@@ -14,7 +14,14 @@ describe('사이트 콘텐츠 폼', () => {
     );
     expect(SITE_FIELDS.experience.find((field) => field.key === 'visible')?.type).toBe('boolean');
     expect(SITE_FIELDS.portfolio.find((field) => field.key === 'media')?.type).toBe('rows');
-    expect(SITE_FIELDS.series.map((field) => field.key)).toEqual(['name', 'slug', 'description']);
+    // 영어 칸(NOR-252)이 뒤에 붙는다.
+    expect(SITE_FIELDS.series.map((field) => field.key)).toEqual([
+      'name',
+      'slug',
+      'description',
+      'en.name',
+      'en.description',
+    ]);
   });
 
   it('NOR-208 AC-7: 목록은 한 줄에 하나, 문단은 빈 줄로 나눈다', async () => {

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   confirmPublish,
   createDocument,
+  createTranslation,
   deleteDocument,
   listTrash,
   loadPublishStatus,
@@ -122,6 +123,25 @@ export function App() {
   }, []);
 
   /** 휴지통으로 옮긴다(NOR-205). 발행한 글은 블로그에서 따로 내려야 한다. */
+  /** 한국어 공개 초안에서 영어판 초안을 만들고 연다(NOR-252). */
+  const translate = async (id: string) => {
+    if (
+      source !== selected?.source &&
+      !window.confirm('저장하지 않은 수정이 있습니다. 저장된 내용으로 영어판을 만들까요?')
+    )
+      return;
+    setBusy(true);
+    try {
+      const created = await createTranslation(id);
+      await refresh();
+      await selectDocument(created.id);
+    } catch (caught) {
+      setError(toMessage(caught));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const removeSelected = async () => {
     if (selected === null) return;
     const message =
@@ -491,6 +511,9 @@ export function App() {
               onSave={() => void save()}
               {...(selected.kind === 'public-draft'
                 ? {
+                    ...(isEnglishDraft(selected.source)
+                      ? {}
+                      : { onCreateTranslation: () => void translate(selected.id) }),
                     onReviewPublish: () => void review(),
                     onUploadImage: async (file: File) => {
                       const documentId = selected.id;
@@ -561,6 +584,12 @@ export function App() {
 }
 
 /** 일지 문서의 날짜. 일지가 아니거나 제목이 날짜가 아니면 null. 일지의 제목은 그 날짜다. */
+/** 공개 초안이 이미 영어면 영어판을 또 만들지 않는다. */
+function isEnglishDraft(source: string): boolean {
+  const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/u.exec(source)?.[1] ?? '';
+  return /^lang:[ \t]*['"]?en['"]?[ \t]*$/mu.test(frontmatter);
+}
+
 function journalDateOf(document: DocumentSummary | undefined): string | null {
   if (document?.kind !== 'journal') return null;
   return /^\d{4}-\d{2}-\d{2}$/u.test(document.title) ? document.title : null;
