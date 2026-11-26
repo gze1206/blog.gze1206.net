@@ -611,3 +611,35 @@ test('NOR-244 AC-1, NOR-244 AC-2: 편집기는 칸을 채우고 미리보기 하
   expect(style.bottom).toBeLessThanOrEqual(4);
   expect(new Set([style.parent, style.marker, style.deeper]).size).toBe(3);
 });
+
+test('NOR-246 AC-1: 느슨한 목록도 미리보기에서 항목 간격이 고르다', async ({ page }) => {
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await page.goto('/');
+  await page.getByLabel('새 문서 제목').fill('느슨한 목록 시험');
+  await page.getByRole('button', { name: /private-post$/u }).click();
+  const editor = page.getByLabel('Markdown 문서');
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+End');
+  // 하위 목록 뒤의 빈 줄 하나가 목록 전체를 느슨한 목록으로 만든다.
+  await page.keyboard.insertText('\n- 하나\n- 둘\n  - 하위 하나\n  - 하위 둘\n\n- 셋\n- 넷\n');
+  await page.getByRole('button', { name: '미리보기' }).click();
+  const preview = page.getByRole('region', { name: '미리보기' });
+  await expect(preview.locator('li > p').first()).toBeVisible();
+  const gaps = await preview
+    .locator('article > ul')
+    .last()
+    .evaluate((list) => {
+      const top = [...list.children].map((item) => item.getBoundingClientRect());
+      const nested = [...(list.querySelector('ul')?.children ?? [])].map((item) =>
+        item.getBoundingClientRect(),
+      );
+      const paragraph = getComputedStyle(list.querySelector('li > p') as Element);
+      return {
+        top: (top[1]?.top ?? 0) - (top[0]?.bottom ?? 0),
+        nested: (nested[1]?.top ?? 0) - (nested[0]?.bottom ?? 0),
+        margin: parseFloat(paragraph.marginTop) + parseFloat(paragraph.marginBottom),
+      };
+    });
+  expect(gaps.margin).toBe(0);
+  expect(Math.abs(gaps.top - gaps.nested)).toBeLessThanOrEqual(1);
+});
