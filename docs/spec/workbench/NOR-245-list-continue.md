@@ -13,7 +13,8 @@
 | 글이 없는 항목                | 표시를 지우고 목록을 끝낸다                   |
 | 목록이 아닌 줄                | 지금처럼 줄만 바꾼다                          |
 
-- 표시만 있는 줄 바로 뒤에서 Backspace 를 누르면 표시를 한 번에 지운다.
+- 표시만 있는 줄 바로 뒤에서 Backspace 를 누르면 표시를 한 번에 지운다. 두 번째 이후 항목은 위 항목에 딸린 문단으로 남아 들여쓰기가 남을 수 있다(Markdown 규칙). 목록을 완전히 끝낼 때는 빈 항목에서 Enter 를 누른다.
+- 빈 줄로 떨어진 항목이 같은 목록으로 읽혀도, 이어 쓸 때는 빈 줄을 넣지 않고 바로 다음 줄에 붙인다.
 - CodeMirror Markdown 의 `insertNewlineContinueMarkup`·`deleteMarkupBackward` 를 쓴다.
 
 ## 수용 기준

@@ -215,3 +215,31 @@ it('NOR-244 AC-3: 목록 항목 줄에 깊이 클래스를 붙이고 커서 없�
       .map((item) => doc.slice(item.from, item.to)),
   ).toEqual(['    ']);
 });
+
+it('NOR-245 AC-1: Enter 는 목록·체크리스트·번호를 이어 쓰고 빈 줄을 넣지 않는다', async () => {
+  const mod = await import('./livePreview.js');
+  const { ensureSyntaxTree } = await import('@codemirror/language');
+  const enter = (doc: string) => {
+    let state = EditorState.create({
+      doc,
+      selection: EditorSelection.cursor(doc.length),
+      extensions: [mod.markdownLanguage()],
+    });
+    ensureSyntaxTree(state, state.doc.length, 1000);
+    const handled = mod.continueMarkup({
+      state,
+      dispatch: (transaction) => {
+        state = transaction.state;
+      },
+    });
+    return { handled, doc: state.doc.toString(), cursor: state.selection.main.head };
+  };
+  expect(enter('- 사과').doc).toBe('- 사과\n- ');
+  expect(enter('- [x] 끝').doc).toBe('- [x] 끝\n- [ ] ');
+  expect(enter('1. 하나').doc).toBe('1. 하나\n2. ');
+  const loose = enter('- 앞\n\n- 사과');
+  expect(loose.doc).toBe('- 앞\n\n- 사과\n- ');
+  expect(loose.cursor).toBe(loose.doc.length);
+  expect(enter('- ').doc).toBe('');
+  expect(enter('문장').handled).toBe(false);
+});

@@ -270,6 +270,8 @@ test('NOR-245 AC-1, NOR-245 AC-2, NOR-245 AC-3: Enter 로 목록·체크리스�
   await page.keyboard.type('빵');
   await expect.poll(source).toContain('빵');
   await expect(page.locator('.cm-line').filter({ hasText: /^- 빵$/u })).toHaveCount(1);
+  // 빈 줄을 사이에 두지 않고 바로 다음 줄에 이어 쓴다.
+  expect(await source()).toContain('- 우유\n- 빵');
   // 빈 항목에서 Enter 를 누르면 목록이 끝난다.
   await page.keyboard.press('Enter');
   await page.keyboard.press('Enter');
@@ -282,7 +284,8 @@ test('NOR-245 AC-1, NOR-245 AC-2, NOR-245 AC-3: Enter 로 목록·체크리스�
   await page.keyboard.press('Enter');
   await page.keyboard.type('할 일 둘');
   await expect(page.locator('.cm-line').filter({ hasText: /^- \[ \] 할 일 둘$/u })).toHaveCount(1);
-
+  // 이어 붙은 빈 체크리스트 항목에서 Enter 를 눌러 목록을 끝낸다.
+  await page.keyboard.press('Enter');
   await page.keyboard.press('Enter');
   await page.keyboard.type('1. 첫째');
   await page.keyboard.press('Enter');
@@ -290,5 +293,6 @@ test('NOR-245 AC-1, NOR-245 AC-2, NOR-245 AC-3: Enter 로 목록·체크리스�
   // 표시만 있는 줄에서 Backspace 를 누르면 표시가 지워진다.
   await page.keyboard.press('Backspace');
   await page.keyboard.type('번호 밖');
-  await expect(page.locator('.cm-line').filter({ hasText: /^번호 밖$/u })).toHaveCount(1);
+  // 위 항목에 딸린 문단으로 남으므로 들여쓰기는 남을 수 있다. 번호 표시만 없으면 된다.
+  await expect(page.locator('.cm-line').filter({ hasText: /^\s*번호 밖$/u })).toHaveCount(1);
 });

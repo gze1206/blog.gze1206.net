@@ -4,13 +4,19 @@
  *
  * 장식 계산(`previewDecorations`)은 DOM 없이 `EditorState` 만으로 하므로 단위 테스트할 수 있다.
  */
-import { markdown, markdownLanguage as baseMarkdown } from '@codemirror/lang-markdown';
+import {
+  insertNewlineContinueMarkup,
+  markdown,
+  markdownLanguage as baseMarkdown,
+} from '@codemirror/lang-markdown';
 import { ensureSyntaxTree, syntaxHighlighting, syntaxTree } from '@codemirror/language';
 import {
   EditorSelection,
   EditorState,
   type Extension,
   type Range,
+  type StateCommand,
+  type Transaction,
   type TransactionSpec,
 } from '@codemirror/state';
 import {
@@ -37,7 +43,7 @@ export interface PreviewItem {
   readonly label?: string;
 }
 
-/** 목록 자동 이어쓰기 같은 입력 변경 키맵은 넣지 않는다. 입력한 글자가 그대로 원본이다(AC-8). */
+/** 키맵은 편집기(LiveEditor)가 정한다. 목록 이어쓰기는 거기서 붙인다(NOR-245). */
 export function markdownLanguage(): Extension {
   // 코드 블록 안의 언어도 파싱한다(NOR-229). 언어 파서는 처음 쓸 때 불러온다.
   return markdown({ base: baseMarkdown, addKeymap: false, codeLanguages: codeLanguage });
@@ -480,3 +486,38 @@ export function toggleTask(state: EditorState, pos: number): TransactionSpec {
   const at = line.from + match[1].length + 1;
   return { changes: { from: at, to: at + 1, insert: match[2] === ' ' ? 'x' : ' ' } };
 }
+
+/**
+ * Enter 로 목록·체크리스트를 이어 쓴다(NOR-245). 빈 줄로 떨어진 항목이 같은 목록으로 읽혀도
+ * 이어 쓸 때는 빈 줄을 넣지 않는다. 쓰는 사람에게는 바로 다음 줄에 이어지는 것이 자연스럽다.
+ */
+export const continueMarkup: StateCommand = ({ state, dispatch }) => {
+  let captured: Transaction | null = null;
+  const handled = insertNewlineContinueMarkup({
+    state,
+    dispatch: (transaction) => {
+      captured = transaction;
+    },
+  });
+  const transaction = captured as Transaction | null;
+  if (!handled || transaction === null) return handled;
+  const changes: { from: number; to: number; insert: string }[] = [];
+  transaction.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+    changes.push({ from: fromA, to: toA, insert: inserted.toString() });
+  });
+  const only = changes[0];
+  const tightened = only === undefined ? '' : only.insert.replace(/^\n[ \t]*\n/u, '\n');
+  if (changes.length !== 1 || only === undefined || tightened === only.insert) {
+    dispatch(transaction);
+    return true;
+  }
+  dispatch(
+    state.update({
+      changes: { from: only.from, to: only.to, insert: tightened },
+      selection: EditorSelection.cursor(only.from + tightened.length),
+      scrollIntoView: true,
+      userEvent: 'input',
+    }),
+  );
+  return true;
+};

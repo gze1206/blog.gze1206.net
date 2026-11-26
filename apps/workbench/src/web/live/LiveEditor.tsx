@@ -6,11 +6,13 @@ import {
   indentMore,
   indentWithTab,
 } from '@codemirror/commands';
+import { deleteMarkupBackward } from '@codemirror/lang-markdown';
 import { EditorSelection, type EditorState, type TransactionSpec } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { useEffect, useRef, useState } from 'react';
 
 import {
+  continueMarkup,
   createSourceState,
   insertLink,
   livePreview,
@@ -90,6 +92,9 @@ export function LiveEditor({ source, onChange, className = '', onUploadImage, on
       createSourceState(source, [
         history(),
         keymap.of([
+          // 목록·체크리스트는 Enter 로 이어 쓰고, 빈 항목에서 끝낸다(NOR-245). 목록이 아니면 기본 줄바꿈이 받는다.
+          { key: 'Enter', run: continueMarkup },
+          { key: 'Backspace', run: deleteMarkupBackward },
           { key: 'Mod-b', run: runner((state) => toggleWrap(state, '**')) },
           { key: 'Mod-i', run: runner((state) => toggleWrap(state, '*')) },
           ...defaultKeymap,
