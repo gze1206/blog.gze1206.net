@@ -70,14 +70,22 @@ function currentState(href: string): 'page' | 'true' | undefined {
     </nav>
     {/* 사이트 검색은 한국어 글만 색인한다(NOR-250). */}
     {lang === 'ko' && <SearchTrigger />}
-    <a
-      href={switchHref}
-      hreflang={UI[otherLang].htmlLang}
-      lang={UI[otherLang].htmlLang}
-      class="site-nav__link text-sm"
-    >
-      {ui.switchLanguage}
-    </a>
-    <ThemeToggle />
+    {/* 화면 설정(언어·테마)은 한 묶음으로 오른쪽 끝에 둔다(NOR-253). */}
+    <div class="site-settings">
+      <a
+        href={switchHref}
+        hreflang={UI[otherLang].htmlLang}
+        lang={UI[otherLang].htmlLang}
+        class="theme-toggle lang-toggle"
+        aria-label={ui.switchLanguage}
+        title={ui.switchLanguage}
+      >
+        {
+          /* 테마 버튼과 같은 화면 설정이라 같은 둥근 버튼으로 둔다(NOR-253). 글자는 갈 언어의 약자다. */
+        }
+        <span aria-hidden="true">{otherLang.toUpperCase()}</span>
+      </a>
+      <ThemeToggle />
+    </div>
   </div>
 </header>

@@ -23,12 +23,26 @@ export interface CommentsEmbed {
   lang: Lang;
 }
 
-/** 영어 글은 경로가 달라 댓글 묶음도 따로다(NOR-250). */
-export function commentsEmbed(slug: string, lang: Lang = 'ko'): CommentsEmbed {
+interface PostRef {
+  readonly slug: string;
+  readonly lang: Lang;
+}
+
+/**
+ * 댓글 묶음 경로(NOR-253). 같은 글은 언어가 달라도 한 묶음을 본다: 한국어 글은 자기 경로,
+ * 한국어판이 있는 영어 글은 한국어판 경로, 없으면 자기 경로다. 한국어 글의 기존 묶음은 바뀌지 않는다.
+ */
+export function commentThreadPath(post: PostRef, translation: PostRef | undefined): string {
+  if (post.lang !== 'ko' && translation?.lang === 'ko') return postPath(translation.slug, 'ko');
+  return postPath(post.slug, post.lang);
+}
+
+/** 위젯 문구는 페이지 언어를 따르고, 묶음은 `threadPath`(없으면 글 경로)다. */
+export function commentsEmbed(slug: string, lang: Lang = 'ko', threadPath?: string): CommentsEmbed {
   return {
     scriptSrc: `${COMMENTS_ORIGIN}/comentario.js`,
     integrity: COMMENTS_SCRIPT_INTEGRITY,
-    pageId: postPath(slug, lang),
+    pageId: threadPath ?? postPath(slug, lang),
     lang,
   };
 }
