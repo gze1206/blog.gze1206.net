@@ -302,3 +302,20 @@ describe('NOR-250 언어별 slug', () => {
     );
   });
 });
+
+describe('NOR-254 translationKey', () => {
+  it('NOR-254 AC-2: 한국어 글의 translationKey 는 자기 slug 와 같아야 한다', async () => {
+    const mod = await import('./posts');
+    expect(mod).toHaveProperty('assertTranslationKeys');
+    const ko = post({ slug: 'devlog-1' });
+    const keyed = (lang: 'ko' | 'en', key: string) => ({
+      ...ko,
+      data: { ...ko.data, lang, translationKey: key },
+    });
+    expect(() =>
+      mod.assertTranslationKeys([keyed('ko', 'devlog-1'), keyed('en', 'devlog-1')]),
+    ).not.toThrow();
+    expect(() => mod.assertTranslationKeys([keyed('en', 'anything')])).not.toThrow();
+    expect(() => mod.assertTranslationKeys([keyed('ko', 'other')])).toThrow(ContentIntegrityError);
+  });
+});

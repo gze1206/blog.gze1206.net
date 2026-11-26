@@ -8,7 +8,7 @@ import { render } from 'astro:content';
 import PostLayout from '../../../layouts/PostLayout.astro';
 import SeriesNav from '../../../components/SeriesNav.astro';
 import PostComments from '../../../components/PostComments.astro';
-import { getTranslation, getVisiblePosts, type Post } from '../../../lib/content';
+import { getVisiblePosts, type Post } from '../../../lib/content';
 import { commentThreadPath } from '../../../lib/comments';
 import { derivePostDetail } from '../../../lib/post-detail';
 import { buildSeriesNav, type SeriesNavigation } from '../../../lib/series-nav';
@@ -28,9 +28,8 @@ interface Props {
 
 const { post, seriesNav } = Astro.props;
 const { Content, headings } = await render(post);
-// 한국어판이 있으면 그 글의 댓글 묶음을 함께 쓴다(NOR-253).
-const translation = await getTranslation(post);
-const threadPath = commentThreadPath(post.data, translation?.data);
+// 번역판은 처음부터 한국어판의 댓글 묶음을 함께 쓴다(NOR-253·254).
+const threadPath = commentThreadPath(post.data);
 const detail = derivePostDetail({
   publishedAt: post.data.publishedAt,
   updatedAt: post.data.updatedAt,
