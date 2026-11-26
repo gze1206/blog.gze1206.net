@@ -8,7 +8,8 @@ import { render } from 'astro:content';
 import PostLayout from '../../../layouts/PostLayout.astro';
 import SeriesNav from '../../../components/SeriesNav.astro';
 import PostComments from '../../../components/PostComments.astro';
-import { getVisiblePosts, type Post } from '../../../lib/content';
+import { getTranslation, getVisiblePosts, type Post } from '../../../lib/content';
+import { commentThreadPath } from '../../../lib/comments';
 import { derivePostDetail } from '../../../lib/post-detail';
 import { buildSeriesNav, type SeriesNavigation } from '../../../lib/series-nav';
 
@@ -27,6 +28,9 @@ interface Props {
 
 const { post, seriesNav } = Astro.props;
 const { Content, headings } = await render(post);
+// 한국어판이 있으면 그 글의 댓글 묶음을 함께 쓴다(NOR-253).
+const translation = await getTranslation(post);
+const threadPath = commentThreadPath(post.data, translation?.data);
 const detail = derivePostDetail({
   publishedAt: post.data.publishedAt,
   updatedAt: post.data.updatedAt,
@@ -38,5 +42,5 @@ const detail = derivePostDetail({
 <PostLayout post={post} detail={detail}>
   <Content />
   <SeriesNav slot="after-content" nav={seriesNav} />
-  <PostComments slot="after-content" slug={post.data.slug} />
+  <PostComments slot="after-content" slug={post.data.slug} threadPath={threadPath} />
 </PostLayout>

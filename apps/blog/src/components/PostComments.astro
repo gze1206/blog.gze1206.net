@@ -10,11 +10,13 @@ import { langFromPath, UI } from '../lib/i18n';
 
 interface Props {
   slug: string;
+  /** 댓글 묶음 경로(NOR-253). 번역판끼리 같은 값을 쓴다. 없으면 글 경로다. */
+  threadPath?: string | undefined;
 }
 
 const lang = langFromPath(Astro.url.pathname);
 const ui = UI[lang];
-const embed = commentsEmbed(Astro.props.slug, lang);
+const embed = commentsEmbed(Astro.props.slug, lang, Astro.props.threadPath);
 ---
 
 <section
