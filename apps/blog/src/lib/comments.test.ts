@@ -22,7 +22,7 @@ describe('comments', () => {
 });
 
 describe('NOR-254 번역판 댓글 묶음', () => {
-  it('NOR-254 AC-1: 영어 글은 translationKey 로 처음부터 한국어판 묶음을 쓰고, 한국어 글은 자기 경로다', async () => {
+  it('NOR-253 AC-2, NOR-254 AC-1: 영어 글은 translationKey 로 처음부터 한국어판 묶음을 쓰고, 한국어 글은 자기 경로다', async () => {
     const mod = await import('./comments.ts');
     expect(
       mod.commentThreadPath({ slug: 'devlog-1', lang: 'ko', translationKey: 'devlog-1' }),
